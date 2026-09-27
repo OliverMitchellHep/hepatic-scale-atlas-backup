@@ -189,7 +189,7 @@ def build():
     f[band] = fb; f[~band] = np.maximum(f[~band], 0.06)
     vol = f.reshape(n)
     verts, faces, _, _ = marching_cubes(vol, 0.0, spacing=(H, H, H))
-    verts += lo; faces = faces[:, ::-1]   # outward winding for three.js (counter-clockwise from outside)
+    verts += lo
     # keep the largest component (subtraction can leave slivers)
     import scipy.sparse as sps, scipy.sparse.csgraph as csg
     m = sps.coo_matrix((np.ones(len(faces) * 3), (np.repeat(faces[:, 0], 3), faces.reshape(-1))), shape=(len(verts),) * 2)
@@ -207,6 +207,9 @@ def build():
     err = max(np.abs(trimesh.proximity.closest_point(trimesh.Trimesh(v2, f2, process=False), verts)[1]).max(),
               np.abs(trimesh.proximity.closest_point(trimesh.Trimesh(verts, faces, process=False), v2)[1]).max())   # two-sided Hausdorff
     print(f'decimated {len(verts)} → {len(v2)} vertices; max deviation {err*MM:.3f} mm (limit {0.001*diag*MM:.3f} mm = 0.1 % of diagonal)')
+    # outward winding (counter-clockwise seen from outside, as three.js front faces expect): positive signed volume
+    vol = np.einsum('ij,ij->i', v2[f2[:, 0]], np.cross(v2[f2[:, 1]], v2[f2[:, 2]])).sum() / 6
+    if vol < 0: f2 = f2[:, ::-1].copy()
     return J, v2, f2, cl, obst, ncomp
 
 
@@ -256,6 +259,7 @@ if __name__ == '__main__':
         pos, idx = encode(verts, faces, J['ct']['qs']); v = J['ct']['viscera']['pancreas']
         assert len(verts) < 65536, 'index must stay Uint16'
         v['pos'], v['idx'] = pos, idx
+        for k in ('uv', 'dup', 'n0'): v.pop(k, None)   # a new mesh invalidates any UV unwrap (pipeline/bake44.py redoes it)
         DATA.write_text(json.dumps(J, separators=(',', ':')))
         print('wrote', DATA)
     else:
