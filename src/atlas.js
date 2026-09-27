@@ -3919,12 +3919,28 @@ function bxStart(mode){
   bxPanel();
   if(mode==='pc') pcView();
 }
-/* v41: oblique view of the percutaneous biopsy needle: about 60° to the track, from in front, below and lateral */
+/* v41: oblique view of the percutaneous biopsy needle: about 60° to the track, from in front, below and lateral.
+   v44: same direction, no zoom: the camera distance and target are solved so the whole liver, the right lower ribs (7–12)
+   and the full needle path (hub to target) project inside the view with a margin (pinhole fit in the camera's basis). */
 function pcView(){ const O=BX.O; if(!O||!O.skin||!O.target) return; const inn=tiers[0].inner; inn.updateMatrixWorld(true);
   const s=O.skin.position.clone(), t=O.target.clone(), d=s.clone().sub(t).normalize(), a=V3(0,-0.15,1);
   const perp=a.clone().addScaledVector(d,-a.dot(d)).normalize(), dir=perp.multiplyScalar(0.86).addScaledVector(d,0.50).normalize();
-  const c=inn.localToWorld(t.clone().lerp(s,0.42)), w=dir.transformDirection(inn.matrixWorld);
-  controls.target.copy(c); camera.position.copy(c).addScaledVector(w,2.1); controls.update(); }
+  const w=dir.transformDirection(inn.matrixWorld), pts=[];
+  const body=inn.userData.body, P=body.geometry.attributes.position; body.updateMatrixWorld(true);
+  for(let i=0;i<P.count;i+=7) pts.push(new THREE.Vector3().fromBufferAttribute(P,i).applyMatrix4(body.matrixWorld));
+  for(let r=7;r<=12;r++) for(const q of RIBS_R[r]||[]) pts.push(inn.localToWorld(q.clone()));
+  const ex=s.clone().addScaledVector(s.clone().sub(t).normalize(),0.30);   // hub end of the needle, outside the skin
+  for(const q of [ex,s,t]) pts.push(inn.localToWorld(q));
+  // camera basis for this direction (OrbitControls keeps world +y up)
+  const up=V3(0,1,0), R=new THREE.Vector3().crossVectors(up,w).normalize(), U=new THREE.Vector3().crossVectors(w,R);
+  let r0=1e9,r1=-1e9,u0=1e9,u1=-1e9; for(const q of pts){ const x=q.dot(R), y=q.dot(U); r0=Math.min(r0,x); r1=Math.max(r1,x); u0=Math.min(u0,y); u1=Math.max(u1,y); }
+  const c0=pts.reduce((m,q)=>m.add(q),new THREE.Vector3()).multiplyScalar(1/pts.length), cw=c0.dot(w);
+  const c=R.clone().multiplyScalar((r0+r1)/2).addScaledVector(U,(u0+u1)/2).addScaledVector(w,cw);
+  // usable half-extents: the side panel / phone sheet shift the view (setViewOffset), leaving W − 2·offsetX by H − 2·|offsetY|
+  const V=camera.view&&camera.view.enabled?camera.view:null, kx=V?Math.max(0.3,1-2*Math.abs(V.offsetX)/V.fullWidth):1, ky=V?Math.max(0.3,1-2*Math.abs(V.offsetY)/V.fullHeight):1;
+  const tv=Math.tan(THREE.MathUtils.degToRad(camera.fov/2))*0.92*ky, th=Math.tan(THREE.MathUtils.degToRad(camera.fov/2))*0.92*camera.aspect*kx;
+  let dist=0; for(const q of pts){ const v=q.clone().sub(c), z=v.dot(w); dist=Math.max(dist,z+Math.abs(v.dot(R))/th,z+Math.abs(v.dot(U))/tv); }
+  controls.target.copy(c); camera.position.copy(c).addScaledVector(w,dist); controls.update(); }
 function bxStop(){
   if(!BX.on) return;
   BX.on=false;
@@ -4958,7 +4974,10 @@ function frame(){
     u.pvPart.instanceMatrix.needsUpdate=true; u.cvPart.instanceMatrix.needsUpdate=true;
   }
 
-  { const ty=THREE.MathUtils.lerp(-0.45,0,THREE.MathUtils.clamp(z,0,1)), dy=ty-controls.target.y;
+  // the orbit target rises from −0.45 to 0 as the macroscopic tier zooms into the lobule. v44: applied as a change, so
+  // a preset's own target (biopsy, SVT views) is not pulled back to −0.45 on the next frame
+  { const ty=THREE.MathUtils.lerp(-0.45,0,THREE.MathUtils.clamp(z,0,1)); if(PERF.ty===undefined) PERF.ty=ty;
+    const dy=ty-PERF.ty; PERF.ty=ty;
     if(Math.abs(dy)>1e-5&&!window.__camLock){ controls.target.y+=dy; camera.position.y+=dy; } }
   controls.update();
   { const now=performance.now();
