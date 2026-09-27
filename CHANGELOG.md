@@ -2,6 +2,7 @@
 
 ## v44 — scene, pancreas, falciform, liver material (in progress)
 - Shadows: real-time shadow maps removed everywhere (renderer, lights, meshes); grounding comes from AO. "Quality: High" now means more AO samples.
+- Spine alignment: the macroscopic scene root is rotated so the least-squares centreline through the T1–L5 vertebral body centroids is vertical. Drift from vertical over its 442 mm: before 68 mm (x) / 91 mm (z) (v43 tilted the model 14.4°), after 0.00 / 0.00 mm (`validate.py` spine-axis check, < 2 mm). Default orbit target = spine axis at liver mid-height. `pipeline/spine44.py` derives the constants.
 
 ## v43 — foundation (27 Sept 2026)
 No intended visual change from v42.

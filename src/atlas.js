@@ -1450,6 +1450,28 @@ function diaBuild(buf){
   g.add(m); L.viscera.add(g); registerFade(g); DIA.group=g;
 }
 
+/* v44: spine centreline in world space, from the loaded context mesh (same body selection as pipeline/spine44.py): X / Z drift
+   of the least-squares line through the T1–L5 vertebral body centroids from world vertical, over its length, in mm */
+function spineCheck(){
+  if(!CTX.group) return null; const m=CTX.group.children.find(o=>o.name==='ctx-bone'); if(!m) return null;
+  m.updateMatrixWorld(true); const g=m.geometry, P=g.attributes.position, I=g.index.array, M=CTX_META, pid=new Map();
+  const a=new THREE.Vector3(), b=new THREE.Vector3(), c=new THREE.Vector3(), cen=[];
+  const pidOf=m.userData.pickFace; M.parts.forEach((p,i)=>{ if(p.n.startsWith('vert_')) pid.set(p.l,i); });
+  const faces=new Map(); for(let f=0;f<I.length/3;f++){ const l=pidOf(f); if(pid.has(l)){ (faces.get(l)||faces.set(l,[]).get(l)).push(f); } }
+  for(const [,fs] of faces){ const C=fs.map(f=>{ a.fromBufferAttribute(P,I[f*3]); b.fromBufferAttribute(P,I[f*3+1]); c.fromBufferAttribute(P,I[f*3+2]);
+      const ar=b.clone().sub(a).cross(c.clone().sub(a)).length()/2; return {p:a.clone().add(b).add(c).multiplyScalar(1/3),ar}; });
+    const zs=C.map(q=>q.p.z), z0=Math.min(...zs), z1=Math.max(...zs), xm=[...C.map(q=>q.p.x)].sort((u,v)=>u-v)[C.length>>1];
+    const s=new THREE.Vector3(); let w=0; for(const q of C) if(q.p.z>z1-0.38*(z1-z0)&&Math.abs(q.p.x-xm)<0.45){ s.addScaledVector(q.p,q.ar); w+=q.ar; }
+    cen.push(s.multiplyScalar(1/w).applyMatrix4(m.matrixWorld)); }
+  const mu=cen.reduce((s,p)=>s.add(p),new THREE.Vector3()).multiplyScalar(1/cen.length);
+  // principal axis by power iteration on the scatter matrix
+  const S=[0,0,0,0,0,0,0,0,0]; for(const p of cen){ const d=[p.x-mu.x,p.y-mu.y,p.z-mu.z]; for(let i=0;i<3;i++) for(let j=0;j<3;j++) S[i*3+j]+=d[i]*d[j]; }
+  let v=[0,1,0]; for(let it=0;it<200;it++){ const n=[0,1,2].map(i=>S[i*3]*v[0]+S[i*3+1]*v[1]+S[i*3+2]*v[2]), l=Math.hypot(...n); v=n.map(x=>x/l); }
+  if(v[1]<0) v=v.map(x=>-x);
+  const t=cen.map(p=>(p.x-mu.x)*v[0]+(p.y-mu.y)*v[1]+(p.z-mu.z)*v[2]), L=Math.max(...t)-Math.min(...t);
+  const mm=UNIT_M*1000/tiers[0].group.scale.x;
+  return {n:cen.length, lengthMm:L*mm, dxMm:v[0]/v[1]*L*mm, dzMm:v[2]/v[1]*L*mm, dir:v, centroid:[mu.x,mu.y,mu.z]};
+}
 /* v41: draw calls / triangles / CPU submit time of one frame (renderer.info.autoReset off around the frame; the v40 harness read
    the last post-processing pass only) */
 function frameStats(){ const info=renderer.info, ar=info.autoReset; info.autoReset=false; info.reset(); let s=camera; while(s.parent) s=s.parent;
@@ -4466,7 +4488,12 @@ function declutter(list){
    back to centre on the way out */
 const MACRO_ZOOM=10, MACRO_HOLD=0.82;
 const mz={s:1,pos:new THREE.Vector3(),Q:null};
-const AXIS_UP=new THREE.Vector3(0.1454,0.9718,-0.1855).normalize(), AXIS_A=new THREE.Vector3(0.367,0,-0.091);
+/* v44: the rotation lives on the macroscopic scene root (tier 0 group), never on the camera or on meshes. AXIS_UP is the
+   least-squares centreline through the T1–L5 vertebral body centroids (pipeline/spine44.py), so the spine is vertical in
+   world space (v43 tilted it 14.4°: 68 mm / 91 mm of X / Z drift over its 442 mm). AXIS_A is the point on that centreline
+   that maps to the world origin; the default orbit target (0,−0.45,0) is the spine axis at the liver's mid-height, so the
+   scene orbits about the spine. spineCheck() re-measures the drift at run time (validate.py: spine axis). */
+const AXIS_UP=new THREE.Vector3(-0.003686,0.999896,0.013910).normalize(), AXIS_A=new THREE.Vector3(0.4183,0.0126,-0.4710);
 const AXIS_Q=new THREE.Quaternion().setFromUnitVectors(AXIS_UP,new THREE.Vector3(0,1,0));
 const AXIS={on:true};
 function macroFocus(grp,s){
@@ -5056,5 +5083,5 @@ const HARNESS_SHOTS=[
   {name:'svt_preset',        cam:{model:true,t:[1.12,-0.36,-0.22],dir:[0.30,-0.28,1],d:3.6,layers:{parenchyma:'ghost',stomach:'ghost'}},
      pre:"(()=>{document.querySelector('.segctl[data-key=\"panc\"] button[data-v=\"acute\"]').click(); const c=document.getElementById('panc-svt'); c.checked=true; c.dispatchEvent(new Event('change'));})()", settle:1.5, post:"document.getElementById('path-clear').click()"}
 ];
-window.__atlas = {ROD, sceneSig, ensure, QUAL, qualSet, LIVER_TEX, R36, LIGHTS, studioEnv, SKIN_ENV, scene, AO, gtao, composer, aoFrame, AO_BG, AXIS, AXIS_Q, AXIS_A, HOME, SKIN, mz, CT_ORGANS:()=>CT_ORGANS, tiers, state, snapAnnos, SEG, SEG_CENTROID, sdfLiver, insideLiver, segAt, HILUM_IN,
+window.__atlas = {spineCheck, ROD, sceneSig, ensure, QUAL, qualSet, LIVER_TEX, R36, LIGHTS, studioEnv, SKIN_ENV, scene, AO, gtao, composer, aoFrame, AO_BG, AXIS, AXIS_Q, AXIS_A, HOME, SKIN, mz, CT_ORGANS:()=>CT_ORGANS, tiers, state, snapAnnos, SEG, SEG_CENTROID, sdfLiver, insideLiver, segAt, HILUM_IN,
   CT_MODE, SEGP, falcX, SURF, LIVER_CM, UNIT_M, pins, updateOcclusion, CTP, PT, ORGAN_KEYS, SDF:{O:SO,N:[SNX,SNY,SNZ],P:SPITCH}, info, hitInfo, setSelection, camera, controls, applyModes, applySim, THREE, PERF, renderer, HVPG, hvpgStart, hvpgStop, hvpgGo, BIL, BX, bxPanel, pathCur, CTX, ctxLoad, svtView, HARNESS_SHOTS, LAYER_DEFAULTS, ribClear, DIA, diaLoad, pcView, forceRamps, frameStats, CTX_KEYS:['ribcage','diaphragm']};

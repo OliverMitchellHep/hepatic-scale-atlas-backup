@@ -13,6 +13,7 @@ Hard checks (fail the run):
   coverage      every clickable name found in the built scene has callout text (registry or a dynamic pattern)
   draw budget   draw calls / triangles with every default layer plus the context structures, under budget
   idle          render-on-demand: the page stops redrawing when nothing changes
+  spine axis    the vertebral-body centreline is vertical in world space (X/Z drift < 2 mm over its length)
   screenshots   fixed views match tests/baseline/ within tolerance
 Warnings (reported, do not fail): registry entries not found in the scene (pathology-only or per-face names the census
 cannot reach), citations to guideline versions known to be superseded.
@@ -117,6 +118,10 @@ async def browser_checks(reg, update_census, rebaseline):
         fs = await page.evaluate('window.__atlas.frameStats()')
         check('draw budget', fs['calls'] <= BUDGET['calls'] and fs['triangles'] / 1000 <= BUDGET['triangles_k'],
               f'{fs["calls"]} calls (≤ {BUDGET["calls"]}), {fs["triangles"]/1000:.0f}k triangles (≤ {BUDGET["triangles_k"]}k)')
+        # spine: the scene root is rotated so the vertebral-body centreline is vertical (world Y) within 2 mm over its length
+        sp = await page.evaluate("async()=>{ const A=window.__atlas; await A.ctxLoad(); return A.spineCheck(); }")
+        check('spine axis', sp and max(abs(sp['dxMm']), abs(sp['dzMm'])) < 2.0,
+              f'{sp["n"]} vertebral bodies, centreline {sp["lengthMm"]:.0f} mm, drift from vertical x {sp["dxMm"]:+.2f} mm, z {sp["dzMm"]:+.2f} mm (< 2)' if sp else 'context mesh not loaded')
         # census
         census = await page.evaluate(CENSUS_JS)
         undescribed = sorted(n for n, c in census.items() if not c['described'])
