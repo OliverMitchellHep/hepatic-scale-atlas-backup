@@ -170,263 +170,7 @@ const TIERS = [
     ]}
 ];
 
-const INFO = {
-  "Diaphragm":"The musculotendinous dome between thorax and abdomen (Gray’s). Muscle fibres arise from the back of the xiphoid, the inner surfaces of the lower six costal cartilages and ribs, the medial and lateral arcuate ligaments and the crura, and converge on the trefoil central tendon. The right dome is higher than the left (liver below). Motor supply: the phrenic nerves (C3–5), which also carry sensation from the central part, so central diaphragmatic irritation is referred to the shoulder tip; the periphery is supplied by the lower intercostal nerves. In this model the dome is fitted to the same CT: it rests on the liver bare area, the gastric fundus and the spleen (organs win over textbook dome height), and the right dome is only slightly higher than the left (supine, inspiratory scan). Textbook levels are T8 (caval opening), T10 (oesophageal hiatus) and T12 (aortic hiatus); on this model spine the caval opening lies at T10–T11 and the oesophageal hiatus at T10–T11, because the dome rests on the liver at about T10.",
-  "Diaphragm (muscular part)":"Peripheral muscle of the diaphragm: sternal (back of the xiphoid), costal (inner surfaces of the lower six costal cartilages and ribs, interdigitating with transversus abdominis) and lumbar parts (crura and arcuate ligaments), all inserting into the central tendon. Phrenic nerve (C3–5) motor supply; the periphery receives sensory fibres from the lower intercostal nerves. The liver bare area lies against its right dome, the fundus and spleen against the left.",
-  "Central tendon of the diaphragm":"Trefoil aponeurosis (right, left and anterior leaflets) into which all muscle fibres insert; the pericardium is fused to its upper surface. The caval opening lies in it, to the right of the midline (textbook T8), so each inspiration stretches the opening and helps venous return. In this model it lies on the liver at about T10.",
-  "Right crus of the diaphragm":"Arises from the bodies and discs of L1–L3 (anterior longitudinal ligament). Its fibres split around the oesophagus to form the oesophageal hiatus (T10), acting as a physiological sphincter at the gastro-oesophageal junction; laxity of the hiatus underlies sliding hiatus hernia. The suspensory ligament of the duodenum (of Treitz) arises from it.",
-  "Left crus of the diaphragm":"Arises from the bodies and discs of L1–L2, to the left of the aorta. With the right crus it forms the median arcuate ligament over the aorta at T12.",
-  "Median arcuate ligament":"Fibrous arch joining the two crura in front of the aorta at T12: the anterior margin of the aortic hiatus. The coeliac trunk arises just below it; a low-lying ligament can compress the trunk (median arcuate ligament syndrome).",
-  "Caval opening (diaphragm)":"Opening in the central tendon for the IVC and branches of the right phrenic nerve (textbook T8). Because it lies in tendon, inspiration widens rather than narrows it. In this model it sits at T10–T11, where the IVC leaves the liver through the central tendon (the dome rests on the liver at about T10 on this supine CT).",
-  "Oesophageal hiatus":"Opening in the right crus for the oesophagus, the anterior and posterior vagal trunks and the oesophageal branches of the left gastric vessels (and lymphatics); textbook T10. The crural sling acts as the external lower oesophageal sphincter; widening allows sliding or para-oesophageal hiatus hernia. In this model it lies at T10–T11.",
-  "Aortic hiatus":"Not a true opening in the muscle: the aorta passes behind the median arcuate ligament, between the crura, at T12, with the thoracic duct and the azygos (and often hemiazygos) vein. Diaphragmatic contraction therefore does not compress the aorta.",
-  "1st rib (right)":"The 1st rib (right), a true rib: its costal cartilage joins the sternum directly. The intercostal vein, artery and nerve run in the costal groove along the lower border of each rib, so needles pass over the upper border of the rib below. The shortest and flattest rib; the subclavian vessels cross its upper surface.",
-  "2nd rib (right)":"The 2nd rib (right), a true rib: its costal cartilage joins the sternum directly. The intercostal vein, artery and nerve run in the costal groove along the lower border of each rib, so needles pass over the upper border of the rib below.",
-  "3rd rib (right)":"The 3rd rib (right), a true rib: its costal cartilage joins the sternum directly. The intercostal vein, artery and nerve run in the costal groove along the lower border of each rib, so needles pass over the upper border of the rib below.",
-  "4th rib (right)":"The 4th rib (right), a true rib: its costal cartilage joins the sternum directly. The intercostal vein, artery and nerve run in the costal groove along the lower border of each rib, so needles pass over the upper border of the rib below.",
-  "5th rib (right)":"The 5th rib (right), a true rib: its costal cartilage joins the sternum directly. The intercostal vein, artery and nerve run in the costal groove along the lower border of each rib, so needles pass over the upper border of the rib below. On the right the dome of the diaphragm and the liver reach the 5th rib or 5th intercostal space in the mid-clavicular line; in this model the dome lies in the 5th space (vertebral level T10 on a supine inspiratory CT).",
-  "6th rib (right)":"The 6th rib (right), a true rib: its costal cartilage joins the sternum directly. The intercostal vein, artery and nerve run in the costal groove along the lower border of each rib, so needles pass over the upper border of the rib below.",
-  "7th rib (right)":"The 7th rib (right), a true rib: its costal cartilage joins the sternum directly. The intercostal vein, artery and nerve run in the costal groove along the lower border of each rib, so needles pass over the upper border of the rib below. The last true rib; its cartilage reaches the sternum beside the xiphisternal junction.",
-  "8th rib (right)":"The 8th rib (right), a false rib: its cartilage joins the cartilage above and helps form the costal margin. The intercostal vein, artery and nerve run in the costal groove along the lower border of each rib, so needles pass over the upper border of the rib below. The 8th–9th intercostal spaces in the right mid-axillary line are the usual window for percutaneous liver biopsy, below the lung edge on ultrasound.",
-  "9th rib (right)":"The 9th rib (right), a false rib: its cartilage joins the cartilage above and helps form the costal margin. The intercostal vein, artery and nerve run in the costal groove along the lower border of each rib, so needles pass over the upper border of the rib below. The 8th–9th intercostal spaces in the right mid-axillary line are the usual window for percutaneous liver biopsy and right-sided PTC; the tip of the 9th costal cartilage marks the transpyloric plane.",
-  "10th rib (right)":"The 10th rib (right), a false rib: its cartilage joins the cartilage above and helps form the costal margin. The intercostal vein, artery and nerve run in the costal groove along the lower border of each rib, so needles pass over the upper border of the rib below. In the mid-axillary line the costodiaphragmatic recess of the pleura reaches the 10th rib, so a lower intercostal approach can cross pleura. The lowest point of the costal margin (10th cartilage) marks the subcostal plane at L3.",
-  "11th rib (right)":"The 11th rib (right), a floating rib: its tip ends free in the posterior abdominal wall. The intercostal vein, artery and nerve run in the costal groove along the lower border of each rib, so needles pass over the upper border of the rib below. Floating; covers the posterior right lobe and bare area of the liver and the upper pole of the right kidney.",
-  "12th rib (right)":"The 12th rib (right), a floating rib: its tip ends free in the posterior abdominal wall. The intercostal vein, artery and nerve run in the costal groove along the lower border of each rib, so needles pass over the upper border of the rib below. The 12th rib crosses the upper pole of the kidney posteriorly, and the pleura dips below its medial half, which matters for posterior renal access and nephrostomy.",
-  "1st rib (left)":"The 1st rib (left), a true rib: its costal cartilage joins the sternum directly. The intercostal vein, artery and nerve run in the costal groove along the lower border of each rib, so needles pass over the upper border of the rib below. The shortest and flattest rib; the subclavian vessels cross its upper surface.",
-  "2nd rib (left)":"The 2nd rib (left), a true rib: its costal cartilage joins the sternum directly. The intercostal vein, artery and nerve run in the costal groove along the lower border of each rib, so needles pass over the upper border of the rib below.",
-  "3rd rib (left)":"The 3rd rib (left), a true rib: its costal cartilage joins the sternum directly. The intercostal vein, artery and nerve run in the costal groove along the lower border of each rib, so needles pass over the upper border of the rib below.",
-  "4th rib (left)":"The 4th rib (left), a true rib: its costal cartilage joins the sternum directly. The intercostal vein, artery and nerve run in the costal groove along the lower border of each rib, so needles pass over the upper border of the rib below.",
-  "5th rib (left)":"The 5th rib (left), a true rib: its costal cartilage joins the sternum directly. The intercostal vein, artery and nerve run in the costal groove along the lower border of each rib, so needles pass over the upper border of the rib below. The left dome lies a little lower than the right, at about the 5th intercostal space.",
-  "6th rib (left)":"The 6th rib (left), a true rib: its costal cartilage joins the sternum directly. The intercostal vein, artery and nerve run in the costal groove along the lower border of each rib, so needles pass over the upper border of the rib below.",
-  "7th rib (left)":"The 7th rib (left), a true rib: its costal cartilage joins the sternum directly. The intercostal vein, artery and nerve run in the costal groove along the lower border of each rib, so needles pass over the upper border of the rib below. The last true rib; its cartilage reaches the sternum beside the xiphisternal junction.",
-  "8th rib (left)":"The 8th rib (left), a false rib: its cartilage joins the cartilage above and helps form the costal margin. The intercostal vein, artery and nerve run in the costal groove along the lower border of each rib, so needles pass over the upper border of the rib below. The spleen lies deep to the left 9th–11th ribs behind the mid-axillary line.",
-  "9th rib (left)":"The 9th rib (left), a false rib: its cartilage joins the cartilage above and helps form the costal margin. The intercostal vein, artery and nerve run in the costal groove along the lower border of each rib, so needles pass over the upper border of the rib below. The spleen lies deep to the left 9th–11th ribs, its long axis along the 10th rib; fractures here raise the suspicion of splenic injury.",
-  "10th rib (left)":"The 10th rib (left), a false rib: its cartilage joins the cartilage above and helps form the costal margin. The intercostal vein, artery and nerve run in the costal groove along the lower border of each rib, so needles pass over the upper border of the rib below. The long axis of the spleen follows the 10th rib; a normal spleen does not project below the costal margin.",
-  "11th rib (left)":"The 11th rib (left), a floating rib: its tip ends free in the posterior abdominal wall. The intercostal vein, artery and nerve run in the costal groove along the lower border of each rib, so needles pass over the upper border of the rib below. Floating; covers the posterior spleen and the upper pole of the left kidney. Splenic injury with left lower rib fractures.",
-  "12th rib (left)":"The 12th rib (left), a floating rib: its tip ends free in the posterior abdominal wall. The intercostal vein, artery and nerve run in the costal groove along the lower border of each rib, so needles pass over the upper border of the rib below. The 12th rib crosses the upper pole of the left kidney; the pleura dips below its medial half.",
-  "T1 vertebra":"T1 thoracic vertebra. Its body carries costal facets for the heads of the ribs.",
-  "T2 vertebra":"T2 thoracic vertebra. Its body carries costal facets for the heads of the ribs.",
-  "T3 vertebra":"T3 thoracic vertebra. Its body carries costal facets for the heads of the ribs.",
-  "T4 vertebra":"T4 thoracic vertebra. Its body carries costal facets for the heads of the ribs.",
-  "T5 vertebra":"T5 thoracic vertebra. Its body carries costal facets for the heads of the ribs.",
-  "T6 vertebra":"T6 thoracic vertebra. Its body carries costal facets for the heads of the ribs.",
-  "T7 vertebra":"T7 thoracic vertebra. Its body carries costal facets for the heads of the ribs.",
-  "T8 vertebra":"T8 thoracic vertebra. Its body carries costal facets for the heads of the ribs. At T8 the IVC passes through the caval opening in the central tendon of the diaphragm (with the right phrenic nerve branches).",
-  "T9 vertebra":"T9 thoracic vertebra. Its body carries costal facets for the heads of the ribs. The xiphisternal joint is at about T9 in the textbook upright subject; in this supine inspiratory CT the xiphoid tip lies lower, at T12.",
-  "T10 vertebra":"T10 thoracic vertebra. Its body carries costal facets for the heads of the ribs. At T10 the oesophagus passes through the oesophageal hiatus in the right crus, with the vagal trunks and the oesophageal branches of the left gastric vessels. In this model the liver dome is at this level (supine inspiration).",
-  "T11 vertebra":"T11 thoracic vertebra. Its body carries costal facets for the heads of the ribs. The spleen lies against the diaphragm opposite the 9th–11th ribs at about T10–L1.",
-  "T12 vertebra":"T12 thoracic vertebra. Its body carries costal facets for the heads of the ribs. At T12 the aorta passes behind the median arcuate ligament (aortic hiatus) with the thoracic duct and azygos vein; the coeliac trunk arises at T12–L1. The upper poles of both kidneys are at T12 in this model.",
-  "L1 vertebra":"L1 lumbar vertebra. L1 marks the transpyloric plane: the pylorus, the pancreatic neck, the origin of the SMA, the renal hila, the gallbladder fundus and the tips of the 9th costal cartilages lie close to it. In this model the pylorus sits lower, at L2, as is common with a supine, distended stomach. The spinal cord ends at L1–L2.",
-  "L2 vertebra":"L2 lumbar vertebra. The renal veins and the pancreatic head lie at L1–L2; in this model the pylorus and first part of the duodenum are at L2.",
-  "L3 vertebra":"L3 lumbar vertebra. The subcostal plane (10th costal cartilage) passes through L3; the third part of the duodenum crosses in front of L3 between the aorta and the SMA.",
-  "L4 vertebra":"L4 lumbar vertebra. The aorta bifurcates at L4, and the supracristal plane (tops of the iliac crests) marks the L4 spinous process: the landmark for lumbar puncture at L3–L4 or L4–L5.",
-  "L5 vertebra":"L5 lumbar vertebra. The common iliac veins join to form the IVC at L5, behind and to the right of the aortic bifurcation.",
-  "Costal cartilage, 1st rib (right)":"Hyaline cartilage continuing the 1st rib (right) forwards. Cartilages 1–7 articulate with the sternum. Cartilages often calcify with age, which can mimic stones or nodes on plain films.",
-  "Costal cartilage, 2nd rib (right)":"Hyaline cartilage continuing the 2nd rib (right) forwards. Cartilages 1–7 articulate with the sternum. Cartilages often calcify with age, which can mimic stones or nodes on plain films.",
-  "Costal cartilage, 3rd rib (right)":"Hyaline cartilage continuing the 3rd rib (right) forwards. Cartilages 1–7 articulate with the sternum. Cartilages often calcify with age, which can mimic stones or nodes on plain films.",
-  "Costal cartilage, 4th rib (right)":"Hyaline cartilage continuing the 4th rib (right) forwards. Cartilages 1–7 articulate with the sternum. Cartilages often calcify with age, which can mimic stones or nodes on plain films.",
-  "Costal cartilage, 5th rib (right)":"Hyaline cartilage continuing the 5th rib (right) forwards. Cartilages 1–7 articulate with the sternum. Cartilages often calcify with age, which can mimic stones or nodes on plain films.",
-  "Costal cartilage, 6th rib (right)":"Hyaline cartilage continuing the 6th rib (right) forwards. Cartilages 1–7 articulate with the sternum. Cartilages often calcify with age, which can mimic stones or nodes on plain films.",
-  "Costal cartilage, 7th rib (right)":"Hyaline cartilage continuing the 7th rib (right) forwards. Cartilages 1–7 articulate with the sternum. Cartilages often calcify with age, which can mimic stones or nodes on plain films.",
-  "Costal cartilage, 8th rib (right)":"Hyaline cartilage continuing the 8th rib (right) forwards. Cartilages 8–10 each join the cartilage above; together with the 7th they form the costal margin. Cartilages often calcify with age, which can mimic stones or nodes on plain films.",
-  "Costal cartilage, 9th rib (right)":"Hyaline cartilage continuing the 9th rib (right) forwards. Cartilages 8–10 each join the cartilage above; together with the 7th they form the costal margin. The tip of the right 9th costal cartilage (costal margin in the mid-clavicular line) overlies the gallbladder fundus: Murphy’s sign is elicited here, and the transpyloric plane (L1) passes through it. Cartilages often calcify with age, which can mimic stones or nodes on plain films.",
-  "Costal cartilage, 10th rib (right)":"Hyaline cartilage continuing the 10th rib (right) forwards. Cartilages 8–10 each join the cartilage above; together with the 7th they form the costal margin. The lowest point of the costal margin marks the subcostal plane (L3). Cartilages often calcify with age, which can mimic stones or nodes on plain films.",
-  "Costal cartilage, 1st rib (left)":"Hyaline cartilage continuing the 1st rib (left) forwards. Cartilages 1–7 articulate with the sternum. Cartilages often calcify with age, which can mimic stones or nodes on plain films.",
-  "Costal cartilage, 2nd rib (left)":"Hyaline cartilage continuing the 2nd rib (left) forwards. Cartilages 1–7 articulate with the sternum. Cartilages often calcify with age, which can mimic stones or nodes on plain films.",
-  "Costal cartilage, 3rd rib (left)":"Hyaline cartilage continuing the 3rd rib (left) forwards. Cartilages 1–7 articulate with the sternum. Cartilages often calcify with age, which can mimic stones or nodes on plain films.",
-  "Costal cartilage, 4th rib (left)":"Hyaline cartilage continuing the 4th rib (left) forwards. Cartilages 1–7 articulate with the sternum. Cartilages often calcify with age, which can mimic stones or nodes on plain films.",
-  "Costal cartilage, 5th rib (left)":"Hyaline cartilage continuing the 5th rib (left) forwards. Cartilages 1–7 articulate with the sternum. Cartilages often calcify with age, which can mimic stones or nodes on plain films.",
-  "Costal cartilage, 6th rib (left)":"Hyaline cartilage continuing the 6th rib (left) forwards. Cartilages 1–7 articulate with the sternum. Cartilages often calcify with age, which can mimic stones or nodes on plain films.",
-  "Costal cartilage, 7th rib (left)":"Hyaline cartilage continuing the 7th rib (left) forwards. Cartilages 1–7 articulate with the sternum. Cartilages often calcify with age, which can mimic stones or nodes on plain films.",
-  "Costal cartilage, 8th rib (left)":"Hyaline cartilage continuing the 8th rib (left) forwards. Cartilages 8–10 each join the cartilage above; together with the 7th they form the costal margin. Cartilages often calcify with age, which can mimic stones or nodes on plain films.",
-  "Costal cartilage, 9th rib (left)":"Hyaline cartilage continuing the 9th rib (left) forwards. Cartilages 8–10 each join the cartilage above; together with the 7th they form the costal margin. The transpyloric plane (L1) crosses the costal margin at the tip of the 9th cartilage. Cartilages often calcify with age, which can mimic stones or nodes on plain films.",
-  "Costal cartilage, 10th rib (left)":"Hyaline cartilage continuing the 10th rib (left) forwards. Cartilages 8–10 each join the cartilage above; together with the 7th they form the costal margin. The lowest point of the costal margin marks the subcostal plane (L3). Cartilages often calcify with age, which can mimic stones or nodes on plain films.",
-  "Sternum":"Manubrium, body and xiphoid process. The sternal angle (manubriosternal joint, 2nd costal cartilage) is at T4–T5; the xiphisternal joint is textbook T9, and in this supine inspiratory CT the xiphoid tip reaches T12. The subxiphoid approach is used for left-sided PTC into segment III and for pericardiocentesis.",
-  "Sacrum":"Five fused sacral vertebrae; the promontory (S1) marks the pelvic brim. The sigmoid mesocolon and the root of the small-bowel mesentery run down towards it on the left and right respectively.",
-  "Ribcage & spine":"Ribs 1–12, costal cartilages, sternum, T1–L5 and the sacrum, segmented from the same CT (TotalSegmentator s1267) and registered to the model within about 1 mm. Use it for surface anatomy: the liver under the right 5th–11th ribs, the spleen under the left 9th–11th, the costal margin, vertebral levels and intercostal access routes.",
-  'Choledochal cyst · Todani I':'Type I, the commonest: cystic or fusiform dilatation of the extrahepatic bile duct (Ia cystic, Ib focal segmental, Ic diffuse fusiform) with normal intrahepatic ducts. What makes it type I: the dilatation is confined to the extrahepatic duct and is a single continuous segment. Usually with an anomalous pancreaticobiliary junction. Treatment: excision of the extrahepatic duct with Roux-en-Y hepaticojejunostomy.',
-  'Choledochal cyst · Todani II':'Type II (rare): a true diverticulum arising from the side of the supraduodenal common bile duct, joined by a narrow neck. What makes it type II: the duct itself is of normal calibre; the cyst sits beside it. Treatment: excision of the diverticulum.',
-  'Choledochal cyst · Todani III':'Type III, choledochocele: dilatation of the intraduodenal (intramural) segment of the distal common bile duct, bulging into the duodenal lumen at the papilla. What makes it type III: only the terminal duct inside the duodenal wall is dilated. It carries the lowest malignancy risk and is usually treated endoscopically by sphincterotomy or unroofing.',
-  'Choledochal cyst · Todani IVa':'Type IVa: multiple cysts of both the intrahepatic and the extrahepatic ducts, typically fusiform extrahepatic dilatation continuing into cystic dilatation of the central intrahepatic ducts. What makes it IVa rather than I: the intrahepatic ducts are cystically dilated too. Treatment: excision of the extrahepatic component with hepaticojejunostomy, plus hepatectomy when the intrahepatic disease is localised.',
-  'Choledochal cyst · Todani IVb':'Type IVb: multiple cysts confined to the extrahepatic duct, a string of dilatations separated by segments of normal calibre, with normal intrahepatic ducts. What makes it IVb: several discrete extrahepatic cysts rather than one fusiform segment. Treatment: excision of the extrahepatic duct with Roux-en-Y hepaticojejunostomy.',
-  'Choledochal cyst · Todani V':'Type V, Caroli disease: single or multiple saccular dilatations of the intrahepatic ducts only, communicating with the biliary tree; the extrahepatic duct is normal. With congenital hepatic fibrosis (and portal hypertension) it is Caroli syndrome. Complications: intrahepatic stones, recurrent cholangitis, abscesses and cholangiocarcinoma. Treatment: liver resection for localised disease, transplantation for diffuse disease.',
-  'TACE catheter and microcatheter':'From the common femoral (or radial) artery, up the aorta into the coeliac axis, common and proper hepatic arteries, then a microcatheter into the segmental artery feeding the tumour for selective chemoembolisation.',
-  'Planned resection':'The anatomical segment to be removed with the tumour. CT volumetry of what remains (the future liver remnant) and liver function decide whether resection is safe.',
-  'Transection line':'The plane of parenchymal transection along the segment boundary, guided by intraoperative ultrasound and the hepatic veins.',
-  'Transection surface (remnant)':'The raw cut surface of the remnant liver, secured for haemostasis and bile leak.',
-  'Resection specimen':'The resected segment containing the tumour, sent for histology including margin status, grade and microvascular invasion.',
-  'Peripancreatic inflammation (fluid, fat stranding)':'Acute pancreatitis (revised Atlanta): two of typical pain, lipase or amylase ≥3× the upper limit, and characteristic imaging. Interstitial oedematous pancreatitis gives this halo of fluid and fat stranding; acute peripancreatic fluid collections within 4 weeks usually resolve. Severity is graded by organ failure (transient <48 h: moderately severe; persistent: severe). NICE NG104: no prophylactic antimicrobials; enteral nutrition within 72 h in moderately severe or severe disease.',
-  'Splenic vein thrombosis':'A complication of acute and chronic pancreatitis (and pancreatic cancer): inflammation of the splenic vein behind the gland. Splenic blood reaches the portal vein through short gastric and gastroepiploic collaterals, giving left-sided (sinistral) portal hypertension: isolated gastric fundal varices (IGV1) and splenomegaly with a normal HVPG. Bleeding gastric varices from this cause are treated by splenectomy or splenic artery embolisation.',
-  'Pancreatic calcification':'Intraductal and parenchymal calcification is the hallmark of chronic pancreatitis (most often alcohol-related) on CT. Duct stones can obstruct the main duct: NICE NG104 suggests surgery first line for painful obstructive disease, and ESWL for a dominant stone when surgery is unsuitable.',
-  'Pancreatic pseudocyst':'A walled fluid collection without an epithelial lining, persisting beyond 4 weeks after pancreatitis. Many resolve; drain only if symptomatic, infected or obstructing. NICE NG104: offer EUS-guided drainage, or endoscopic transpapillary drainage for pancreatic head pseudocysts; surgery if endoscopy is unsuitable or fails. In chronic pancreatitis also offer PERT and HbA1c monitoring at least every 6 months.',
-  'Benign CBD stricture':'Causes: bile duct injury at cholecystectomy, chronic pancreatitis, PSC dominant stricture, IgG4-related cholangitis and post-transplant anastomotic stricture. Malignancy must be excluded (brushings, EUS-FNB, IgG4). Endoscopic treatment is with multiple side-by-side plastic stents or a fully covered metal stent (ESGE); surgical hepaticojejunostomy for refractory or post-injury strictures.',
-  'Choledochal cyst':'Congenital cystic dilatation of the bile ducts, often with an anomalous pancreaticobiliary junction (a long common channel allowing pancreatic juice reflux). Todani: I fusiform extrahepatic (commonest); II supraduodenal diverticulum; III choledochocele; IVa intra- and extrahepatic; IVb multiple extrahepatic; V intrahepatic only (Caroli). Complications: stones, cholangitis, pancreatitis and a raised lifetime risk of cholangiocarcinoma, so types I, II and IV are excised with Roux-en-Y hepaticojejunostomy; III is usually treated endoscopically by sphincterotomy; V may need liver resection or transplantation.',
-  'TIPSS sheath, needle and wire':'Placed from the right internal jugular vein: a long sheath is passed through the right atrium and IVC into the right hepatic vein, a curved needle is turned anteriorly and inferiorly and advanced through the parenchyma into the right portal vein (often under ultrasound guidance), and a wire is passed into the main portal vein. The tract is balloon-dilated and the covered stent deployed over the wire: its bare end is released in the portal vein, then the covered segment is unsheathed back to the hepatocaval junction.',
-  'Plastic pancreatic stent':'A 5–7 Fr plastic stent placed at ERCP across a main pancreatic duct stricture to relieve obstructive (post-prandial) pain; evidence in malignant obstruction comes from small series. Exocrine insufficiency is treated with enteric-coated pancreatic enzyme replacement (NICE NG85).',
-  'Metal pancreatic stent (fully covered)':'A fully covered self-expanding metal stent can bridge a malignant main pancreatic duct stricture when a plastic stent occludes or migrates; its use is off-label and reserved for selected cases.',
-  'Duodenoscope (side-viewing)':'The ERCP scope: optics and an elevator on the side of the tip let the endoscopist face the papilla in the second part of the duodenum and steer accessories into it.',
-  'Sphincterotome / cannula':'A bowed diathermy wire catheter passed over a guidewire from the elevator into the bile duct; it cannulates, delivers contrast and cuts the sphincter.',
-  'Biliary sphincterotomy':'The roof of the papilla is cut with blended current along the 11–12 o’clock axis to widen the biliary orifice for stone extraction or stenting.',
-  'Extraction balloon':'Inflated above the stone to the calibre of the duct, then withdrawn through the sphincterotomy to sweep stones and debris into the duodenum.',
-  'Transjugular biopsy sheath and cannula':'Passed from the right internal jugular vein through the right atrium and IVC into the right hepatic vein. A stiff metal cannula inside it lets the operator point the needle anteriorly, away from the capsule.',
-  'Transjugular biopsy needle (18–19G)':'Fired 1–2 cm from the hepatic vein into the parenchyma. Because the capsule is not crossed, bleeding returns into the vein; the route of choice when INR >1.4 or platelets <50 ×10⁹/L (BSG/RCR/RCPath 2020).',
-  'Liver core (transjugular)':'Transjugular cores are thinner and more often fragmented than percutaneous ones, so 3–4 passes are usually taken to give enough portal tracts.',
-  'Percutaneous biopsy needle (16G)':'A 16G core needle through the right 8th or 9th intercostal space in the mid-axillary line, passed just over the upper border of the rib below to avoid the intercostal vein, artery and nerve in the costal groove, under ultrasound guidance, on held breath (switch on Ribcage & spine to see the space it uses). BSG/RCR/RCPath 2020 recommend a 16G needle and a core of at least 20 mm for non-lesional biopsy.',
-  'Liver core (percutaneous, 16G)':'A single 16G core of at least 20 mm is the standard for staging and grading diffuse liver disease.',
-  'Skin entry (right intercostal, mid-axillary line)':'Chosen by ultrasound: below the lung edge, clear of the gallbladder, large vessels and dilated ducts, usually over segments VI–VII.',
-  'PTC drain side hole':'Side holes along the internal–external drain let bile enter above the obstruction and leave into the duodenum below it. Holes must lie inside the ducts: one left in the parenchymal track causes bile leak or haemobilia.',
-  'PTC drain (internal–external)':'Percutaneous transhepatic biliary drain: an 8–10 Fr locking-pigtail catheter placed under ultrasound and fluoroscopy, here from the right mid-axillary line through the 9th intercostal space, over the upper border of the 10th rib, into a segment VI duct (a left-sided drain goes subxiphoid into segment III). The costodiaphragmatic recess reaches the 10th rib in this line, so the puncture is kept as low as the ducts allow, in expiration and below the lung edge on fluoroscopy, to avoid crossing the pleura. An internal–external drain crosses the obstruction and coils in the duodenum; side holes above and below the stricture let bile drain externally or, once capped, internally, and the tract allows a metal stent later. For distal obstruction ERCP comes first and PTC is used when ERCP fails or cannot reach the papilla (ESGE). In complex hilar obstruction (Bismuth III–IV) PTC is an alternative first-line route, chosen by the MDT (BSG 2023). Risks: haemobilia, bile leak, cholangitis and dislodgement.',
-  'Renal artery':'Arises from the lateral aorta at L1–L2 and enters the hilum behind the renal vein; the right passes behind the IVC.',
-  'Renal vein':'Leaves the hilum in front of the artery. The left runs in front of the aorta beneath the SMA to the IVC and receives spontaneous splenorenal shunts; the right is short.',
-  'Right kidney':'Lies behind the right lobe and makes the renal impression on its visceral surface (segment VI); the hepatorenal pouch (Morison’s) between them is the most dependent intraperitoneal space when supine.',
-  'Pancreas':'Retroperitoneal across L1–L2, entirely behind the stomach and separated from it by the lesser sac. Head in the duodenal C-loop, neck in front of the portal–superior mesenteric confluence, body over the aorta and SMA, the body lying nearly level at L1–L2 and the tail rising gently between the stomach and the upper pole of the left kidney to the splenic hilum, where it lies in the splenorenal ligament. The splenic vein runs in a groove on the back of the body and tail (exposed from behind) and the tortuous splenic artery along its upper border; both enter the hilum separately.',
-  'Portal and splenic veins (CT)':'The portal and splenic veins as segmented on this CT: the splenic vein runs behind the pancreas to the confluence, and the trunk ascends to the porta hepatis. The modelled portal tree follows this course; switch this on to compare.',
-  'Aorta (CT)':'The aorta as segmented on this CT. The modelled aorta and its coeliac and mesenteric branches follow this course.',
-  'IVC (CT)':'The inferior vena cava as segmented on this CT, running in its groove on the back of the liver. The modelled IVC and hepatic veins follow this course.',
-  'About this anatomy':'Organ surfaces derived from the TotalSegmentator dataset (Wasserthal et al., Radiol AI 2023), CC BY 4.0. Single-patient anatomy; one normal variant. Case s1267: adult, portal-venous phase. Liver and neighbouring organs are the patient’s own surfaces (left lobe shortened by 28% beyond the umbilical fissure). The vessels, bile ducts and gallbladder are modelled and fitted to this anatomy; this patient’s own gallbladder had been removed.',
-  "Caudate lobe hypertrophy":"In Budd–Chiari the caudate lobe keeps its outflow — short caudate veins drain straight into the IVC — so it hypertrophies while the rest of the liver congests and atrophies. Caudate:right lobe width ratio >0.55 is suggestive. Rotate to an inferior or posterior view to see it.",
-  "Spleen":"Left upper quadrant beneath ribs 9–11, drained by the splenic vein to the portal confluence. Enlarges with portal hypertension (congestive splenomegaly, hypersplenism, thrombocytopenia). Baveno VII: liver stiffness ≤15 kPa with platelets ≥150 ×10⁹/L rules out CSPH; ≥25 kPa rules it in.",
-  "Stomach":"Gastric varices (Sarin): GOV1 continue from oesophageal varices along the lesser curve; GOV2 extend to the fundus; IGV1 are isolated fundal; IGV2 ectopic. Fundal varices bleed less often but more severely — cyanoacrylate injection, BRTO or TIPSS.",
-  "Oesophagus":"The lower oesophagus is the main portosystemic junction: left gastric (coronary) vein → submucosal and paraoesophageal veins → azygos.",
-  "Left kidney":"Its renal vein crosses in front of the aorta beneath the SMA to the IVC — the outflow for spontaneous splenorenal and gastrorenal shunts.",
-  "Left renal vein":"Passes between the aorta and the SMA to reach the IVC. Receives spontaneous splenorenal and gastrorenal shunts, and dilates when they are large.",
-  "Left renal vein (dilated)":"Dilated by the flow of a large spontaneous splenorenal shunt.",
-  "Oesophageal varices":"Portosystemic collaterals from the left gastric vein draining to the azygos. They form once HVPG ≥10 mmHg (clinically significant portal hypertension) and bleed above 12 mmHg. CSPH: non-selective beta-blocker, carvedilol preferred. Acute bleed: terlipressin, antibiotics, restrictive transfusion, band ligation within 12 h; pre-emptive TIPSS in Child–Pugh C 10–13, or B >7 with active bleeding (Baveno VII, 2022; Baveno VIII was published in J Hepatol in 2026; BSG variceal guidance dates from 2015).",
-  "Gastric fundal varices":"Fed by the short gastric (and posterior gastric) veins from the splenic hilum; commonly drain through a gastrorenal shunt. Treat bleeding with cyanoacrylate injection or TIPSS; BRTO where a gastrorenal shunt exists. Also the classic sign of splenic vein thrombosis (sinistral portal hypertension).",
-  "Splenorenal shunt":"Spontaneous portosystemic shunt from the splenic to the left renal vein. Large shunts (>8 mm) steal portal flow and are linked to recurrent hepatic encephalopathy; embolisation (BRTO/PARTO) is an option in refractory HE.",
-  "Recanalised paraumbilical vein":"Reopened within the ligamentum teres from the left portal vein to the umbilicus — decompresses the portal system to the abdominal wall; may produce a venous hum (Cruveilhier–Baumgarten).",
-  "Caput medusae":"Dilated periumbilical abdominal-wall veins fed by the recanalised paraumbilical vein. Flow radiates away from the umbilicus — unlike IVC obstruction, where infra-umbilical veins drain upward.",
-  "Umbilicus":"Where the recanalised paraumbilical vein reaches the abdominal wall.",
-  "Azygos vein":"Drains oesophageal varices through paraoesophageal veins to the SVC; with the hemiazygos and lumbar veins it is also the main bypass for IVC obstruction.",
-  "Portal cavernoma":"Cavernous transformation: hepatopetal collaterals around a chronically occluded portal vein, forming within weeks. Causes portal cholangiopathy (bile duct compression). Presinusoidal portal hypertension — HVPG is normal despite varices.",
-  "Portal vein thrombus (acute, occlusive)":"Acute PVT: pain and a risk of mesenteric ischaemia if the SMV is involved. Anticoagulate promptly (LMWH, then DOAC or VKA) for at least 6 months; early treatment recanalises about half. Collaterals have not formed yet (Baveno VII; EASL Clinical Practice Guidelines on vascular diseases of the liver, J Hepatol 2025).",
-  "Portal vein thrombus (partial, non-occlusive)":"Common in cirrhosis. Baveno VII: anticoagulate recent PVT that occludes >50% of the trunk, involves the SMV, is progressing, or occurs in a transplant candidate. Do not delay anticoagulation for variceal screening.",
-  "Chronic portal vein occlusion (fibrotic cord)":"The trunk is replaced by a fibrotic cord bypassed by a cavernoma. Presinusoidal portal hypertension with varices but normal HVPG; manage varices as in cirrhosis; long-term anticoagulation if a prothrombotic state persists.",
-  "SMV thrombus":"Extension into the superior mesenteric vein threatens venous mesenteric ischaemia — urgent anticoagulation and surgical review if peritonism or a rising lactate.",
-  "TIPSS stent":"Transjugular intrahepatic portosystemic shunt: an 8–10 mm ePTFE-covered stent from the right hepatic vein through the parenchyma into the right portal vein, bypassing sinusoidal resistance. Target portal pressure gradient <12 mmHg. Uses: pre-emptive or rescue for variceal bleeding, refractory ascites, Budd–Chiari. Risks: hepatic encephalopathy, liver and cardiac decompensation (BSG TIPSS guideline 2020; Baveno VII 2022, now updated by Baveno VIII, J Hepatol 2026).",
-  "TIPSS stent (ePTFE-covered segment)":"The covered part lines the parenchymal tract and hepatic vein so bile and tissue cannot occlude it — covered stents markedly improved patency over bare stents.",
-  "TIPSS radiopaque marker":"Marks the start of the covered segment, placed at the portal vein entry so that the uncovered ~2 cm sits within the portal vein.",
-  "Hepatic vein thrombosis":"Classic Budd–Chiari syndrome. Look for a cause (myeloproliferative neoplasm in ~40%, JAK2 V617F; PNH; antiphospholipid). Stepwise care: anticoagulation → angioplasty or stenting of short stenoses → TIPSS → transplantation (EASL Clinical Practice Guidelines on vascular diseases of the liver, J Hepatol 2025).",
-  "IVC web":"Membranous obstruction of the suprahepatic IVC — the predominant Budd–Chiari form in Asia and southern Africa. Treated by angioplasty ± stenting; lower-body return diverts through azygos, hemiazygos and lumbar veins.",
-  "Intrahepatic venovenous collaterals":"The comma-shaped \"spider-web\" network on hepatic venography, characteristic of Budd–Chiari: occluded hepatic veins decompress into patent ones and into the caudate veins.",
-  "Enlarged caudate veins":"The caudate drains straight into the IVC through its own short veins, so it escapes the hepatic vein block and hypertrophies (caudate:right lobe ratio >0.55) — the classic Budd–Chiari sign.",
-  "Common bile duct stone":"Choledocholithiasis: pain and cholestasis, cholangitis if infected. ERCP with sphincterotomy and extraction, then cholecystectomy (BSG CBD stones guideline 2017).",
-  "Gallstones":"Cholelithiasis. With stone disease the gallbladder is usually thick-walled and small — Courvoisier: painless jaundice with a palpable gallbladder is unlikely to be stones.",
-  "Impacted stone (Mirizzi syndrome)":"A stone impacted in Hartmann’s pouch or the cystic duct compresses the common hepatic duct (Csendes I) or erodes into it (II–V). Recognise it before cholecystectomy — high risk of bile duct injury.",
-  "Plastic biliary stent":"7–10 Fr plastic stents bridge stones and benign strictures; they occlude within ~3 months. For distal malignant obstruction self-expanding metal stents are preferred (ESGE).",
-  "Metal biliary stent (SEMS)":"8–10 mm self-expanding metal stents give longer patency in malignant obstruction. Perihilar Bismuth III–IV: aim to drain ≥50% of liver volume, often with bilateral stents (ESGE).",
-  "Fat droplets (macrovesicular steatosis)":"Large single vacuoles that displace the nucleus. Graded by the proportion of hepatocytes: S1 5–33%, S2 34–66%, S3 >66%. In adults fat starts in zone 3; paediatric MASLD is often periportal.",
-  "Haemosiderin (iron) granules":"Hereditary haemochromatosis (HFE C282Y homozygosity): iron loads periportal (zone 1) hepatocytes first, pericanalicular, with a gradient to zone 3. Kupffer-cell iron suggests secondary overload. Venesection to a ferritin of 50–100 µg/L (EASL haemochromatosis CPG 2022).",
-  "Inflammatory cells":"Lobular inflammation: mixed lymphocytes and neutrophils around ballooned cells in MASH; sparse cells at the edge of zone 3 necrosis after paracetamol.",
-  "Lymphoplasmacytic infiltrate (interface hepatitis)":"Autoimmune hepatitis: lymphocytes and plasma cells breach the limiting plate from the portal tract, with emperipolesis and rosettes. Scored with the simplified IAIHG criteria; treated with prednisolone or budesonide plus azathioprine.",
-  "Sinusoidal congestion (red cells)":"Outflow obstruction — Budd–Chiari, sinusoidal obstruction syndrome, right heart failure: zone 3 sinusoids dilate and fill with red cells as the plates atrophy; grossly the nutmeg liver.",
-  "Councilman (acidophil) body":"An apoptotic hepatocyte — shrunken and eosinophilic. Midzonal (zone 2) necrosis with Councilman bodies is the classic picture of yellow fever.",
-  "Macrovesicular fat droplet":"One large droplet fills the cell and pushes the nucleus to the edge — the signet-ring appearance of macrovesicular steatosis.",
-  "Mallory–Denk bodies":"Ropey eosinophilic aggregates of misfolded keratins 8/18 with p62 and ubiquitin in ballooned hepatocytes — MASH and alcohol-related hepatitis, also Wilson disease and chronic cholestasis.",
-  'Aorta':'Descends in the posterior mediastinum and enters the abdomen through the aortic hiatus at T12, posterior to the caudate lobe and to the left of the IVC. Gives the coeliac trunk at T12 and the SMA at L1.',
-  'Coeliac trunk':'Arises from the anterior aorta at T12 and runs about 1 cm before trifurcating into the left gastric, splenic and common hepatic arteries.',
-  'Common hepatic artery':'The rightward coeliac branch. Runs along the upper border of the pancreatic head and divides into the gastroduodenal and proper hepatic arteries.',
-  'Proper hepatic artery':'Ascends in the free edge of the lesser omentum, anteromedial to the portal vein and medial to the common bile duct, and divides into right and left hepatic arteries at the porta.',
-  'Gastroduodenal artery':'Descends behind the first part of the duodenum \u2014 the vessel eroded by a posterior duodenal ulcer.',
-  'Left gastric artery':'The smallest coeliac branch, running up to the oesophagogastric junction and along the lesser curve. An aberrant left hepatic artery from it is a common variant.',
-  'Splenic artery':'Tortuous course along the upper border of the pancreas to the splenic hilum, above the splenic vein.',
-  'Superior mesenteric artery':'Arises from the aorta at L1, behind the pancreatic neck, lying to the left of the SMV. A replaced right hepatic artery arises from it in ~10\u201315%.',
-  'Cystic artery':'Usually from the right hepatic artery within Calot\u2019s triangle \u2014 the structure clipped with the cystic duct at cholecystectomy.',
-  'Right hepatic artery':'Usually passes behind the common hepatic duct to the right pedicle, following the right portal vein into the anterior and posterior sectors.',
-  'Left hepatic artery':'Runs with the left portal vein to the umbilical fissure; frequently gives a middle hepatic artery to segment IV.',
-  'Segmental hepatic artery':'Arterial branch travelling in the portal pedicle beside the portal vein and bile duct \u2014 the sole blood supply of the biliary epithelium.',
-  'Superior mesenteric vein':'Drains the small bowel and right colon; lies to the right of the SMA and joins the splenic vein behind the pancreatic neck to form the portal vein.',
-  'Splenic vein':'Runs behind the pancreas, below the splenic artery, receiving the inferior mesenteric vein before joining the SMV. Isolated splenic vein thrombosis gives sinistral portal hypertension with gastric varices.',
-  'Inferior mesenteric vein':'Drains the left colon and usually joins the splenic vein; less often the SMV or the confluence.',
-  'Left gastric vein':'The coronary vein. Drains the lesser curve into the portal vein and communicates with oesophageal veins \u2014 the principal feeder of oesophageal varices in portal hypertension.',
-  'Right portal vein':'Short (1\u20133 cm) before dividing into anterior and posterior sectoral branches.',
-  'Left portal vein':'A long transverse part beneath segment IV, then the umbilical portion \u2014 the landmark for the left intersectoral boundary.',
-  'Right anterior portal branch':'Supplies the right anterior sector: segment V below and VIII above.',
-  'Right posterior portal branch':'Supplies the right posterior sector: segment VI below and VII above.',
-  'Umbilical portion':'The left portal vein turning anteriorly in the umbilical fissure, ending in the umbilical recess; gives segment III on its left and segment IV branches on its right.',
-  'Right hepatic vein':'Runs in the right intersectoral plane between the anterior (V, VIII) and posterior (VI, VII) sectors, entering the IVC separately.',
-  'Middle hepatic vein':'Runs in Cantlie\u2019s plane between the right and left hemilivers, draining IV, V and VIII. Its course decides the line of a right or left hepatectomy.',
-  'Left hepatic vein':'Runs between segments II and III, usually joining the middle hepatic vein in a common trunk before the IVC.',
-  'Middle and left hepatic vein trunk':'The common trunk of the middle and left hepatic veins, present in the majority, entering the left anterior aspect of the IVC.',
-  'Caudate veins':'Short veins draining segment I directly into the retrohepatic IVC \u2014 which is why the caudate survives, and hypertrophies, in Budd\u2013Chiari.',
-  'Segmental bile duct':'Duct draining one segment, travelling in the portal pedicle with its vein and artery toward the hilar confluence.',
-  'Subcapsular veins':'Fine veins running just beneath Glisson’s capsule. Visible at laparoscopy and on the cut surface, and the reason the capsule looks mottled rather than uniform.',
-  'Intrahepatic bile ducts':'Segmental and sectoral ducts running with the portal pedicles, converging on the right and left hepatic ducts at the hilum.',
-  'Right lobe':'Segments V–VIII, on the patient’s right — screen left in this anterior view. Supplied by the right portal branch and right hepatic artery, drained by the right hepatic vein.',
-  'Left lobe':'Segments II and III lie lateral to the umbilical fissure; segment IV is medial to it but still functionally left, because the functional boundary is Cantlie’s line, not the falciform.',
-  'Parenchyma':'Hepatocyte mass in plates one cell thick. Click with Segments on to identify the Couinaud territory.',
-  'Porta hepatis':'Transverse fissure on the visceral surface. Portal vein posteriorly, hepatic artery medially, bile duct anterolaterally — the "Mickey Mouse" on ultrasound.',
-  'Glisson’s capsule':'The fibrous coat. Stretch here produces the right upper quadrant pain of acute hepatitis or congestion; the parenchyma itself has no nociceptors.',
-  'Falciform ligament':'A sickle-shaped double fold of peritoneum running from the anterior abdominal wall and umbilicus onto the anterosuperior surface, dividing the anatomical lobes and continuing posteriorly as the coronary ligament.',
-  'Ligamentum teres':'The obliterated left umbilical vein, carried in the free inferior edge of the falciform and running into the umbilical fissure. It recanalises in portal hypertension — the caput medusae.',
-  'Caudate lobe':'Segment I. Between the IVC and the fissure for the ligamentum venosum, with portal supply from both sides and short veins draining directly into the IVC — hence its hypertrophy in Budd–Chiari.',
-  'IVC':'Runs in its groove on the posterior surface. The three hepatic veins enter it just below the diaphragm.',
-  'Gallbladder':'Fundus, body, infundibulum and neck, lying in the fossa on the visceral surface along the line separating segment IVb from segment V. Capacity roughly 50 mL.',
-  'Cystic duct':'Joins the common hepatic duct to form the common bile duct. Its spiral valves of Heister keep it patent; a stone impacted here gives biliary colic without jaundice, or Mirizzi syndrome if it compresses the CHD.',
-  'Right hepatic duct':'Drains segments V–VIII. Short extrahepatic course, and variant anatomy here — a low right posterior sectoral duct — is the commonest cause of bile duct injury at cholecystectomy.',
-  'Left hepatic duct':'Drains segments II–IV with a longer transverse extrahepatic course beneath the quadrate lobe.',
-  'Common hepatic duct':'Formed at the hilar confluence, runs in the free edge of the hepatoduodenal ligament to the cystic duct junction.',
-  'Common bile duct':'Roughly 6–8 cm long, ≤6 mm in diameter (a little wider after cholecystectomy and with age). Supraduodenal, then retroduodenal, then intrapancreatic before the ampulla.',
-  'Ampulla of Vater':'Where the common bile duct and pancreatic duct meet and open into the second part of the duodenum, guarded by the sphincter of Oddi. The target of ERCP cannulation.',
-  'Pancreatic duct':'The main pancreatic duct (of Wirsung) runs the length of the gland from tail to head, normally ≤3 mm in the head, 2 mm in the body and 1 mm in the tail. Joins the distal common bile duct at the ampulla. The common channel explains gallstone pancreatitis.',
-  'Duodenum':'Second part receives the ampulla on its posteromedial wall, at the major papilla.',
-  'Portal trunk':'Formed behind the neck of the pancreas from the splenic and superior mesenteric veins. Normal diameter ≤13 mm; loss of respiratory variation suggests portal hypertension.',
-  'Right portal branch':'Divides into anterior (V, VIII) and posterior (VI, VII) sectoral branches after a short extrahepatic course.',
-  'Left portal branch':'A long transverse portion, then the umbilical portion turning anteriorly in the umbilical fissure to supply II, III and IV.',
-  'Hepatic artery':'Carries oxygenated blood at systemic pressure and is the sole supply to the biliary tree.',
-  'Hepatic veins':'Right, middle and left, converging on the suprahepatic IVC. Valveless and thin-walled, so they transmit right atrial pressure directly.',
-  'Thrombus':'Occlusive portal thrombus. Acute: pain and lactataemia if extension reaches the mesenteric arcade. Chronic: cavernous transformation and prehepatic portal hypertension with preserved synthetic function.',
-  'Portal collaterals':'Cavernous transformation — a plexus of periportal veins bridging the occlusion. Takes weeks to form, so its presence dates the thrombus as chronic.',
-  'Central vein':'Terminal hepatic venule. Unfenestrated endothelium, and the first structure to congest in right heart failure.',
-  'Portal tract':'Portal venule, hepatic arteriole, bile ductule and lymphatics in a connective-tissue sheath — the triad seen on biopsy.',
-  'Terminal portal venule':'The last portal branch before the sinusoids. Runs along the lobular margin, giving off inlet venules along its length.',
-  'Inlet venule':'A short vessel connecting the terminal portal venule to the sinusoidal network. Its sphincter-like segment is one site of intrahepatic flow regulation.',
-  'Sinusoidal blood flow':'Mixed portal and arterial blood enters at the lobular margin and crosses the plates centripetally to the central vein, losing oxygen as it goes — the basis of the zone 1 → 3 gradient.',
-  'Sinusoid':'A 7–15 µm fenestrated channel running between plates of hepatocytes from the portal to the central venule. Low pressure, low velocity, and no basement membrane.',
-  'Bile ductule':'Receives bile from the canals of Hering at the limiting plate and carries it into the portal tract — the opposite direction to blood.',
-  'Zone 1':'Periportal. pO₂ ~60–65 mmHg. β-oxidation, gluconeogenesis, ureagenesis. Injured first by toxins delivered in high concentration (iron, yellow phosphorus) and at the limiting plate in interface hepatitis.',
-  'Acinus (Rappaport)':'The functional unit: blood from the terminal portal venule and hepatic arteriole running along the border between two lobules crosses the plates toward the central veins on either side. Zone 1 lies along that axis, zone 3 against the central veins, so one acinus spans parts of two classic lobules.',
-  'Central vein (adjacent lobule)':'The terminal hepatic venule of the neighbouring lobule — the second end-point of the acinus drawn between the two central veins.',
-  'Zone 2':'Midzonal. Selective zone 2 necrosis is rare (classically yellow fever). Mouse lineage tracing places much of homeostatic hepatocyte renewal here.',
-  'Zone 3':'Pericentral. pO₂ ~30–35 mmHg with the least oxygen reserve — first to necrose in ischaemic (hypoxic) hepatitis. Glutamine synthetase- and CYP2E1-rich, so also the site of paracetamol (NAPQI) and alcohol-related injury, and of congestion in outflow obstruction.',
-  'Limiting plate':'The hepatocyte layer abutting the portal tract. Its erosion — interface hepatitis — is the hallmark of autoimmune hepatitis.',
-  'Fibrous septum':'Bridging fibrosis linking a portal tract to a central vein. It short-circuits the sinusoidal bed and raises resistance before any nodule forms.',
-  'Fenestrated endothelium':'Liver sinusoidal endothelial cells. Sieve plates of 50–200 nm fenestrae, no basement membrane, giving plasma direct access to the hepatocyte surface.',
-  'Fenestra':'An open pore through the endothelial cytoplasm, 50–200 nm across, clustered into sieve plates. Defenestration impairs lipoprotein exchange and is an early event in steatohepatitis.',
-  'Basement membrane':'Absent in health. Its deposition, with loss of fenestrae, is capillarisation — the change that precedes measurable portal hypertension.',
-  'Space of Disse':'Perisinusoidal space between endothelium and hepatocyte microvilli. Site of stellate cells, matrix deposition and the origin of hepatic lymph.',
-  'Bile canaliculus':'A sealed groove between adjacent hepatocytes, closed by tight junctions. Bile flows toward the portal tract — opposite to blood.',
-  'Tight junction':'Seals the canalicular lumen from the sinusoidal space. Its failure allows bile constituents to regurgitate into plasma.',
-  'Kupffer cell':'Resident intraluminal macrophage, 80–90% of the body’s fixed macrophage mass. Clears portal endotoxin; a major source of TNF-α in alcohol-related hepatitis.',
-  'Stellate cell':'Quiescent: perisinusoidal, retinoid-laden. Activated: proliferative, contractile, α-SMA positive, secreting collagen I and III into Disse. The central effector of fibrosis.',
-  'Retinoid droplet':'Vitamin A stored as retinyl esters. Loss of these droplets is the visual signature of stellate activation.',
-  'Perisinusoidal collagen':'Type I and III collagen laid down in the space of Disse by activated stellate cells. As it accumulates Disse widens, the endothelium loses its fenestrae and the sinusoidal lumen narrows \u2014 raising intrahepatic resistance and slowing flow before any nodule forms.',
-  'Collagen fibril':'Type I and III collagen deposited by activated stellate cells, strictly within the space of Disse. Increases sinusoidal resistance before any nodule forms.',
-  'Erythrocyte':'Sinusoidal transit is slow and the lumen narrow, maximising contact time with the hepatocyte surface.',
-  'Hepatocyte plate':'One cell thick in the adult, flanked by sinusoids on both faces, with canaliculi sealed between adjacent cells.',
-  'Microvilli':'Project from the sinusoidal pole into the space of Disse, amplifying the uptake surface roughly sixfold. These are hepatocyte structures; the fenestrae belong to the endothelium.',
-  'Hepatocyte':'Cuboidal, polarised, polyploid in a third of cases. Roughly 80% of liver mass and effectively all of its synthetic and detoxifying work.',
-  'Nucleus':'Often polyploid; binucleation increases with age and regenerative stress.',
-  'Nucleolus':'Prominent, reflecting the ribosomal output needed for albumin and clotting-factor synthesis.',
-  'Mitochondria':'Up to 2 000 per cell, ~20% of cytoplasmic volume. β-oxidation, urea cycle, oxidative phosphorylation.',
-  'Endoplasmic reticulum':'Rough ER for albumin and clotting factors; smooth ER for phase I oxidation and glucuronidation. Smooth ER proliferates with enzyme induction.',
-  'Ribosome':'Bound to rough ER. The liver exports roughly 12 g of albumin a day from this machinery.',
-  'Lipid droplets':'Triglyceride stores. Macrovesicular accumulation displacing the nucleus is the histological signature of steatosis.',
-  'Glycogen':'Cytoplasmic rosettes, depleted within 24–48 hours of fasting.',
-  'Canalicular membrane':'Microvillous, sealed by tight junctions, carrying BSEP, MRP2 and MDR3. Only ~13% of the cell surface but the whole of biliary excretion.',
-  'Canalicular transporter':'BSEP (bile salts), MRP2 (conjugated bilirubin), MDR3 (phosphatidylcholine). ATP-dependent and rate-limiting for bile flow.',
-  'Sinusoidal membrane':'Microvillous, facing the space of Disse. Carries NTCP and the OATPs — the uptake pole.',
-  'Basolateral transporter':'NTCP for conjugated bile salts; OATP1B1/1B3 for organic anions. OATP1B1 polymorphism underlies simvastatin myopathy risk.',
-  'Segment I':'Caudate lobe. Portal supply from both right and left branches, venous drainage directly into the IVC by short veins, so it is spared in Budd–Chiari and hypertrophies.',
-  'Segment II':'Left lateral superior. With III forms the left lateral section — the graft in a paediatric living-donor transplant.',
-  'Segment III':'Left lateral inferior, anterior to II. Its duct is the target for a segment III bypass in unresectable hilar obstruction.',
-  'Segment IVa':'Left medial superior, between the umbilical fissure and the middle hepatic vein. Abuts the diaphragm.',
-  'Segment IVb':'Left medial inferior, the quadrate lobe, lying against the gallbladder fossa — which is why gallbladder cancer invades here first.',
-  'Segment V':'Right anterior inferior, adjacent to the gallbladder fossa on the right side of Cantlie’s line.',
-  'Segment VI':'Right posterior inferior. Reached percutaneously with least difficulty; a common site for radiofrequency ablation.',
-  'Segment VII':'Right posterior superior, below the diaphragm and hidden behind the right lobe on a frontal view — often a blind spot on ultrasound.',
-  'Segment VIII':'Right anterior superior, the largest single segment, immediately beneath the dome.'
-};
+const INFO = @@REGISTRY@@;
 
 function info(l){
   if(INFO[l]) return INFO[l];
@@ -1287,8 +1031,13 @@ class FlowNet{
   pick(){ let tot=0; for(const R of this.routes) tot+=R.wc; if(tot<1e-4) return -1;
     let x=rng()*tot; for(let i=0;i<this.routes.length;i++){ x-=this.routes[i].wc; if(x<=0) return i; } return this.routes.length-1; }
   update(dt,v){
-    const a=Math.min(1,dt*1.4);
-    for(const R of this.routes) R.wc+=(R.w-R.wc)*a;
+    const a=Math.min(1,dt*1.4); let settling=false;
+    for(const R of this.routes){ R.wc+=(R.w-R.wc)*a; if(Math.abs(R.w-R.wc)>1e-5) settling=true; }
+    // v43: with flow off and route weights settled nothing moves, so skip the per-frame buffer rewrite (lets the
+    // render-on-demand loop see a still scene); one pass still runs whenever that state is first reached
+    const key=this.scale+'|'+this.pr, still=this.init&&v===0&&!settling;
+    if(still&&this._stillKey===key) return;
+    this._stillKey=still?key:null;
     if(!this.init){ this.init=true; for(const R of this.routes) R.wc=R.w;
       for(const p of this.p){ p.r=this.pick(); if(p.r>=0){ const R=this.routes[p.r]; p.s=rng()*(R.block??R.len); } } }
     const o=this.o, c=this.c, M=this.mesh, OFF=this.off.array;
@@ -5009,7 +4758,7 @@ function qualSet(h){ QUAL.high=!!h&&!aoPhone(); renderer.shadowMap.enabled=QUAL.
 function qualShadows(){
   if(!QUAL.high||!tiers[0].built) return;
   const g=tiers[0].group; if(!g.visible){ LIGHTS.key.castShadow=false; return; } LIGHTS.key.castShadow=true;
-  if((QUAL.frame++%10)===0){   // caster/receiver flags follow ghosting and layer visibility
+  if(ROD.on||(QUAL.frame++%10)===0){   // v43: every drawn frame (draws are rarer with render-on-demand)   // caster/receiver flags follow ghosting and layer visibility
     g.traverse(o=>{ if(!o.isMesh||o.isInstancedMesh) { if(o.isInstancedMesh) o.castShadow=o.receiveShadow=false; return; }
       const m=Array.isArray(o.material)?o.material[0]:o.material; let gk=1; for(let n=o;n;n=n.parent) gk*=n.userData.ghostK??1;
       const solid=!!m&&m.opacity>=0.97&&m.depthWrite!==false&&m.blending===THREE.NormalBlending&&gk>=1&&!o.userData.noAO;
@@ -5025,6 +4774,53 @@ document.getElementById('btn-q').addEventListener('click',()=>qualSet(!QUAL.high
 addEventListener('resize',()=>{ if(aoPhone()&&QUAL.high) qualSet(false); const b=document.getElementById('btn-q'); if(b) b.hidden=aoPhone(); });
 let booted=false;
 
+/* v43 render-on-demand. The frame loop still runs every animation frame (simulation ticks, flow, overlays), but the
+   WebGL render (including GTAO and shadows) is skipped when nothing visible has changed. "Changed" is measured, not
+   declared: a signature over the camera, canvas size, and every visible object's world matrix, material state and
+   buffer versions (plus skin/shader uniforms). After any change the scene keeps rendering for ROD.tail ms so eased
+   effects (the AO fade-in, cross-fades) finish, and a safety frame is drawn every ROD.idle ms regardless. */
+const ROD={debug:false, changes:[], dbgMap:null, on:true, tail:1000, idle:1000, last:-1e9, lastDraw:-1e9, sig:NaN, drawn:0, skipped:0};
+function rodNum(v){ if(typeof v==='number') return v; if(typeof v==='boolean') return v?1:0; if(!v) return 0;
+  if(v.isColor) return v.r*3.1+v.g*5.7+v.b*7.3; if(v.isVector2) return v.x*1.3+v.y*2.9; if(v.isVector3) return v.x*1.3+v.y*2.9+v.z*4.1;
+  if(v.isVector4||v.isQuaternion) return v.x*1.3+v.y*2.9+v.z*4.1+v.w*5.3; if(v.isTexture) return v.version*11+v.id;
+  if(v.isMatrix4||v.isMatrix3){ let t=0; const e=v.elements; for(let i=0;i<e.length;i++) t+=Math.round(e[i]*1e6)*(i+1); return t; } return 0; }
+function rodUniforms(u){ let t=0, k=1; for(const n in u){ const v=u[n]&&u[n].value!==undefined?u[n].value:u[n]; t+=rodNum(v)*(k++); } return t; }
+function rodMat(m){ if(!m) return 0; let t=m.version*3+m.opacity*17+(m.visible?1:0)+m.id*0.001+rodNum(m.color)+rodNum(m.emissive)
+    +(m.transmission||0)*5+(m.clearcoat||0)*7+(m.roughness||0)*11+(m.normalMap?m.normalMap.id+m.normalMap.version:0)+(m.map?m.map.version:0);
+  if(m.uniforms) t+=rodUniforms(m.uniforms); if(m.userData&&m.userData.skin) t+=rodUniforms(m.userData.skin); return t; }
+function sceneSig(){
+  scene.updateMatrixWorld(); camera.updateMatrixWorld();
+  let a=rodNum(camera.matrixWorld)+rodNum(camera.projectionMatrix)*0.7+renderer.domElement.width*13+renderer.domElement.height*17
+    +renderer.getPixelRatio()*19+renderer.toneMappingExposure*23+(renderer.shadowMap.enabled?29:0)+rodNum(scene.background), b=0, k=0;
+  const dbg=ROD.debug?new Map():null;
+  const walk=o=>{ if(!o.visible) return; k++; const a0=a, b0=b;
+    const e=o.matrixWorld.elements, q=x=>Math.round(x*1e6);   // quantised: controls.update() leaves ~1e-20 jitter
+    a+=(q(e[0])+q(e[1])*2+q(e[5])*3+q(e[6])*4+q(e[10])*5+q(e[12])*7+q(e[13])*11+q(e[14])*13)*(k%89+1);
+    if(o.isMesh||o.isPoints||o.isLine||o.isSprite){
+      const ms=Array.isArray(o.material)?o.material:[o.material]; for(const m of ms) b+=rodMat(m)*(k%53+1);
+      const g=o.geometry; if(g){ for(const n in g.attributes) b+=g.attributes[n].version*(k%31+1); if(g.index) b+=g.index.version*37;
+        b+=(g.drawRange.count===Infinity?0:g.drawRange.count)+g.drawRange.start*3; }
+      if(o.isInstancedMesh){ b+=o.count*41+o.instanceMatrix.version*43+(o.instanceColor?o.instanceColor.version*47:0); }
+      if(o.morphTargetInfluences) for(let i=0;i<o.morphTargetInfluences.length;i++) b+=o.morphTargetInfluences[i]*(i+3);
+      b+=(o.castShadow?67:0)+(o.receiveShadow?71:0);
+    } else if(o.isLight){ b+=o.intensity*53+rodNum(o.color)+(o.castShadow?59:0); }
+    if(dbg) dbg.set(o,(a-a0)+'/'+(b-b0));
+    const c=o.children; for(let i=0;i<c.length;i++) walk(c[i]); };
+  walk(scene);
+  if(dbg){ const prev=ROD.dbgMap; ROD.dbgMap=dbg; if(prev){ const ch=[]; for(const [o,v] of dbg) if(prev.get(o)!==v){ let n=o, p=[]; for(let i=0;i<4&&n;i++){ p.push(n.userData.pick||n.name||n.type); n=n.parent; } ch.push(p.join(' < ')); }
+      if(ch.length) ROD.changes.push(ch.slice(0,8)); if(ROD.changes.length>20) ROD.changes.shift(); } }
+  return a*1.000001+b+k*61;
+}
+function rodShouldDraw(now){
+  if(!ROD.on||window.__rodOff) return true;
+  if(PERF.moving) { ROD.last=now; return true; }
+  const sg=sceneSig();
+  if(sg!==ROD.sig){ ROD.sig=sg; ROD.last=now; }
+  return now-ROD.last<ROD.tail || now-ROD.lastDraw>ROD.idle;
+}
+// the renderer itself bumps some material versions while drawing (the transmission pass flips double-sided
+// transmissive materials to BackSide and back), so the reference signature is taken after each draw
+function rodAfterDraw(){ if(ROD.on&&!window.__rodOff) ROD.sig=sceneSig(); }
 function frame(){
   requestAnimationFrame(frame);
   const dt=Math.min(clock.getDelta(),0.05), el=clock.elapsedTime;
@@ -5161,8 +4957,8 @@ function frame(){
     PERF.moving = now-PERF.lastMoveT<200;
     const pr = PERF.moving ? PERF.move : PERF.full;
     if(pr!==renderer.getPixelRatio()) renderer.setPixelRatio(pr);
-    qualShadows();
-    const r0=performance.now(); if(!aoFrame(pr)) renderer.render(scene,camera); PERF.rMs+=performance.now()-r0; }
+    if(rodShouldDraw(now)){ ROD.drawn++; ROD.lastDraw=now; qualShadows();
+      const r0=performance.now(); if(!aoFrame(pr)) renderer.render(scene,camera); PERF.rMs+=performance.now()-r0; rodAfterDraw(); } else ROD.skipped++; }
 
   /* overlays */
   const near=t<0.5?i0:Math.min(i0+1,tiers.length-1);
@@ -5275,5 +5071,5 @@ const HARNESS_SHOTS=[
   {name:'svt_preset',        cam:{model:true,t:[1.12,-0.36,-0.22],dir:[0.30,-0.28,1],d:3.6,layers:{parenchyma:'ghost',stomach:'ghost'}},
      pre:"(()=>{document.querySelector('.segctl[data-key=\"panc\"] button[data-v=\"acute\"]').click(); const c=document.getElementById('panc-svt'); c.checked=true; c.dispatchEvent(new Event('change'));})()", settle:1.5, post:"document.getElementById('path-clear').click()"}
 ];
-window.__atlas = {QUAL, qualSet, LIVER_TEX, R36, LIGHTS, studioEnv, SKIN_ENV, scene, AO, gtao, composer, aoFrame, AO_BG, AXIS, AXIS_Q, AXIS_A, HOME, SKIN, mz, CT_ORGANS:()=>CT_ORGANS, tiers, state, snapAnnos, SEG, SEG_CENTROID, sdfLiver, insideLiver, segAt, HILUM_IN,
+window.__atlas = {ROD, sceneSig, ensure, QUAL, qualSet, LIVER_TEX, R36, LIGHTS, studioEnv, SKIN_ENV, scene, AO, gtao, composer, aoFrame, AO_BG, AXIS, AXIS_Q, AXIS_A, HOME, SKIN, mz, CT_ORGANS:()=>CT_ORGANS, tiers, state, snapAnnos, SEG, SEG_CENTROID, sdfLiver, insideLiver, segAt, HILUM_IN,
   CT_MODE, SEGP, falcX, SURF, LIVER_CM, UNIT_M, pins, updateOcclusion, CTP, PT, ORGAN_KEYS, SDF:{O:SO,N:[SNX,SNY,SNZ],P:SPITCH}, info, hitInfo, setSelection, camera, controls, applyModes, applySim, THREE, PERF, renderer, HVPG, hvpgStart, hvpgStop, hvpgGo, BIL, BX, bxPanel, pathCur, CTX, ctxLoad, svtView, HARNESS_SHOTS, LAYER_DEFAULTS, ribClear, DIA, diaLoad, pcView, forceRamps, frameStats, CTX_KEYS:['ribcage','diaphragm']};

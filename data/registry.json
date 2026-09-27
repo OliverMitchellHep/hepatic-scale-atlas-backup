@@ -1,0 +1,2791 @@
+{
+ "schema": 1,
+ "note": "One entry per named structure. id is permanent (deep links and teaching pages use it); name is the label shown in the atlas and must match the mesh pick name; info is the callout text. layer/tier/kind are filled by tests/census.py.",
+ "structures": [
+  {
+   "id": "diaphragm",
+   "name": "Diaphragm",
+   "info": "The musculotendinous dome between thorax and abdomen (Gray’s). Muscle fibres arise from the back of the xiphoid, the inner surfaces of the lower six costal cartilages and ribs, the medial and lateral arcuate ligaments and the crura, and converge on the trefoil central tendon. The right dome is higher than the left (liver below). Motor supply: the phrenic nerves (C3–5), which also carry sensation from the central part, so central diaphragmatic irritation is referred to the shoulder tip; the periphery is supplied by the lower intercostal nerves. In this model the dome is fitted to the same CT: it rests on the liver bare area, the gastric fundus and the spleen (organs win over textbook dome height), and the right dome is only slightly higher than the left (supine, inspiratory scan). Textbook levels are T8 (caval opening), T10 (oesophageal hiatus) and T12 (aortic hiatus); on this model spine the caval opening lies at T10–T11 and the oesophageal hiatus at T10–T11, because the dome rests on the liver at about T10.",
+   "cites": [],
+   "tier": [],
+   "layer": []
+  },
+  {
+   "id": "diaphragm-muscular-part",
+   "name": "Diaphragm (muscular part)",
+   "info": "Peripheral muscle of the diaphragm: sternal (back of the xiphoid), costal (inner surfaces of the lower six costal cartilages and ribs, interdigitating with transversus abdominis) and lumbar parts (crura and arcuate ligaments), all inserting into the central tendon. Phrenic nerve (C3–5) motor supply; the periphery receives sensory fibres from the lower intercostal nerves. The liver bare area lies against its right dome, the fundus and spleen against the left.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "viscera"
+   ]
+  },
+  {
+   "id": "central-tendon-of-the-diaphragm",
+   "name": "Central tendon of the diaphragm",
+   "info": "Trefoil aponeurosis (right, left and anterior leaflets) into which all muscle fibres insert; the pericardium is fused to its upper surface. The caval opening lies in it, to the right of the midline (textbook T8), so each inspiration stretches the opening and helps venous return. In this model it lies on the liver at about T10.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "viscera"
+   ]
+  },
+  {
+   "id": "right-crus-of-the-diaphragm",
+   "name": "Right crus of the diaphragm",
+   "info": "Arises from the bodies and discs of L1–L3 (anterior longitudinal ligament). Its fibres split around the oesophagus to form the oesophageal hiatus (T10), acting as a physiological sphincter at the gastro-oesophageal junction; laxity of the hiatus underlies sliding hiatus hernia. The suspensory ligament of the duodenum (of Treitz) arises from it.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "viscera"
+   ]
+  },
+  {
+   "id": "left-crus-of-the-diaphragm",
+   "name": "Left crus of the diaphragm",
+   "info": "Arises from the bodies and discs of L1–L2, to the left of the aorta. With the right crus it forms the median arcuate ligament over the aorta at T12.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "viscera"
+   ]
+  },
+  {
+   "id": "median-arcuate-ligament",
+   "name": "Median arcuate ligament",
+   "info": "Fibrous arch joining the two crura in front of the aorta at T12: the anterior margin of the aortic hiatus. The coeliac trunk arises just below it; a low-lying ligament can compress the trunk (median arcuate ligament syndrome).",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "viscera"
+   ]
+  },
+  {
+   "id": "caval-opening-diaphragm",
+   "name": "Caval opening (diaphragm)",
+   "info": "Opening in the central tendon for the IVC and branches of the right phrenic nerve (textbook T8). Because it lies in tendon, inspiration widens rather than narrows it. In this model it sits at T10–T11, where the IVC leaves the liver through the central tendon (the dome rests on the liver at about T10 on this supine CT).",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "viscera"
+   ]
+  },
+  {
+   "id": "oesophageal-hiatus",
+   "name": "Oesophageal hiatus",
+   "info": "Opening in the right crus for the oesophagus, the anterior and posterior vagal trunks and the oesophageal branches of the left gastric vessels (and lymphatics); textbook T10. The crural sling acts as the external lower oesophageal sphincter; widening allows sliding or para-oesophageal hiatus hernia. In this model it lies at T10–T11.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "viscera"
+   ]
+  },
+  {
+   "id": "aortic-hiatus",
+   "name": "Aortic hiatus",
+   "info": "Not a true opening in the muscle: the aorta passes behind the median arcuate ligament, between the crura, at T12, with the thoracic duct and the azygos (and often hemiazygos) vein. Diaphragmatic contraction therefore does not compress the aorta.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "viscera"
+   ]
+  },
+  {
+   "id": "1st-rib-right",
+   "name": "1st rib (right)",
+   "info": "The 1st rib (right), a true rib: its costal cartilage joins the sternum directly. The intercostal vein, artery and nerve run in the costal groove along the lower border of each rib, so needles pass over the upper border of the rib below. The shortest and flattest rib; the subclavian vessels cross its upper surface.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "viscera"
+   ]
+  },
+  {
+   "id": "2nd-rib-right",
+   "name": "2nd rib (right)",
+   "info": "The 2nd rib (right), a true rib: its costal cartilage joins the sternum directly. The intercostal vein, artery and nerve run in the costal groove along the lower border of each rib, so needles pass over the upper border of the rib below.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "viscera"
+   ]
+  },
+  {
+   "id": "3rd-rib-right",
+   "name": "3rd rib (right)",
+   "info": "The 3rd rib (right), a true rib: its costal cartilage joins the sternum directly. The intercostal vein, artery and nerve run in the costal groove along the lower border of each rib, so needles pass over the upper border of the rib below.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "viscera"
+   ]
+  },
+  {
+   "id": "4th-rib-right",
+   "name": "4th rib (right)",
+   "info": "The 4th rib (right), a true rib: its costal cartilage joins the sternum directly. The intercostal vein, artery and nerve run in the costal groove along the lower border of each rib, so needles pass over the upper border of the rib below.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "viscera"
+   ]
+  },
+  {
+   "id": "5th-rib-right",
+   "name": "5th rib (right)",
+   "info": "The 5th rib (right), a true rib: its costal cartilage joins the sternum directly. The intercostal vein, artery and nerve run in the costal groove along the lower border of each rib, so needles pass over the upper border of the rib below. On the right the dome of the diaphragm and the liver reach the 5th rib or 5th intercostal space in the mid-clavicular line; in this model the dome lies in the 5th space (vertebral level T10 on a supine inspiratory CT).",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "viscera"
+   ]
+  },
+  {
+   "id": "6th-rib-right",
+   "name": "6th rib (right)",
+   "info": "The 6th rib (right), a true rib: its costal cartilage joins the sternum directly. The intercostal vein, artery and nerve run in the costal groove along the lower border of each rib, so needles pass over the upper border of the rib below.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "viscera"
+   ]
+  },
+  {
+   "id": "7th-rib-right",
+   "name": "7th rib (right)",
+   "info": "The 7th rib (right), a true rib: its costal cartilage joins the sternum directly. The intercostal vein, artery and nerve run in the costal groove along the lower border of each rib, so needles pass over the upper border of the rib below. The last true rib; its cartilage reaches the sternum beside the xiphisternal junction.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "viscera"
+   ]
+  },
+  {
+   "id": "8th-rib-right",
+   "name": "8th rib (right)",
+   "info": "The 8th rib (right), a false rib: its cartilage joins the cartilage above and helps form the costal margin. The intercostal vein, artery and nerve run in the costal groove along the lower border of each rib, so needles pass over the upper border of the rib below. The 8th–9th intercostal spaces in the right mid-axillary line are the usual window for percutaneous liver biopsy, below the lung edge on ultrasound.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "viscera"
+   ]
+  },
+  {
+   "id": "9th-rib-right",
+   "name": "9th rib (right)",
+   "info": "The 9th rib (right), a false rib: its cartilage joins the cartilage above and helps form the costal margin. The intercostal vein, artery and nerve run in the costal groove along the lower border of each rib, so needles pass over the upper border of the rib below. The 8th–9th intercostal spaces in the right mid-axillary line are the usual window for percutaneous liver biopsy and right-sided PTC; the tip of the 9th costal cartilage marks the transpyloric plane.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "viscera"
+   ]
+  },
+  {
+   "id": "10th-rib-right",
+   "name": "10th rib (right)",
+   "info": "The 10th rib (right), a false rib: its cartilage joins the cartilage above and helps form the costal margin. The intercostal vein, artery and nerve run in the costal groove along the lower border of each rib, so needles pass over the upper border of the rib below. In the mid-axillary line the costodiaphragmatic recess of the pleura reaches the 10th rib, so a lower intercostal approach can cross pleura. The lowest point of the costal margin (10th cartilage) marks the subcostal plane at L3.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "viscera"
+   ]
+  },
+  {
+   "id": "11th-rib-right",
+   "name": "11th rib (right)",
+   "info": "The 11th rib (right), a floating rib: its tip ends free in the posterior abdominal wall. The intercostal vein, artery and nerve run in the costal groove along the lower border of each rib, so needles pass over the upper border of the rib below. Floating; covers the posterior right lobe and bare area of the liver and the upper pole of the right kidney.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "viscera"
+   ]
+  },
+  {
+   "id": "12th-rib-right",
+   "name": "12th rib (right)",
+   "info": "The 12th rib (right), a floating rib: its tip ends free in the posterior abdominal wall. The intercostal vein, artery and nerve run in the costal groove along the lower border of each rib, so needles pass over the upper border of the rib below. The 12th rib crosses the upper pole of the kidney posteriorly, and the pleura dips below its medial half, which matters for posterior renal access and nephrostomy.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "viscera"
+   ]
+  },
+  {
+   "id": "1st-rib-left",
+   "name": "1st rib (left)",
+   "info": "The 1st rib (left), a true rib: its costal cartilage joins the sternum directly. The intercostal vein, artery and nerve run in the costal groove along the lower border of each rib, so needles pass over the upper border of the rib below. The shortest and flattest rib; the subclavian vessels cross its upper surface.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "viscera"
+   ]
+  },
+  {
+   "id": "2nd-rib-left",
+   "name": "2nd rib (left)",
+   "info": "The 2nd rib (left), a true rib: its costal cartilage joins the sternum directly. The intercostal vein, artery and nerve run in the costal groove along the lower border of each rib, so needles pass over the upper border of the rib below.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "viscera"
+   ]
+  },
+  {
+   "id": "3rd-rib-left",
+   "name": "3rd rib (left)",
+   "info": "The 3rd rib (left), a true rib: its costal cartilage joins the sternum directly. The intercostal vein, artery and nerve run in the costal groove along the lower border of each rib, so needles pass over the upper border of the rib below.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "viscera"
+   ]
+  },
+  {
+   "id": "4th-rib-left",
+   "name": "4th rib (left)",
+   "info": "The 4th rib (left), a true rib: its costal cartilage joins the sternum directly. The intercostal vein, artery and nerve run in the costal groove along the lower border of each rib, so needles pass over the upper border of the rib below.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "viscera"
+   ]
+  },
+  {
+   "id": "5th-rib-left",
+   "name": "5th rib (left)",
+   "info": "The 5th rib (left), a true rib: its costal cartilage joins the sternum directly. The intercostal vein, artery and nerve run in the costal groove along the lower border of each rib, so needles pass over the upper border of the rib below. The left dome lies a little lower than the right, at about the 5th intercostal space.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "viscera"
+   ]
+  },
+  {
+   "id": "6th-rib-left",
+   "name": "6th rib (left)",
+   "info": "The 6th rib (left), a true rib: its costal cartilage joins the sternum directly. The intercostal vein, artery and nerve run in the costal groove along the lower border of each rib, so needles pass over the upper border of the rib below.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "viscera"
+   ]
+  },
+  {
+   "id": "7th-rib-left",
+   "name": "7th rib (left)",
+   "info": "The 7th rib (left), a true rib: its costal cartilage joins the sternum directly. The intercostal vein, artery and nerve run in the costal groove along the lower border of each rib, so needles pass over the upper border of the rib below. The last true rib; its cartilage reaches the sternum beside the xiphisternal junction.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "viscera"
+   ]
+  },
+  {
+   "id": "8th-rib-left",
+   "name": "8th rib (left)",
+   "info": "The 8th rib (left), a false rib: its cartilage joins the cartilage above and helps form the costal margin. The intercostal vein, artery and nerve run in the costal groove along the lower border of each rib, so needles pass over the upper border of the rib below. The spleen lies deep to the left 9th–11th ribs behind the mid-axillary line.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "viscera"
+   ]
+  },
+  {
+   "id": "9th-rib-left",
+   "name": "9th rib (left)",
+   "info": "The 9th rib (left), a false rib: its cartilage joins the cartilage above and helps form the costal margin. The intercostal vein, artery and nerve run in the costal groove along the lower border of each rib, so needles pass over the upper border of the rib below. The spleen lies deep to the left 9th–11th ribs, its long axis along the 10th rib; fractures here raise the suspicion of splenic injury.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "viscera"
+   ]
+  },
+  {
+   "id": "10th-rib-left",
+   "name": "10th rib (left)",
+   "info": "The 10th rib (left), a false rib: its cartilage joins the cartilage above and helps form the costal margin. The intercostal vein, artery and nerve run in the costal groove along the lower border of each rib, so needles pass over the upper border of the rib below. The long axis of the spleen follows the 10th rib; a normal spleen does not project below the costal margin.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "viscera"
+   ]
+  },
+  {
+   "id": "11th-rib-left",
+   "name": "11th rib (left)",
+   "info": "The 11th rib (left), a floating rib: its tip ends free in the posterior abdominal wall. The intercostal vein, artery and nerve run in the costal groove along the lower border of each rib, so needles pass over the upper border of the rib below. Floating; covers the posterior spleen and the upper pole of the left kidney. Splenic injury with left lower rib fractures.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "viscera"
+   ]
+  },
+  {
+   "id": "12th-rib-left",
+   "name": "12th rib (left)",
+   "info": "The 12th rib (left), a floating rib: its tip ends free in the posterior abdominal wall. The intercostal vein, artery and nerve run in the costal groove along the lower border of each rib, so needles pass over the upper border of the rib below. The 12th rib crosses the upper pole of the left kidney; the pleura dips below its medial half.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "viscera"
+   ]
+  },
+  {
+   "id": "t1-vertebra",
+   "name": "T1 vertebra",
+   "info": "T1 thoracic vertebra. Its body carries costal facets for the heads of the ribs.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "viscera"
+   ]
+  },
+  {
+   "id": "t2-vertebra",
+   "name": "T2 vertebra",
+   "info": "T2 thoracic vertebra. Its body carries costal facets for the heads of the ribs.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "viscera"
+   ]
+  },
+  {
+   "id": "t3-vertebra",
+   "name": "T3 vertebra",
+   "info": "T3 thoracic vertebra. Its body carries costal facets for the heads of the ribs.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "viscera"
+   ]
+  },
+  {
+   "id": "t4-vertebra",
+   "name": "T4 vertebra",
+   "info": "T4 thoracic vertebra. Its body carries costal facets for the heads of the ribs.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "viscera"
+   ]
+  },
+  {
+   "id": "t5-vertebra",
+   "name": "T5 vertebra",
+   "info": "T5 thoracic vertebra. Its body carries costal facets for the heads of the ribs.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "viscera"
+   ]
+  },
+  {
+   "id": "t6-vertebra",
+   "name": "T6 vertebra",
+   "info": "T6 thoracic vertebra. Its body carries costal facets for the heads of the ribs.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "viscera"
+   ]
+  },
+  {
+   "id": "t7-vertebra",
+   "name": "T7 vertebra",
+   "info": "T7 thoracic vertebra. Its body carries costal facets for the heads of the ribs.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "viscera"
+   ]
+  },
+  {
+   "id": "t8-vertebra",
+   "name": "T8 vertebra",
+   "info": "T8 thoracic vertebra. Its body carries costal facets for the heads of the ribs. At T8 the IVC passes through the caval opening in the central tendon of the diaphragm (with the right phrenic nerve branches).",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "viscera"
+   ]
+  },
+  {
+   "id": "t9-vertebra",
+   "name": "T9 vertebra",
+   "info": "T9 thoracic vertebra. Its body carries costal facets for the heads of the ribs. The xiphisternal joint is at about T9 in the textbook upright subject; in this supine inspiratory CT the xiphoid tip lies lower, at T12.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "viscera"
+   ]
+  },
+  {
+   "id": "t10-vertebra",
+   "name": "T10 vertebra",
+   "info": "T10 thoracic vertebra. Its body carries costal facets for the heads of the ribs. At T10 the oesophagus passes through the oesophageal hiatus in the right crus, with the vagal trunks and the oesophageal branches of the left gastric vessels. In this model the liver dome is at this level (supine inspiration).",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "viscera"
+   ]
+  },
+  {
+   "id": "t11-vertebra",
+   "name": "T11 vertebra",
+   "info": "T11 thoracic vertebra. Its body carries costal facets for the heads of the ribs. The spleen lies against the diaphragm opposite the 9th–11th ribs at about T10–L1.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "viscera"
+   ]
+  },
+  {
+   "id": "t12-vertebra",
+   "name": "T12 vertebra",
+   "info": "T12 thoracic vertebra. Its body carries costal facets for the heads of the ribs. At T12 the aorta passes behind the median arcuate ligament (aortic hiatus) with the thoracic duct and azygos vein; the coeliac trunk arises at T12–L1. The upper poles of both kidneys are at T12 in this model.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "viscera"
+   ]
+  },
+  {
+   "id": "l1-vertebra",
+   "name": "L1 vertebra",
+   "info": "L1 lumbar vertebra. L1 marks the transpyloric plane: the pylorus, the pancreatic neck, the origin of the SMA, the renal hila, the gallbladder fundus and the tips of the 9th costal cartilages lie close to it. In this model the pylorus sits lower, at L2, as is common with a supine, distended stomach. The spinal cord ends at L1–L2.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "viscera"
+   ]
+  },
+  {
+   "id": "l2-vertebra",
+   "name": "L2 vertebra",
+   "info": "L2 lumbar vertebra. The renal veins and the pancreatic head lie at L1–L2; in this model the pylorus and first part of the duodenum are at L2.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "viscera"
+   ]
+  },
+  {
+   "id": "l3-vertebra",
+   "name": "L3 vertebra",
+   "info": "L3 lumbar vertebra. The subcostal plane (10th costal cartilage) passes through L3; the third part of the duodenum crosses in front of L3 between the aorta and the SMA.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "viscera"
+   ]
+  },
+  {
+   "id": "l4-vertebra",
+   "name": "L4 vertebra",
+   "info": "L4 lumbar vertebra. The aorta bifurcates at L4, and the supracristal plane (tops of the iliac crests) marks the L4 spinous process: the landmark for lumbar puncture at L3–L4 or L4–L5.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "viscera"
+   ]
+  },
+  {
+   "id": "l5-vertebra",
+   "name": "L5 vertebra",
+   "info": "L5 lumbar vertebra. The common iliac veins join to form the IVC at L5, behind and to the right of the aortic bifurcation.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "viscera"
+   ]
+  },
+  {
+   "id": "costal-cartilage-1st-rib-right",
+   "name": "Costal cartilage, 1st rib (right)",
+   "info": "Hyaline cartilage continuing the 1st rib (right) forwards. Cartilages 1–7 articulate with the sternum. Cartilages often calcify with age, which can mimic stones or nodes on plain films.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "viscera"
+   ]
+  },
+  {
+   "id": "costal-cartilage-2nd-rib-right",
+   "name": "Costal cartilage, 2nd rib (right)",
+   "info": "Hyaline cartilage continuing the 2nd rib (right) forwards. Cartilages 1–7 articulate with the sternum. Cartilages often calcify with age, which can mimic stones or nodes on plain films.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "viscera"
+   ]
+  },
+  {
+   "id": "costal-cartilage-3rd-rib-right",
+   "name": "Costal cartilage, 3rd rib (right)",
+   "info": "Hyaline cartilage continuing the 3rd rib (right) forwards. Cartilages 1–7 articulate with the sternum. Cartilages often calcify with age, which can mimic stones or nodes on plain films.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "viscera"
+   ]
+  },
+  {
+   "id": "costal-cartilage-4th-rib-right",
+   "name": "Costal cartilage, 4th rib (right)",
+   "info": "Hyaline cartilage continuing the 4th rib (right) forwards. Cartilages 1–7 articulate with the sternum. Cartilages often calcify with age, which can mimic stones or nodes on plain films.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "viscera"
+   ]
+  },
+  {
+   "id": "costal-cartilage-5th-rib-right",
+   "name": "Costal cartilage, 5th rib (right)",
+   "info": "Hyaline cartilage continuing the 5th rib (right) forwards. Cartilages 1–7 articulate with the sternum. Cartilages often calcify with age, which can mimic stones or nodes on plain films.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "viscera"
+   ]
+  },
+  {
+   "id": "costal-cartilage-6th-rib-right",
+   "name": "Costal cartilage, 6th rib (right)",
+   "info": "Hyaline cartilage continuing the 6th rib (right) forwards. Cartilages 1–7 articulate with the sternum. Cartilages often calcify with age, which can mimic stones or nodes on plain films.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "viscera"
+   ]
+  },
+  {
+   "id": "costal-cartilage-7th-rib-right",
+   "name": "Costal cartilage, 7th rib (right)",
+   "info": "Hyaline cartilage continuing the 7th rib (right) forwards. Cartilages 1–7 articulate with the sternum. Cartilages often calcify with age, which can mimic stones or nodes on plain films.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "viscera"
+   ]
+  },
+  {
+   "id": "costal-cartilage-8th-rib-right",
+   "name": "Costal cartilage, 8th rib (right)",
+   "info": "Hyaline cartilage continuing the 8th rib (right) forwards. Cartilages 8–10 each join the cartilage above; together with the 7th they form the costal margin. Cartilages often calcify with age, which can mimic stones or nodes on plain films.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "viscera"
+   ]
+  },
+  {
+   "id": "costal-cartilage-9th-rib-right",
+   "name": "Costal cartilage, 9th rib (right)",
+   "info": "Hyaline cartilage continuing the 9th rib (right) forwards. Cartilages 8–10 each join the cartilage above; together with the 7th they form the costal margin. The tip of the right 9th costal cartilage (costal margin in the mid-clavicular line) overlies the gallbladder fundus: Murphy’s sign is elicited here, and the transpyloric plane (L1) passes through it. Cartilages often calcify with age, which can mimic stones or nodes on plain films.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "viscera"
+   ]
+  },
+  {
+   "id": "costal-cartilage-10th-rib-right",
+   "name": "Costal cartilage, 10th rib (right)",
+   "info": "Hyaline cartilage continuing the 10th rib (right) forwards. Cartilages 8–10 each join the cartilage above; together with the 7th they form the costal margin. The lowest point of the costal margin marks the subcostal plane (L3). Cartilages often calcify with age, which can mimic stones or nodes on plain films.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "viscera"
+   ]
+  },
+  {
+   "id": "costal-cartilage-1st-rib-left",
+   "name": "Costal cartilage, 1st rib (left)",
+   "info": "Hyaline cartilage continuing the 1st rib (left) forwards. Cartilages 1–7 articulate with the sternum. Cartilages often calcify with age, which can mimic stones or nodes on plain films.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "viscera"
+   ]
+  },
+  {
+   "id": "costal-cartilage-2nd-rib-left",
+   "name": "Costal cartilage, 2nd rib (left)",
+   "info": "Hyaline cartilage continuing the 2nd rib (left) forwards. Cartilages 1–7 articulate with the sternum. Cartilages often calcify with age, which can mimic stones or nodes on plain films.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "viscera"
+   ]
+  },
+  {
+   "id": "costal-cartilage-3rd-rib-left",
+   "name": "Costal cartilage, 3rd rib (left)",
+   "info": "Hyaline cartilage continuing the 3rd rib (left) forwards. Cartilages 1–7 articulate with the sternum. Cartilages often calcify with age, which can mimic stones or nodes on plain films.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "viscera"
+   ]
+  },
+  {
+   "id": "costal-cartilage-4th-rib-left",
+   "name": "Costal cartilage, 4th rib (left)",
+   "info": "Hyaline cartilage continuing the 4th rib (left) forwards. Cartilages 1–7 articulate with the sternum. Cartilages often calcify with age, which can mimic stones or nodes on plain films.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "viscera"
+   ]
+  },
+  {
+   "id": "costal-cartilage-5th-rib-left",
+   "name": "Costal cartilage, 5th rib (left)",
+   "info": "Hyaline cartilage continuing the 5th rib (left) forwards. Cartilages 1–7 articulate with the sternum. Cartilages often calcify with age, which can mimic stones or nodes on plain films.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "viscera"
+   ]
+  },
+  {
+   "id": "costal-cartilage-6th-rib-left",
+   "name": "Costal cartilage, 6th rib (left)",
+   "info": "Hyaline cartilage continuing the 6th rib (left) forwards. Cartilages 1–7 articulate with the sternum. Cartilages often calcify with age, which can mimic stones or nodes on plain films.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "viscera"
+   ]
+  },
+  {
+   "id": "costal-cartilage-7th-rib-left",
+   "name": "Costal cartilage, 7th rib (left)",
+   "info": "Hyaline cartilage continuing the 7th rib (left) forwards. Cartilages 1–7 articulate with the sternum. Cartilages often calcify with age, which can mimic stones or nodes on plain films.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "viscera"
+   ]
+  },
+  {
+   "id": "costal-cartilage-8th-rib-left",
+   "name": "Costal cartilage, 8th rib (left)",
+   "info": "Hyaline cartilage continuing the 8th rib (left) forwards. Cartilages 8–10 each join the cartilage above; together with the 7th they form the costal margin. Cartilages often calcify with age, which can mimic stones or nodes on plain films.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "viscera"
+   ]
+  },
+  {
+   "id": "costal-cartilage-9th-rib-left",
+   "name": "Costal cartilage, 9th rib (left)",
+   "info": "Hyaline cartilage continuing the 9th rib (left) forwards. Cartilages 8–10 each join the cartilage above; together with the 7th they form the costal margin. The transpyloric plane (L1) crosses the costal margin at the tip of the 9th cartilage. Cartilages often calcify with age, which can mimic stones or nodes on plain films.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "viscera"
+   ]
+  },
+  {
+   "id": "costal-cartilage-10th-rib-left",
+   "name": "Costal cartilage, 10th rib (left)",
+   "info": "Hyaline cartilage continuing the 10th rib (left) forwards. Cartilages 8–10 each join the cartilage above; together with the 7th they form the costal margin. The lowest point of the costal margin marks the subcostal plane (L3). Cartilages often calcify with age, which can mimic stones or nodes on plain films.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "viscera"
+   ]
+  },
+  {
+   "id": "sternum",
+   "name": "Sternum",
+   "info": "Manubrium, body and xiphoid process. The sternal angle (manubriosternal joint, 2nd costal cartilage) is at T4–T5; the xiphisternal joint is textbook T9, and in this supine inspiratory CT the xiphoid tip reaches T12. The subxiphoid approach is used for left-sided PTC into segment III and for pericardiocentesis.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "viscera"
+   ]
+  },
+  {
+   "id": "sacrum",
+   "name": "Sacrum",
+   "info": "Five fused sacral vertebrae; the promontory (S1) marks the pelvic brim. The sigmoid mesocolon and the root of the small-bowel mesentery run down towards it on the left and right respectively.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "viscera"
+   ]
+  },
+  {
+   "id": "ribcage-and-spine",
+   "name": "Ribcage & spine",
+   "info": "Ribs 1–12, costal cartilages, sternum, T1–L5 and the sacrum, segmented from the same CT (TotalSegmentator s1267) and registered to the model within about 1 mm. Use it for surface anatomy: the liver under the right 5th–11th ribs, the spleen under the left 9th–11th, the costal margin, vertebral levels and intercostal access routes.",
+   "cites": [],
+   "tier": [],
+   "layer": []
+  },
+  {
+   "id": "choledochal-cyst-todani-i",
+   "name": "Choledochal cyst · Todani I",
+   "info": "Type I, the commonest: cystic or fusiform dilatation of the extrahepatic bile duct (Ia cystic, Ib focal segmental, Ic diffuse fusiform) with normal intrahepatic ducts. What makes it type I: the dilatation is confined to the extrahepatic duct and is a single continuous segment. Usually with an anomalous pancreaticobiliary junction. Treatment: excision of the extrahepatic duct with Roux-en-Y hepaticojejunostomy.",
+   "cites": [],
+   "tier": [],
+   "layer": []
+  },
+  {
+   "id": "choledochal-cyst-todani-ii",
+   "name": "Choledochal cyst · Todani II",
+   "info": "Type II (rare): a true diverticulum arising from the side of the supraduodenal common bile duct, joined by a narrow neck. What makes it type II: the duct itself is of normal calibre; the cyst sits beside it. Treatment: excision of the diverticulum.",
+   "cites": [],
+   "tier": [],
+   "layer": []
+  },
+  {
+   "id": "choledochal-cyst-todani-iii",
+   "name": "Choledochal cyst · Todani III",
+   "info": "Type III, choledochocele: dilatation of the intraduodenal (intramural) segment of the distal common bile duct, bulging into the duodenal lumen at the papilla. What makes it type III: only the terminal duct inside the duodenal wall is dilated. It carries the lowest malignancy risk and is usually treated endoscopically by sphincterotomy or unroofing.",
+   "cites": [],
+   "tier": [],
+   "layer": []
+  },
+  {
+   "id": "choledochal-cyst-todani-iva",
+   "name": "Choledochal cyst · Todani IVa",
+   "info": "Type IVa: multiple cysts of both the intrahepatic and the extrahepatic ducts, typically fusiform extrahepatic dilatation continuing into cystic dilatation of the central intrahepatic ducts. What makes it IVa rather than I: the intrahepatic ducts are cystically dilated too. Treatment: excision of the extrahepatic component with hepaticojejunostomy, plus hepatectomy when the intrahepatic disease is localised.",
+   "cites": [],
+   "tier": [],
+   "layer": []
+  },
+  {
+   "id": "choledochal-cyst-todani-ivb",
+   "name": "Choledochal cyst · Todani IVb",
+   "info": "Type IVb: multiple cysts confined to the extrahepatic duct, a string of dilatations separated by segments of normal calibre, with normal intrahepatic ducts. What makes it IVb: several discrete extrahepatic cysts rather than one fusiform segment. Treatment: excision of the extrahepatic duct with Roux-en-Y hepaticojejunostomy.",
+   "cites": [],
+   "tier": [],
+   "layer": []
+  },
+  {
+   "id": "choledochal-cyst-todani-v",
+   "name": "Choledochal cyst · Todani V",
+   "info": "Type V, Caroli disease: single or multiple saccular dilatations of the intrahepatic ducts only, communicating with the biliary tree; the extrahepatic duct is normal. With congenital hepatic fibrosis (and portal hypertension) it is Caroli syndrome. Complications: intrahepatic stones, recurrent cholangitis, abscesses and cholangiocarcinoma. Treatment: liver resection for localised disease, transplantation for diffuse disease.",
+   "cites": [],
+   "tier": [],
+   "layer": []
+  },
+  {
+   "id": "tace-catheter-and-microcatheter",
+   "name": "TACE catheter and microcatheter",
+   "info": "From the common femoral (or radial) artery, up the aorta into the coeliac axis, common and proper hepatic arteries, then a microcatheter into the segmental artery feeding the tumour for selective chemoembolisation.",
+   "cites": [],
+   "tier": [],
+   "layer": []
+  },
+  {
+   "id": "planned-resection",
+   "name": "Planned resection",
+   "info": "The anatomical segment to be removed with the tumour. CT volumetry of what remains (the future liver remnant) and liver function decide whether resection is safe.",
+   "cites": [],
+   "tier": [],
+   "layer": []
+  },
+  {
+   "id": "transection-line",
+   "name": "Transection line",
+   "info": "The plane of parenchymal transection along the segment boundary, guided by intraoperative ultrasound and the hepatic veins.",
+   "cites": [],
+   "tier": [],
+   "layer": []
+  },
+  {
+   "id": "transection-surface-remnant",
+   "name": "Transection surface (remnant)",
+   "info": "The raw cut surface of the remnant liver, secured for haemostasis and bile leak.",
+   "cites": [],
+   "tier": [],
+   "layer": []
+  },
+  {
+   "id": "resection-specimen",
+   "name": "Resection specimen",
+   "info": "The resected segment containing the tumour, sent for histology including margin status, grade and microvascular invasion.",
+   "cites": [],
+   "tier": [],
+   "layer": []
+  },
+  {
+   "id": "peripancreatic-inflammation-fluid-fat-stranding",
+   "name": "Peripancreatic inflammation (fluid, fat stranding)",
+   "info": "Acute pancreatitis (revised Atlanta): two of typical pain, lipase or amylase ≥3× the upper limit, and characteristic imaging. Interstitial oedematous pancreatitis gives this halo of fluid and fat stranding; acute peripancreatic fluid collections within 4 weeks usually resolve. Severity is graded by organ failure (transient <48 h: moderately severe; persistent: severe). NICE NG104: no prophylactic antimicrobials; enteral nutrition within 72 h in moderately severe or severe disease.",
+   "cites": [
+    "NICE NG104"
+   ],
+   "tier": [],
+   "layer": []
+  },
+  {
+   "id": "splenic-vein-thrombosis",
+   "name": "Splenic vein thrombosis",
+   "info": "A complication of acute and chronic pancreatitis (and pancreatic cancer): inflammation of the splenic vein behind the gland. Splenic blood reaches the portal vein through short gastric and gastroepiploic collaterals, giving left-sided (sinistral) portal hypertension: isolated gastric fundal varices (IGV1) and splenomegaly with a normal HVPG. Bleeding gastric varices from this cause are treated by splenectomy or splenic artery embolisation.",
+   "cites": [],
+   "tier": [],
+   "layer": []
+  },
+  {
+   "id": "pancreatic-calcification",
+   "name": "Pancreatic calcification",
+   "info": "Intraductal and parenchymal calcification is the hallmark of chronic pancreatitis (most often alcohol-related) on CT. Duct stones can obstruct the main duct: NICE NG104 suggests surgery first line for painful obstructive disease, and ESWL for a dominant stone when surgery is unsuitable.",
+   "cites": [
+    "NICE NG104"
+   ],
+   "tier": [],
+   "layer": []
+  },
+  {
+   "id": "pancreatic-pseudocyst",
+   "name": "Pancreatic pseudocyst",
+   "info": "A walled fluid collection without an epithelial lining, persisting beyond 4 weeks after pancreatitis. Many resolve; drain only if symptomatic, infected or obstructing. NICE NG104: offer EUS-guided drainage, or endoscopic transpapillary drainage for pancreatic head pseudocysts; surgery if endoscopy is unsuitable or fails. In chronic pancreatitis also offer PERT and HbA1c monitoring at least every 6 months.",
+   "cites": [
+    "NICE NG104"
+   ],
+   "tier": [],
+   "layer": []
+  },
+  {
+   "id": "benign-cbd-stricture",
+   "name": "Benign CBD stricture",
+   "info": "Causes: bile duct injury at cholecystectomy, chronic pancreatitis, PSC dominant stricture, IgG4-related cholangitis and post-transplant anastomotic stricture. Malignancy must be excluded (brushings, EUS-FNB, IgG4). Endoscopic treatment is with multiple side-by-side plastic stents or a fully covered metal stent (ESGE); surgical hepaticojejunostomy for refractory or post-injury strictures.",
+   "cites": [
+    "ESGE"
+   ],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "biliary"
+   ]
+  },
+  {
+   "id": "choledochal-cyst",
+   "name": "Choledochal cyst",
+   "info": "Congenital cystic dilatation of the bile ducts, often with an anomalous pancreaticobiliary junction (a long common channel allowing pancreatic juice reflux). Todani: I fusiform extrahepatic (commonest); II supraduodenal diverticulum; III choledochocele; IVa intra- and extrahepatic; IVb multiple extrahepatic; V intrahepatic only (Caroli). Complications: stones, cholangitis, pancreatitis and a raised lifetime risk of cholangiocarcinoma, so types I, II and IV are excised with Roux-en-Y hepaticojejunostomy; III is usually treated endoscopically by sphincterotomy; V may need liver resection or transplantation.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "biliary"
+   ]
+  },
+  {
+   "id": "tipss-sheath-needle-and-wire",
+   "name": "TIPSS sheath, needle and wire",
+   "info": "Placed from the right internal jugular vein: a long sheath is passed through the right atrium and IVC into the right hepatic vein, a curved needle is turned anteriorly and inferiorly and advanced through the parenchyma into the right portal vein (often under ultrasound guidance), and a wire is passed into the main portal vein. The tract is balloon-dilated and the covered stent deployed over the wire: its bare end is released in the portal vein, then the covered segment is unsheathed back to the hepatocaval junction.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": []
+  },
+  {
+   "id": "plastic-pancreatic-stent",
+   "name": "Plastic pancreatic stent",
+   "info": "A 5–7 Fr plastic stent placed at ERCP across a main pancreatic duct stricture to relieve obstructive (post-prandial) pain; evidence in malignant obstruction comes from small series. Exocrine insufficiency is treated with enteric-coated pancreatic enzyme replacement (NICE NG85).",
+   "cites": [
+    "NICE NG85"
+   ],
+   "tier": [],
+   "layer": []
+  },
+  {
+   "id": "metal-pancreatic-stent-fully-covered",
+   "name": "Metal pancreatic stent (fully covered)",
+   "info": "A fully covered self-expanding metal stent can bridge a malignant main pancreatic duct stricture when a plastic stent occludes or migrates; its use is off-label and reserved for selected cases.",
+   "cites": [],
+   "tier": [],
+   "layer": []
+  },
+  {
+   "id": "duodenoscope-side-viewing",
+   "name": "Duodenoscope (side-viewing)",
+   "info": "The ERCP scope: optics and an elevator on the side of the tip let the endoscopist face the papilla in the second part of the duodenum and steer accessories into it.",
+   "cites": [],
+   "tier": [],
+   "layer": []
+  },
+  {
+   "id": "sphincterotome-cannula",
+   "name": "Sphincterotome / cannula",
+   "info": "A bowed diathermy wire catheter passed over a guidewire from the elevator into the bile duct; it cannulates, delivers contrast and cuts the sphincter.",
+   "cites": [],
+   "tier": [],
+   "layer": []
+  },
+  {
+   "id": "biliary-sphincterotomy",
+   "name": "Biliary sphincterotomy",
+   "info": "The roof of the papilla is cut with blended current along the 11–12 o’clock axis to widen the biliary orifice for stone extraction or stenting.",
+   "cites": [],
+   "tier": [],
+   "layer": []
+  },
+  {
+   "id": "extraction-balloon",
+   "name": "Extraction balloon",
+   "info": "Inflated above the stone to the calibre of the duct, then withdrawn through the sphincterotomy to sweep stones and debris into the duodenum.",
+   "cites": [],
+   "tier": [],
+   "layer": []
+  },
+  {
+   "id": "transjugular-biopsy-sheath-and-cannula",
+   "name": "Transjugular biopsy sheath and cannula",
+   "info": "Passed from the right internal jugular vein through the right atrium and IVC into the right hepatic vein. A stiff metal cannula inside it lets the operator point the needle anteriorly, away from the capsule.",
+   "cites": [],
+   "tier": [],
+   "layer": []
+  },
+  {
+   "id": "transjugular-biopsy-needle-18-19g",
+   "name": "Transjugular biopsy needle (18–19G)",
+   "info": "Fired 1–2 cm from the hepatic vein into the parenchyma. Because the capsule is not crossed, bleeding returns into the vein; the route of choice when INR >1.4 or platelets <50 ×10⁹/L (BSG/RCR/RCPath 2020).",
+   "cites": [
+    "BSG/RCR/RCPath 2020"
+   ],
+   "tier": [],
+   "layer": []
+  },
+  {
+   "id": "liver-core-transjugular",
+   "name": "Liver core (transjugular)",
+   "info": "Transjugular cores are thinner and more often fragmented than percutaneous ones, so 3–4 passes are usually taken to give enough portal tracts.",
+   "cites": [],
+   "tier": [],
+   "layer": []
+  },
+  {
+   "id": "percutaneous-biopsy-needle-16g",
+   "name": "Percutaneous biopsy needle (16G)",
+   "info": "A 16G core needle through the right 8th or 9th intercostal space in the mid-axillary line, passed just over the upper border of the rib below to avoid the intercostal vein, artery and nerve in the costal groove, under ultrasound guidance, on held breath (switch on Ribcage & spine to see the space it uses). BSG/RCR/RCPath 2020 recommend a 16G needle and a core of at least 20 mm for non-lesional biopsy.",
+   "cites": [
+    "BSG/RCR/RCPath 2020"
+   ],
+   "tier": [],
+   "layer": []
+  },
+  {
+   "id": "liver-core-percutaneous-16g",
+   "name": "Liver core (percutaneous, 16G)",
+   "info": "A single 16G core of at least 20 mm is the standard for staging and grading diffuse liver disease.",
+   "cites": [],
+   "tier": [],
+   "layer": []
+  },
+  {
+   "id": "skin-entry-right-intercostal-mid-axillary-line",
+   "name": "Skin entry (right intercostal, mid-axillary line)",
+   "info": "Chosen by ultrasound: below the lung edge, clear of the gallbladder, large vessels and dilated ducts, usually over segments VI–VII.",
+   "cites": [],
+   "tier": [],
+   "layer": []
+  },
+  {
+   "id": "ptc-drain-side-hole",
+   "name": "PTC drain side hole",
+   "info": "Side holes along the internal–external drain let bile enter above the obstruction and leave into the duodenum below it. Holes must lie inside the ducts: one left in the parenchymal track causes bile leak or haemobilia.",
+   "cites": [],
+   "tier": [],
+   "layer": []
+  },
+  {
+   "id": "ptc-drain-internal-external",
+   "name": "PTC drain (internal–external)",
+   "info": "Percutaneous transhepatic biliary drain: an 8–10 Fr locking-pigtail catheter placed under ultrasound and fluoroscopy, here from the right mid-axillary line through the 9th intercostal space, over the upper border of the 10th rib, into a segment VI duct (a left-sided drain goes subxiphoid into segment III). The costodiaphragmatic recess reaches the 10th rib in this line, so the puncture is kept as low as the ducts allow, in expiration and below the lung edge on fluoroscopy, to avoid crossing the pleura. An internal–external drain crosses the obstruction and coils in the duodenum; side holes above and below the stricture let bile drain externally or, once capped, internally, and the tract allows a metal stent later. For distal obstruction ERCP comes first and PTC is used when ERCP fails or cannot reach the papilla (ESGE). In complex hilar obstruction (Bismuth III–IV) PTC is an alternative first-line route, chosen by the MDT (BSG 2023). Risks: haemobilia, bile leak, cholangitis and dislodgement.",
+   "cites": [
+    "ESGE",
+    "BSG 2023"
+   ],
+   "tier": [],
+   "layer": []
+  },
+  {
+   "id": "renal-artery",
+   "name": "Renal artery",
+   "info": "Arises from the lateral aorta at L1–L2 and enters the hilum behind the renal vein; the right passes behind the IVC.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "viscera"
+   ]
+  },
+  {
+   "id": "renal-vein",
+   "name": "Renal vein",
+   "info": "Leaves the hilum in front of the artery. The left runs in front of the aorta beneath the SMA to the IVC and receives spontaneous splenorenal shunts; the right is short.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "viscera"
+   ]
+  },
+  {
+   "id": "right-kidney",
+   "name": "Right kidney",
+   "info": "Lies behind the right lobe and makes the renal impression on its visceral surface (segment VI); the hepatorenal pouch (Morison’s) between them is the most dependent intraperitoneal space when supine.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "viscera"
+   ]
+  },
+  {
+   "id": "pancreas",
+   "name": "Pancreas",
+   "info": "Retroperitoneal across L1–L2, entirely behind the stomach and separated from it by the lesser sac. Head in the duodenal C-loop, neck in front of the portal–superior mesenteric confluence, body over the aorta and SMA, the body lying nearly level at L1–L2 and the tail rising gently between the stomach and the upper pole of the left kidney to the splenic hilum, where it lies in the splenorenal ligament. The splenic vein runs in a groove on the back of the body and tail (exposed from behind) and the tortuous splenic artery along its upper border; both enter the hilum separately.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "viscera"
+   ]
+  },
+  {
+   "id": "portal-and-splenic-veins-ct",
+   "name": "Portal and splenic veins (CT)",
+   "info": "The portal and splenic veins as segmented on this CT: the splenic vein runs behind the pancreas to the confluence, and the trunk ascends to the porta hepatis. The modelled portal tree follows this course; switch this on to compare.",
+   "cites": [],
+   "tier": [],
+   "layer": []
+  },
+  {
+   "id": "aorta-ct",
+   "name": "Aorta (CT)",
+   "info": "The aorta as segmented on this CT. The modelled aorta and its coeliac and mesenteric branches follow this course.",
+   "cites": [],
+   "tier": [],
+   "layer": []
+  },
+  {
+   "id": "ivc-ct",
+   "name": "IVC (CT)",
+   "info": "The inferior vena cava as segmented on this CT, running in its groove on the back of the liver. The modelled IVC and hepatic veins follow this course.",
+   "cites": [],
+   "tier": [],
+   "layer": []
+  },
+  {
+   "id": "about-this-anatomy",
+   "name": "About this anatomy",
+   "info": "Organ surfaces derived from the TotalSegmentator dataset (Wasserthal et al., Radiol AI 2023), CC BY 4.0. Single-patient anatomy; one normal variant. Case s1267: adult, portal-venous phase. Liver and neighbouring organs are the patient’s own surfaces (left lobe shortened by 28% beyond the umbilical fissure). The vessels, bile ducts and gallbladder are modelled and fitted to this anatomy; this patient’s own gallbladder had been removed.",
+   "cites": [],
+   "tier": [],
+   "layer": []
+  },
+  {
+   "id": "caudate-lobe-hypertrophy",
+   "name": "Caudate lobe hypertrophy",
+   "info": "In Budd–Chiari the caudate lobe keeps its outflow — short caudate veins drain straight into the IVC — so it hypertrophies while the rest of the liver congests and atrophies. Caudate:right lobe width ratio >0.55 is suggestive. Rotate to an inferior or posterior view to see it.",
+   "cites": [],
+   "tier": [],
+   "layer": []
+  },
+  {
+   "id": "spleen",
+   "name": "Spleen",
+   "info": "Left upper quadrant beneath ribs 9–11, drained by the splenic vein to the portal confluence. Enlarges with portal hypertension (congestive splenomegaly, hypersplenism, thrombocytopenia). Baveno VII: liver stiffness ≤15 kPa with platelets ≥150 ×10⁹/L rules out CSPH; ≥25 kPa rules it in.",
+   "cites": [
+    "Baveno VII"
+   ],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "viscera"
+   ]
+  },
+  {
+   "id": "stomach",
+   "name": "Stomach",
+   "info": "Gastric varices (Sarin): GOV1 continue from oesophageal varices along the lesser curve; GOV2 extend to the fundus; IGV1 are isolated fundal; IGV2 ectopic. Fundal varices bleed less often but more severely — cyanoacrylate injection, BRTO or TIPSS.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "viscera"
+   ]
+  },
+  {
+   "id": "oesophagus",
+   "name": "Oesophagus",
+   "info": "The lower oesophagus is the main portosystemic junction: left gastric (coronary) vein → submucosal and paraoesophageal veins → azygos.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "viscera"
+   ]
+  },
+  {
+   "id": "left-kidney",
+   "name": "Left kidney",
+   "info": "Its renal vein crosses in front of the aorta beneath the SMA to the IVC — the outflow for spontaneous splenorenal and gastrorenal shunts.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "viscera"
+   ]
+  },
+  {
+   "id": "left-renal-vein",
+   "name": "Left renal vein",
+   "info": "Passes between the aorta and the SMA to reach the IVC. Receives spontaneous splenorenal and gastrorenal shunts, and dilates when they are large.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "hepaticVein"
+   ]
+  },
+  {
+   "id": "left-renal-vein-dilated",
+   "name": "Left renal vein (dilated)",
+   "info": "Dilated by the flow of a large spontaneous splenorenal shunt.",
+   "cites": [],
+   "tier": [],
+   "layer": []
+  },
+  {
+   "id": "oesophageal-varices",
+   "name": "Oesophageal varices",
+   "info": "Portosystemic collaterals from the left gastric vein draining to the azygos. They form once HVPG ≥10 mmHg (clinically significant portal hypertension) and bleed above 12 mmHg. CSPH: non-selective beta-blocker, carvedilol preferred. Acute bleed: terlipressin, antibiotics, restrictive transfusion, band ligation within 12 h; pre-emptive TIPSS in Child–Pugh C 10–13, or B >7 with active bleeding (Baveno VII, 2022; Baveno VIII was published in J Hepatol in 2026; BSG variceal guidance dates from 2015).",
+   "cites": [
+    "Baveno VII",
+    "BSG variceal 2015"
+   ],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "portal"
+   ]
+  },
+  {
+   "id": "gastric-fundal-varices",
+   "name": "Gastric fundal varices",
+   "info": "Fed by the short gastric (and posterior gastric) veins from the splenic hilum; commonly drain through a gastrorenal shunt. Treat bleeding with cyanoacrylate injection or TIPSS; BRTO where a gastrorenal shunt exists. Also the classic sign of splenic vein thrombosis (sinistral portal hypertension).",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "portal"
+   ]
+  },
+  {
+   "id": "splenorenal-shunt",
+   "name": "Splenorenal shunt",
+   "info": "Spontaneous portosystemic shunt from the splenic to the left renal vein. Large shunts (>8 mm) steal portal flow and are linked to recurrent hepatic encephalopathy; embolisation (BRTO/PARTO) is an option in refractory HE.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "portal"
+   ]
+  },
+  {
+   "id": "recanalised-paraumbilical-vein",
+   "name": "Recanalised paraumbilical vein",
+   "info": "Reopened within the ligamentum teres from the left portal vein to the umbilicus — decompresses the portal system to the abdominal wall; may produce a venous hum (Cruveilhier–Baumgarten).",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "portal"
+   ]
+  },
+  {
+   "id": "caput-medusae",
+   "name": "Caput medusae",
+   "info": "Dilated periumbilical abdominal-wall veins fed by the recanalised paraumbilical vein. Flow radiates away from the umbilicus — unlike IVC obstruction, where infra-umbilical veins drain upward.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "portal"
+   ]
+  },
+  {
+   "id": "umbilicus",
+   "name": "Umbilicus",
+   "info": "Where the recanalised paraumbilical vein reaches the abdominal wall.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "portal"
+   ]
+  },
+  {
+   "id": "azygos-vein",
+   "name": "Azygos vein",
+   "info": "Drains oesophageal varices through paraoesophageal veins to the SVC; with the hemiazygos and lumbar veins it is also the main bypass for IVC obstruction.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "hepaticVein"
+   ]
+  },
+  {
+   "id": "portal-cavernoma",
+   "name": "Portal cavernoma",
+   "info": "Cavernous transformation: hepatopetal collaterals around a chronically occluded portal vein, forming within weeks. Causes portal cholangiopathy (bile duct compression). Presinusoidal portal hypertension — HVPG is normal despite varices.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "portal"
+   ]
+  },
+  {
+   "id": "portal-vein-thrombus-acute-occlusive",
+   "name": "Portal vein thrombus (acute, occlusive)",
+   "info": "Acute PVT: pain and a risk of mesenteric ischaemia if the SMV is involved. Anticoagulate promptly (LMWH, then DOAC or VKA) for at least 6 months; early treatment recanalises about half. Collaterals have not formed yet (Baveno VII; EASL Clinical Practice Guidelines on vascular diseases of the liver, J Hepatol 2025).",
+   "cites": [
+    "Baveno VII"
+   ],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "portal"
+   ]
+  },
+  {
+   "id": "portal-vein-thrombus-partial-non-occlusive",
+   "name": "Portal vein thrombus (partial, non-occlusive)",
+   "info": "Common in cirrhosis. Baveno VII: anticoagulate recent PVT that occludes >50% of the trunk, involves the SMV, is progressing, or occurs in a transplant candidate. Do not delay anticoagulation for variceal screening.",
+   "cites": [
+    "Baveno VII"
+   ],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "portal"
+   ]
+  },
+  {
+   "id": "chronic-portal-vein-occlusion-fibrotic-cord",
+   "name": "Chronic portal vein occlusion (fibrotic cord)",
+   "info": "The trunk is replaced by a fibrotic cord bypassed by a cavernoma. Presinusoidal portal hypertension with varices but normal HVPG; manage varices as in cirrhosis; long-term anticoagulation if a prothrombotic state persists.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "portal"
+   ]
+  },
+  {
+   "id": "smv-thrombus",
+   "name": "SMV thrombus",
+   "info": "Extension into the superior mesenteric vein threatens venous mesenteric ischaemia — urgent anticoagulation and surgical review if peritonism or a rising lactate.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "portal"
+   ]
+  },
+  {
+   "id": "tipss-stent",
+   "name": "TIPSS stent",
+   "info": "Transjugular intrahepatic portosystemic shunt: an 8–10 mm ePTFE-covered stent from the right hepatic vein through the parenchyma into the right portal vein, bypassing sinusoidal resistance. Target portal pressure gradient <12 mmHg. Uses: pre-emptive or rescue for variceal bleeding, refractory ascites, Budd–Chiari. Risks: hepatic encephalopathy, liver and cardiac decompensation (BSG TIPSS guideline 2020; Baveno VII 2022, now updated by Baveno VIII, J Hepatol 2026).",
+   "cites": [
+    "BSG TIPSS guideline 2020",
+    "Baveno VII"
+   ],
+   "tier": [
+    0
+   ],
+   "layer": []
+  },
+  {
+   "id": "tipss-stent-eptfe-covered-segment",
+   "name": "TIPSS stent (ePTFE-covered segment)",
+   "info": "The covered part lines the parenchymal tract and hepatic vein so bile and tissue cannot occlude it — covered stents markedly improved patency over bare stents.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": []
+  },
+  {
+   "id": "tipss-radiopaque-marker",
+   "name": "TIPSS radiopaque marker",
+   "info": "Marks the start of the covered segment, placed at the portal vein entry so that the uncovered ~2 cm sits within the portal vein.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": []
+  },
+  {
+   "id": "hepatic-vein-thrombosis",
+   "name": "Hepatic vein thrombosis",
+   "info": "Classic Budd–Chiari syndrome. Look for a cause (myeloproliferative neoplasm in ~40%, JAK2 V617F; PNH; antiphospholipid). Stepwise care: anticoagulation → angioplasty or stenting of short stenoses → TIPSS → transplantation (EASL Clinical Practice Guidelines on vascular diseases of the liver, J Hepatol 2025).",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "hepaticVein"
+   ]
+  },
+  {
+   "id": "ivc-web",
+   "name": "IVC web",
+   "info": "Membranous obstruction of the suprahepatic IVC — the predominant Budd–Chiari form in Asia and southern Africa. Treated by angioplasty ± stenting; lower-body return diverts through azygos, hemiazygos and lumbar veins.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "hepaticVein"
+   ]
+  },
+  {
+   "id": "intrahepatic-venovenous-collaterals",
+   "name": "Intrahepatic venovenous collaterals",
+   "info": "The comma-shaped \"spider-web\" network on hepatic venography, characteristic of Budd–Chiari: occluded hepatic veins decompress into patent ones and into the caudate veins.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "hepaticVein"
+   ]
+  },
+  {
+   "id": "enlarged-caudate-veins",
+   "name": "Enlarged caudate veins",
+   "info": "The caudate drains straight into the IVC through its own short veins, so it escapes the hepatic vein block and hypertrophies (caudate:right lobe ratio >0.55) — the classic Budd–Chiari sign.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "hepaticVein"
+   ]
+  },
+  {
+   "id": "common-bile-duct-stone",
+   "name": "Common bile duct stone",
+   "info": "Choledocholithiasis: pain and cholestasis, cholangitis if infected. ERCP with sphincterotomy and extraction, then cholecystectomy (BSG CBD stones guideline 2017).",
+   "cites": [
+    "BSG CBD stones guideline 2017"
+   ],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "biliary"
+   ]
+  },
+  {
+   "id": "gallstones",
+   "name": "Gallstones",
+   "info": "Cholelithiasis. With stone disease the gallbladder is usually thick-walled and small — Courvoisier: painless jaundice with a palpable gallbladder is unlikely to be stones.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "biliary"
+   ]
+  },
+  {
+   "id": "impacted-stone-mirizzi-syndrome",
+   "name": "Impacted stone (Mirizzi syndrome)",
+   "info": "A stone impacted in Hartmann’s pouch or the cystic duct compresses the common hepatic duct (Csendes I) or erodes into it (II–V). Recognise it before cholecystectomy — high risk of bile duct injury.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "biliary"
+   ]
+  },
+  {
+   "id": "plastic-biliary-stent",
+   "name": "Plastic biliary stent",
+   "info": "7–10 Fr plastic stents bridge stones and benign strictures; they occlude within ~3 months. For distal malignant obstruction self-expanding metal stents are preferred (ESGE).",
+   "cites": [
+    "ESGE"
+   ],
+   "tier": [],
+   "layer": []
+  },
+  {
+   "id": "metal-biliary-stent-sems",
+   "name": "Metal biliary stent (SEMS)",
+   "info": "8–10 mm self-expanding metal stents give longer patency in malignant obstruction. Perihilar Bismuth III–IV: aim to drain ≥50% of liver volume, often with bilateral stents (ESGE).",
+   "cites": [
+    "ESGE"
+   ],
+   "tier": [],
+   "layer": []
+  },
+  {
+   "id": "fat-droplets-macrovesicular-steatosis",
+   "name": "Fat droplets (macrovesicular steatosis)",
+   "info": "Large single vacuoles that displace the nucleus. Graded by the proportion of hepatocytes: S1 5–33%, S2 34–66%, S3 >66%. In adults fat starts in zone 3; paediatric MASLD is often periportal.",
+   "cites": [],
+   "tier": [],
+   "layer": []
+  },
+  {
+   "id": "haemosiderin-iron-granules",
+   "name": "Haemosiderin (iron) granules",
+   "info": "Hereditary haemochromatosis (HFE C282Y homozygosity): iron loads periportal (zone 1) hepatocytes first, pericanalicular, with a gradient to zone 3. Kupffer-cell iron suggests secondary overload. Venesection to a ferritin of 50–100 µg/L (EASL haemochromatosis CPG 2022).",
+   "cites": [
+    "EASL haemochromatosis CPG 2022"
+   ],
+   "tier": [
+    4
+   ],
+   "layer": []
+  },
+  {
+   "id": "inflammatory-cells",
+   "name": "Inflammatory cells",
+   "info": "Lobular inflammation: mixed lymphocytes and neutrophils around ballooned cells in MASH; sparse cells at the edge of zone 3 necrosis after paracetamol.",
+   "cites": [],
+   "tier": [],
+   "layer": []
+  },
+  {
+   "id": "lymphoplasmacytic-infiltrate-interface-hepatitis",
+   "name": "Lymphoplasmacytic infiltrate (interface hepatitis)",
+   "info": "Autoimmune hepatitis: lymphocytes and plasma cells breach the limiting plate from the portal tract, with emperipolesis and rosettes. Scored with the simplified IAIHG criteria; treated with prednisolone or budesonide plus azathioprine.",
+   "cites": [],
+   "tier": [],
+   "layer": []
+  },
+  {
+   "id": "sinusoidal-congestion-red-cells",
+   "name": "Sinusoidal congestion (red cells)",
+   "info": "Outflow obstruction — Budd–Chiari, sinusoidal obstruction syndrome, right heart failure: zone 3 sinusoids dilate and fill with red cells as the plates atrophy; grossly the nutmeg liver.",
+   "cites": [],
+   "tier": [],
+   "layer": []
+  },
+  {
+   "id": "councilman-acidophil-body",
+   "name": "Councilman (acidophil) body",
+   "info": "An apoptotic hepatocyte — shrunken and eosinophilic. Midzonal (zone 2) necrosis with Councilman bodies is the classic picture of yellow fever.",
+   "cites": [],
+   "tier": [],
+   "layer": []
+  },
+  {
+   "id": "macrovesicular-fat-droplet",
+   "name": "Macrovesicular fat droplet",
+   "info": "One large droplet fills the cell and pushes the nucleus to the edge — the signet-ring appearance of macrovesicular steatosis.",
+   "cites": [],
+   "tier": [
+    4
+   ],
+   "layer": []
+  },
+  {
+   "id": "mallory-denk-bodies",
+   "name": "Mallory–Denk bodies",
+   "info": "Ropey eosinophilic aggregates of misfolded keratins 8/18 with p62 and ubiquitin in ballooned hepatocytes — MASH and alcohol-related hepatitis, also Wilson disease and chronic cholestasis.",
+   "cites": [],
+   "tier": [
+    4
+   ],
+   "layer": []
+  },
+  {
+   "id": "aorta",
+   "name": "Aorta",
+   "info": "Descends in the posterior mediastinum and enters the abdomen through the aortic hiatus at T12, posterior to the caudate lobe and to the left of the IVC. Gives the coeliac trunk at T12 and the SMA at L1.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "artery"
+   ]
+  },
+  {
+   "id": "coeliac-trunk",
+   "name": "Coeliac trunk",
+   "info": "Arises from the anterior aorta at T12 and runs about 1 cm before trifurcating into the left gastric, splenic and common hepatic arteries.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "artery"
+   ]
+  },
+  {
+   "id": "common-hepatic-artery",
+   "name": "Common hepatic artery",
+   "info": "The rightward coeliac branch. Runs along the upper border of the pancreatic head and divides into the gastroduodenal and proper hepatic arteries.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "artery"
+   ]
+  },
+  {
+   "id": "proper-hepatic-artery",
+   "name": "Proper hepatic artery",
+   "info": "Ascends in the free edge of the lesser omentum, anteromedial to the portal vein and medial to the common bile duct, and divides into right and left hepatic arteries at the porta.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "artery"
+   ]
+  },
+  {
+   "id": "gastroduodenal-artery",
+   "name": "Gastroduodenal artery",
+   "info": "Descends behind the first part of the duodenum — the vessel eroded by a posterior duodenal ulcer.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "artery"
+   ]
+  },
+  {
+   "id": "left-gastric-artery",
+   "name": "Left gastric artery",
+   "info": "The smallest coeliac branch, running up to the oesophagogastric junction and along the lesser curve. An aberrant left hepatic artery from it is a common variant.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "artery"
+   ]
+  },
+  {
+   "id": "splenic-artery",
+   "name": "Splenic artery",
+   "info": "Tortuous course along the upper border of the pancreas to the splenic hilum, above the splenic vein.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "artery"
+   ]
+  },
+  {
+   "id": "superior-mesenteric-artery",
+   "name": "Superior mesenteric artery",
+   "info": "Arises from the aorta at L1, behind the pancreatic neck, lying to the left of the SMV. A replaced right hepatic artery arises from it in ~10–15%.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "artery"
+   ]
+  },
+  {
+   "id": "cystic-artery",
+   "name": "Cystic artery",
+   "info": "Usually from the right hepatic artery within Calot’s triangle — the structure clipped with the cystic duct at cholecystectomy.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "artery"
+   ]
+  },
+  {
+   "id": "right-hepatic-artery",
+   "name": "Right hepatic artery",
+   "info": "Usually passes behind the common hepatic duct to the right pedicle, following the right portal vein into the anterior and posterior sectors.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "artery"
+   ]
+  },
+  {
+   "id": "left-hepatic-artery",
+   "name": "Left hepatic artery",
+   "info": "Runs with the left portal vein to the umbilical fissure; frequently gives a middle hepatic artery to segment IV.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "artery"
+   ]
+  },
+  {
+   "id": "segmental-hepatic-artery",
+   "name": "Segmental hepatic artery",
+   "info": "Arterial branch travelling in the portal pedicle beside the portal vein and bile duct — the sole blood supply of the biliary epithelium.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "artery"
+   ]
+  },
+  {
+   "id": "superior-mesenteric-vein",
+   "name": "Superior mesenteric vein",
+   "info": "Drains the small bowel and right colon; lies to the right of the SMA and joins the splenic vein behind the pancreatic neck to form the portal vein.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "portal"
+   ]
+  },
+  {
+   "id": "splenic-vein",
+   "name": "Splenic vein",
+   "info": "Runs behind the pancreas, below the splenic artery, receiving the inferior mesenteric vein before joining the SMV. Isolated splenic vein thrombosis gives sinistral portal hypertension with gastric varices.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "portal"
+   ]
+  },
+  {
+   "id": "inferior-mesenteric-vein",
+   "name": "Inferior mesenteric vein",
+   "info": "Drains the left colon and usually joins the splenic vein; less often the SMV or the confluence.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "portal"
+   ]
+  },
+  {
+   "id": "left-gastric-vein",
+   "name": "Left gastric vein",
+   "info": "The coronary vein. Drains the lesser curve into the portal vein and communicates with oesophageal veins — the principal feeder of oesophageal varices in portal hypertension.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "portal"
+   ]
+  },
+  {
+   "id": "right-portal-vein",
+   "name": "Right portal vein",
+   "info": "Short (1–3 cm) before dividing into anterior and posterior sectoral branches.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "portal"
+   ]
+  },
+  {
+   "id": "left-portal-vein",
+   "name": "Left portal vein",
+   "info": "A long transverse part beneath segment IV, then the umbilical portion — the landmark for the left intersectoral boundary.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "portal"
+   ]
+  },
+  {
+   "id": "right-anterior-portal-branch",
+   "name": "Right anterior portal branch",
+   "info": "Supplies the right anterior sector: segment V below and VIII above.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "portal"
+   ]
+  },
+  {
+   "id": "right-posterior-portal-branch",
+   "name": "Right posterior portal branch",
+   "info": "Supplies the right posterior sector: segment VI below and VII above.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "portal"
+   ]
+  },
+  {
+   "id": "umbilical-portion",
+   "name": "Umbilical portion",
+   "info": "The left portal vein turning anteriorly in the umbilical fissure, ending in the umbilical recess; gives segment III on its left and segment IV branches on its right.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "portal"
+   ]
+  },
+  {
+   "id": "right-hepatic-vein",
+   "name": "Right hepatic vein",
+   "info": "Runs in the right intersectoral plane between the anterior (V, VIII) and posterior (VI, VII) sectors, entering the IVC separately.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "hepaticVein"
+   ]
+  },
+  {
+   "id": "middle-hepatic-vein",
+   "name": "Middle hepatic vein",
+   "info": "Runs in Cantlie’s plane between the right and left hemilivers, draining IV, V and VIII. Its course decides the line of a right or left hepatectomy.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "hepaticVein"
+   ]
+  },
+  {
+   "id": "left-hepatic-vein",
+   "name": "Left hepatic vein",
+   "info": "Runs between segments II and III, usually joining the middle hepatic vein in a common trunk before the IVC.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "hepaticVein"
+   ]
+  },
+  {
+   "id": "middle-and-left-hepatic-vein-trunk",
+   "name": "Middle and left hepatic vein trunk",
+   "info": "The common trunk of the middle and left hepatic veins, present in the majority, entering the left anterior aspect of the IVC.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "hepaticVein"
+   ]
+  },
+  {
+   "id": "caudate-veins",
+   "name": "Caudate veins",
+   "info": "Short veins draining segment I directly into the retrohepatic IVC — which is why the caudate survives, and hypertrophies, in Budd–Chiari.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "hepaticVein"
+   ]
+  },
+  {
+   "id": "segmental-bile-duct",
+   "name": "Segmental bile duct",
+   "info": "Duct draining one segment, travelling in the portal pedicle with its vein and artery toward the hilar confluence.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "biliary"
+   ]
+  },
+  {
+   "id": "subcapsular-veins",
+   "name": "Subcapsular veins",
+   "info": "Fine veins running just beneath Glisson’s capsule. Visible at laparoscopy and on the cut surface, and the reason the capsule looks mottled rather than uniform.",
+   "cites": [],
+   "tier": [],
+   "layer": []
+  },
+  {
+   "id": "intrahepatic-bile-ducts",
+   "name": "Intrahepatic bile ducts",
+   "info": "Segmental and sectoral ducts running with the portal pedicles, converging on the right and left hepatic ducts at the hilum.",
+   "cites": [],
+   "tier": [],
+   "layer": []
+  },
+  {
+   "id": "right-lobe",
+   "name": "Right lobe",
+   "info": "Segments V–VIII, on the patient’s right — screen left in this anterior view. Supplied by the right portal branch and right hepatic artery, drained by the right hepatic vein.",
+   "cites": [],
+   "tier": [],
+   "layer": []
+  },
+  {
+   "id": "left-lobe",
+   "name": "Left lobe",
+   "info": "Segments II and III lie lateral to the umbilical fissure; segment IV is medial to it but still functionally left, because the functional boundary is Cantlie’s line, not the falciform.",
+   "cites": [],
+   "tier": [],
+   "layer": []
+  },
+  {
+   "id": "parenchyma",
+   "name": "Parenchyma",
+   "info": "Hepatocyte mass in plates one cell thick. Click with Segments on to identify the Couinaud territory.",
+   "cites": [],
+   "tier": [
+    0,
+    1
+   ],
+   "layer": [
+    "parenchyma"
+   ]
+  },
+  {
+   "id": "porta-hepatis",
+   "name": "Porta hepatis",
+   "info": "Transverse fissure on the visceral surface. Portal vein posteriorly, hepatic artery medially, bile duct anterolaterally — the \"Mickey Mouse\" on ultrasound.",
+   "cites": [],
+   "tier": [],
+   "layer": []
+  },
+  {
+   "id": "glisson-s-capsule",
+   "name": "Glisson’s capsule",
+   "info": "The fibrous coat. Stretch here produces the right upper quadrant pain of acute hepatitis or congestion; the parenchyma itself has no nociceptors.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "parenchyma"
+   ]
+  },
+  {
+   "id": "falciform-ligament",
+   "name": "Falciform ligament",
+   "info": "A sickle-shaped double fold of peritoneum running from the anterior abdominal wall and umbilicus onto the anterosuperior surface, dividing the anatomical lobes and continuing posteriorly as the coronary ligament.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "parenchyma"
+   ]
+  },
+  {
+   "id": "ligamentum-teres",
+   "name": "Ligamentum teres",
+   "info": "The obliterated left umbilical vein, carried in the free inferior edge of the falciform and running into the umbilical fissure. It recanalises in portal hypertension — the caput medusae.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "parenchyma"
+   ]
+  },
+  {
+   "id": "caudate-lobe",
+   "name": "Caudate lobe",
+   "info": "Segment I. Between the IVC and the fissure for the ligamentum venosum, with portal supply from both sides and short veins draining directly into the IVC — hence its hypertrophy in Budd–Chiari.",
+   "cites": [],
+   "tier": [],
+   "layer": []
+  },
+  {
+   "id": "ivc",
+   "name": "IVC",
+   "info": "Runs in its groove on the posterior surface. The three hepatic veins enter it just below the diaphragm.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "hepaticVein"
+   ]
+  },
+  {
+   "id": "gallbladder",
+   "name": "Gallbladder",
+   "info": "Fundus, body, infundibulum and neck, lying in the fossa on the visceral surface along the line separating segment IVb from segment V. Capacity roughly 50 mL.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "biliary"
+   ]
+  },
+  {
+   "id": "cystic-duct",
+   "name": "Cystic duct",
+   "info": "Joins the common hepatic duct to form the common bile duct. Its spiral valves of Heister keep it patent; a stone impacted here gives biliary colic without jaundice, or Mirizzi syndrome if it compresses the CHD.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "biliary"
+   ]
+  },
+  {
+   "id": "right-hepatic-duct",
+   "name": "Right hepatic duct",
+   "info": "Drains segments V–VIII. Short extrahepatic course, and variant anatomy here — a low right posterior sectoral duct — is the commonest cause of bile duct injury at cholecystectomy.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "biliary"
+   ]
+  },
+  {
+   "id": "left-hepatic-duct",
+   "name": "Left hepatic duct",
+   "info": "Drains segments II–IV with a longer transverse extrahepatic course beneath the quadrate lobe.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "biliary"
+   ]
+  },
+  {
+   "id": "common-hepatic-duct",
+   "name": "Common hepatic duct",
+   "info": "Formed at the hilar confluence, runs in the free edge of the hepatoduodenal ligament to the cystic duct junction.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "biliary"
+   ]
+  },
+  {
+   "id": "common-bile-duct",
+   "name": "Common bile duct",
+   "info": "Roughly 6–8 cm long, ≤6 mm in diameter (a little wider after cholecystectomy and with age). Supraduodenal, then retroduodenal, then intrapancreatic before the ampulla.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "biliary"
+   ]
+  },
+  {
+   "id": "ampulla-of-vater",
+   "name": "Ampulla of Vater",
+   "info": "Where the common bile duct and pancreatic duct meet and open into the second part of the duodenum, guarded by the sphincter of Oddi. The target of ERCP cannulation.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "biliary"
+   ]
+  },
+  {
+   "id": "pancreatic-duct",
+   "name": "Pancreatic duct",
+   "info": "The main pancreatic duct (of Wirsung) runs the length of the gland from tail to head, normally ≤3 mm in the head, 2 mm in the body and 1 mm in the tail. Joins the distal common bile duct at the ampulla. The common channel explains gallstone pancreatitis.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "biliary"
+   ]
+  },
+  {
+   "id": "duodenum",
+   "name": "Duodenum",
+   "info": "Second part receives the ampulla on its posteromedial wall, at the major papilla.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "viscera"
+   ]
+  },
+  {
+   "id": "portal-trunk",
+   "name": "Portal trunk",
+   "info": "Formed behind the neck of the pancreas from the splenic and superior mesenteric veins. Normal diameter ≤13 mm; loss of respiratory variation suggests portal hypertension.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "portal"
+   ]
+  },
+  {
+   "id": "right-portal-branch",
+   "name": "Right portal branch",
+   "info": "Divides into anterior (V, VIII) and posterior (VI, VII) sectoral branches after a short extrahepatic course.",
+   "cites": [],
+   "tier": [],
+   "layer": []
+  },
+  {
+   "id": "left-portal-branch",
+   "name": "Left portal branch",
+   "info": "A long transverse portion, then the umbilical portion turning anteriorly in the umbilical fissure to supply II, III and IV.",
+   "cites": [],
+   "tier": [],
+   "layer": []
+  },
+  {
+   "id": "hepatic-artery",
+   "name": "Hepatic artery",
+   "info": "Carries oxygenated blood at systemic pressure and is the sole supply to the biliary tree.",
+   "cites": [],
+   "tier": [
+    1,
+    2
+   ],
+   "layer": []
+  },
+  {
+   "id": "hepatic-veins",
+   "name": "Hepatic veins",
+   "info": "Right, middle and left, converging on the suprahepatic IVC. Valveless and thin-walled, so they transmit right atrial pressure directly.",
+   "cites": [],
+   "tier": [],
+   "layer": []
+  },
+  {
+   "id": "thrombus",
+   "name": "Thrombus",
+   "info": "Occlusive portal thrombus. Acute: pain and lactataemia if extension reaches the mesenteric arcade. Chronic: cavernous transformation and prehepatic portal hypertension with preserved synthetic function.",
+   "cites": [],
+   "tier": [],
+   "layer": []
+  },
+  {
+   "id": "portal-collaterals",
+   "name": "Portal collaterals",
+   "info": "Cavernous transformation — a plexus of periportal veins bridging the occlusion. Takes weeks to form, so its presence dates the thrombus as chronic.",
+   "cites": [],
+   "tier": [],
+   "layer": []
+  },
+  {
+   "id": "central-vein",
+   "name": "Central vein",
+   "info": "Terminal hepatic venule. Unfenestrated endothelium, and the first structure to congest in right heart failure.",
+   "cites": [],
+   "tier": [
+    1,
+    2
+   ],
+   "layer": []
+  },
+  {
+   "id": "portal-tract",
+   "name": "Portal tract",
+   "info": "Portal venule, hepatic arteriole, bile ductule and lymphatics in a connective-tissue sheath — the triad seen on biopsy.",
+   "cites": [],
+   "tier": [
+    1,
+    2
+   ],
+   "layer": []
+  },
+  {
+   "id": "terminal-portal-venule",
+   "name": "Terminal portal venule",
+   "info": "The last portal branch before the sinusoids. Runs along the lobular margin, giving off inlet venules along its length.",
+   "cites": [],
+   "tier": [
+    2
+   ],
+   "layer": []
+  },
+  {
+   "id": "inlet-venule",
+   "name": "Inlet venule",
+   "info": "A short vessel connecting the terminal portal venule to the sinusoidal network. Its sphincter-like segment is one site of intrahepatic flow regulation.",
+   "cites": [],
+   "tier": [
+    2
+   ],
+   "layer": []
+  },
+  {
+   "id": "sinusoidal-blood-flow",
+   "name": "Sinusoidal blood flow",
+   "info": "Mixed portal and arterial blood enters at the lobular margin and crosses the plates centripetally to the central vein, losing oxygen as it goes — the basis of the zone 1 → 3 gradient.",
+   "cites": [],
+   "tier": [],
+   "layer": []
+  },
+  {
+   "id": "sinusoid",
+   "name": "Sinusoid",
+   "info": "A 7–15 µm fenestrated channel running between plates of hepatocytes from the portal to the central venule. Low pressure, low velocity, and no basement membrane.",
+   "cites": [],
+   "tier": [
+    2
+   ],
+   "layer": []
+  },
+  {
+   "id": "bile-ductule",
+   "name": "Bile ductule",
+   "info": "Receives bile from the canals of Hering at the limiting plate and carries it into the portal tract — the opposite direction to blood.",
+   "cites": [],
+   "tier": [
+    1,
+    2
+   ],
+   "layer": []
+  },
+  {
+   "id": "zone-1",
+   "name": "Zone 1",
+   "info": "Periportal. pO₂ ~60–65 mmHg. β-oxidation, gluconeogenesis, ureagenesis. Injured first by toxins delivered in high concentration (iron, yellow phosphorus) and at the limiting plate in interface hepatitis.",
+   "cites": [],
+   "tier": [
+    1,
+    2
+   ],
+   "layer": []
+  },
+  {
+   "id": "acinus-rappaport",
+   "name": "Acinus (Rappaport)",
+   "info": "The functional unit: blood from the terminal portal venule and hepatic arteriole running along the border between two lobules crosses the plates toward the central veins on either side. Zone 1 lies along that axis, zone 3 against the central veins, so one acinus spans parts of two classic lobules.",
+   "cites": [],
+   "tier": [],
+   "layer": []
+  },
+  {
+   "id": "central-vein-adjacent-lobule",
+   "name": "Central vein (adjacent lobule)",
+   "info": "The terminal hepatic venule of the neighbouring lobule — the second end-point of the acinus drawn between the two central veins.",
+   "cites": [],
+   "tier": [
+    1
+   ],
+   "layer": []
+  },
+  {
+   "id": "zone-2",
+   "name": "Zone 2",
+   "info": "Midzonal. Selective zone 2 necrosis is rare (classically yellow fever). Mouse lineage tracing places much of homeostatic hepatocyte renewal here.",
+   "cites": [],
+   "tier": [
+    1,
+    2
+   ],
+   "layer": []
+  },
+  {
+   "id": "zone-3",
+   "name": "Zone 3",
+   "info": "Pericentral. pO₂ ~30–35 mmHg with the least oxygen reserve — first to necrose in ischaemic (hypoxic) hepatitis. Glutamine synthetase- and CYP2E1-rich, so also the site of paracetamol (NAPQI) and alcohol-related injury, and of congestion in outflow obstruction.",
+   "cites": [],
+   "tier": [
+    1,
+    2
+   ],
+   "layer": []
+  },
+  {
+   "id": "limiting-plate",
+   "name": "Limiting plate",
+   "info": "The hepatocyte layer abutting the portal tract. Its erosion — interface hepatitis — is the hallmark of autoimmune hepatitis.",
+   "cites": [],
+   "tier": [
+    1
+   ],
+   "layer": []
+  },
+  {
+   "id": "fibrous-septum",
+   "name": "Fibrous septum",
+   "info": "Bridging fibrosis linking a portal tract to a central vein. It short-circuits the sinusoidal bed and raises resistance before any nodule forms.",
+   "cites": [],
+   "tier": [
+    1,
+    2
+   ],
+   "layer": []
+  },
+  {
+   "id": "fenestrated-endothelium",
+   "name": "Fenestrated endothelium",
+   "info": "Liver sinusoidal endothelial cells. Sieve plates of 50–200 nm fenestrae, no basement membrane, giving plasma direct access to the hepatocyte surface.",
+   "cites": [],
+   "tier": [
+    3
+   ],
+   "layer": []
+  },
+  {
+   "id": "fenestra",
+   "name": "Fenestra",
+   "info": "An open pore through the endothelial cytoplasm, 50–200 nm across, clustered into sieve plates. Defenestration impairs lipoprotein exchange and is an early event in steatohepatitis.",
+   "cites": [],
+   "tier": [],
+   "layer": []
+  },
+  {
+   "id": "basement-membrane",
+   "name": "Basement membrane",
+   "info": "Absent in health. Its deposition, with loss of fenestrae, is capillarisation — the change that precedes measurable portal hypertension.",
+   "cites": [],
+   "tier": [
+    3
+   ],
+   "layer": []
+  },
+  {
+   "id": "space-of-disse",
+   "name": "Space of Disse",
+   "info": "Perisinusoidal space between endothelium and hepatocyte microvilli. Site of stellate cells, matrix deposition and the origin of hepatic lymph.",
+   "cites": [],
+   "tier": [
+    2,
+    3
+   ],
+   "layer": []
+  },
+  {
+   "id": "bile-canaliculus",
+   "name": "Bile canaliculus",
+   "info": "A sealed groove between adjacent hepatocytes, closed by tight junctions. Bile flows toward the portal tract — opposite to blood.",
+   "cites": [],
+   "tier": [
+    2,
+    3
+   ],
+   "layer": []
+  },
+  {
+   "id": "tight-junction",
+   "name": "Tight junction",
+   "info": "Seals the canalicular lumen from the sinusoidal space. Its failure allows bile constituents to regurgitate into plasma.",
+   "cites": [],
+   "tier": [
+    4
+   ],
+   "layer": []
+  },
+  {
+   "id": "kupffer-cell",
+   "name": "Kupffer cell",
+   "info": "Resident intraluminal macrophage, 80–90% of the body’s fixed macrophage mass. Clears portal endotoxin; a major source of TNF-α in alcohol-related hepatitis.",
+   "cites": [],
+   "tier": [
+    3
+   ],
+   "layer": []
+  },
+  {
+   "id": "stellate-cell",
+   "name": "Stellate cell",
+   "info": "Quiescent: perisinusoidal, retinoid-laden. Activated: proliferative, contractile, α-SMA positive, secreting collagen I and III into Disse. The central effector of fibrosis.",
+   "cites": [],
+   "tier": [
+    3
+   ],
+   "layer": []
+  },
+  {
+   "id": "retinoid-droplet",
+   "name": "Retinoid droplet",
+   "info": "Vitamin A stored as retinyl esters. Loss of these droplets is the visual signature of stellate activation.",
+   "cites": [],
+   "tier": [
+    3
+   ],
+   "layer": []
+  },
+  {
+   "id": "perisinusoidal-collagen",
+   "name": "Perisinusoidal collagen",
+   "info": "Type I and III collagen laid down in the space of Disse by activated stellate cells. As it accumulates Disse widens, the endothelium loses its fenestrae and the sinusoidal lumen narrows — raising intrahepatic resistance and slowing flow before any nodule forms.",
+   "cites": [],
+   "tier": [
+    2,
+    3
+   ],
+   "layer": []
+  },
+  {
+   "id": "collagen-fibril",
+   "name": "Collagen fibril",
+   "info": "Type I and III collagen deposited by activated stellate cells, strictly within the space of Disse. Increases sinusoidal resistance before any nodule forms.",
+   "cites": [],
+   "tier": [],
+   "layer": []
+  },
+  {
+   "id": "erythrocyte",
+   "name": "Erythrocyte",
+   "info": "Sinusoidal transit is slow and the lumen narrow, maximising contact time with the hepatocyte surface.",
+   "cites": [],
+   "tier": [
+    3
+   ],
+   "layer": []
+  },
+  {
+   "id": "hepatocyte-plate",
+   "name": "Hepatocyte plate",
+   "info": "One cell thick in the adult, flanked by sinusoids on both faces, with canaliculi sealed between adjacent cells.",
+   "cites": [],
+   "tier": [
+    1,
+    2,
+    3
+   ],
+   "layer": []
+  },
+  {
+   "id": "microvilli",
+   "name": "Microvilli",
+   "info": "Project from the sinusoidal pole into the space of Disse, amplifying the uptake surface roughly sixfold. These are hepatocyte structures; the fenestrae belong to the endothelium.",
+   "cites": [],
+   "tier": [],
+   "layer": []
+  },
+  {
+   "id": "hepatocyte",
+   "name": "Hepatocyte",
+   "info": "Cuboidal, polarised, polyploid in a third of cases. Roughly 80% of liver mass and effectively all of its synthetic and detoxifying work.",
+   "cites": [],
+   "tier": [
+    4
+   ],
+   "layer": []
+  },
+  {
+   "id": "nucleus",
+   "name": "Nucleus",
+   "info": "Often polyploid; binucleation increases with age and regenerative stress.",
+   "cites": [],
+   "tier": [
+    4
+   ],
+   "layer": []
+  },
+  {
+   "id": "nucleolus",
+   "name": "Nucleolus",
+   "info": "Prominent, reflecting the ribosomal output needed for albumin and clotting-factor synthesis.",
+   "cites": [],
+   "tier": [
+    4
+   ],
+   "layer": []
+  },
+  {
+   "id": "mitochondria",
+   "name": "Mitochondria",
+   "info": "Up to 2 000 per cell, ~20% of cytoplasmic volume. β-oxidation, urea cycle, oxidative phosphorylation.",
+   "cites": [],
+   "tier": [
+    4
+   ],
+   "layer": []
+  },
+  {
+   "id": "endoplasmic-reticulum",
+   "name": "Endoplasmic reticulum",
+   "info": "Rough ER for albumin and clotting factors; smooth ER for phase I oxidation and glucuronidation. Smooth ER proliferates with enzyme induction.",
+   "cites": [],
+   "tier": [
+    4
+   ],
+   "layer": []
+  },
+  {
+   "id": "ribosome",
+   "name": "Ribosome",
+   "info": "Bound to rough ER. The liver exports roughly 12 g of albumin a day from this machinery.",
+   "cites": [],
+   "tier": [
+    4
+   ],
+   "layer": []
+  },
+  {
+   "id": "lipid-droplets",
+   "name": "Lipid droplets",
+   "info": "Triglyceride stores. Macrovesicular accumulation displacing the nucleus is the histological signature of steatosis.",
+   "cites": [],
+   "tier": [
+    4
+   ],
+   "layer": []
+  },
+  {
+   "id": "glycogen",
+   "name": "Glycogen",
+   "info": "Cytoplasmic rosettes, depleted within 24–48 hours of fasting.",
+   "cites": [],
+   "tier": [
+    4
+   ],
+   "layer": []
+  },
+  {
+   "id": "canalicular-membrane",
+   "name": "Canalicular membrane",
+   "info": "Microvillous, sealed by tight junctions, carrying BSEP, MRP2 and MDR3. Only ~13% of the cell surface but the whole of biliary excretion.",
+   "cites": [],
+   "tier": [
+    4
+   ],
+   "layer": []
+  },
+  {
+   "id": "canalicular-transporter",
+   "name": "Canalicular transporter",
+   "info": "BSEP (bile salts), MRP2 (conjugated bilirubin), MDR3 (phosphatidylcholine). ATP-dependent and rate-limiting for bile flow.",
+   "cites": [],
+   "tier": [
+    4
+   ],
+   "layer": []
+  },
+  {
+   "id": "sinusoidal-membrane",
+   "name": "Sinusoidal membrane",
+   "info": "Microvillous, facing the space of Disse. Carries NTCP and the OATPs — the uptake pole.",
+   "cites": [],
+   "tier": [
+    4
+   ],
+   "layer": []
+  },
+  {
+   "id": "basolateral-transporter",
+   "name": "Basolateral transporter",
+   "info": "NTCP for conjugated bile salts; OATP1B1/1B3 for organic anions. OATP1B1 polymorphism underlies simvastatin myopathy risk.",
+   "cites": [],
+   "tier": [
+    4
+   ],
+   "layer": []
+  },
+  {
+   "id": "segment-i",
+   "name": "Segment I",
+   "info": "Caudate lobe. Portal supply from both right and left branches, venous drainage directly into the IVC by short veins, so it is spared in Budd–Chiari and hypertrophies.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "parenchyma"
+   ]
+  },
+  {
+   "id": "segment-ii",
+   "name": "Segment II",
+   "info": "Left lateral superior. With III forms the left lateral section — the graft in a paediatric living-donor transplant.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "parenchyma"
+   ]
+  },
+  {
+   "id": "segment-iii",
+   "name": "Segment III",
+   "info": "Left lateral inferior, anterior to II. Its duct is the target for a segment III bypass in unresectable hilar obstruction.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "parenchyma"
+   ]
+  },
+  {
+   "id": "segment-iva",
+   "name": "Segment IVa",
+   "info": "Left medial superior, between the umbilical fissure and the middle hepatic vein. Abuts the diaphragm.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "parenchyma"
+   ]
+  },
+  {
+   "id": "segment-ivb",
+   "name": "Segment IVb",
+   "info": "Left medial inferior, the quadrate lobe, lying against the gallbladder fossa — which is why gallbladder cancer invades here first.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "parenchyma"
+   ]
+  },
+  {
+   "id": "segment-v",
+   "name": "Segment V",
+   "info": "Right anterior inferior, adjacent to the gallbladder fossa on the right side of Cantlie’s line.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "parenchyma"
+   ]
+  },
+  {
+   "id": "segment-vi",
+   "name": "Segment VI",
+   "info": "Right posterior inferior. Reached percutaneously with least difficulty; a common site for radiofrequency ablation.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "parenchyma"
+   ]
+  },
+  {
+   "id": "segment-vii",
+   "name": "Segment VII",
+   "info": "Right posterior superior, below the diaphragm and hidden behind the right lobe on a frontal view — often a blind spot on ultrasound.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "parenchyma"
+   ]
+  },
+  {
+   "id": "segment-viii",
+   "name": "Segment VIII",
+   "info": "Right anterior superior, the largest single segment, immediately beneath the dome.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "parenchyma"
+   ]
+  }
+ ]
+}
