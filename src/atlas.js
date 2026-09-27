@@ -4746,36 +4746,22 @@ function aoFrame(pr){
   if(gtao.enabled){ gtao.updateGtaoMaterial({radius:AO.radius*tiers[0].group.scale.x}); gtao.blendIntensity=AO.base*AO.k; }
   const bg=scene.background; scene.background=AO_BG; composer.render(); scene.background=bg; return true;
 }
-/* v42 quality */
+/* v42 quality. v44: no real-time shadow maps anywhere (renderer, lights and meshes); contact grounding comes from the
+   baked self-AO in the liver maps and the screen-space GTAO at rest. High quality = more AO samples and full AO strength. */
 const QUAL={high:false, phone:aoPhone, frame:0};
-renderer.shadowMap.type=THREE.PCFSoftShadowMap; renderer.shadowMap.autoUpdate=true;
-{ const k=LIGHTS.key; k.shadow.mapSize.set(2048,2048); k.shadow.bias=-0.0004; k.shadow.normalBias=0.012; k.shadow.radius=3; scene.add(k.target); }
-function qualSet(h){ QUAL.high=!!h&&!aoPhone(); renderer.shadowMap.enabled=QUAL.high; LIGHTS.key.castShadow=QUAL.high;
+renderer.shadowMap.enabled=false;
+for(const k in LIGHTS) if(LIGHTS[k].isLight) LIGHTS[k].castShadow=false;
+function qualSet(h){ QUAL.high=!!h&&!aoPhone();
   AO.base=QUAL.high?1.0:0.8; gtao.updateGtaoMaterial({samples:QUAL.high?24:16});
-  scene.traverse(o=>{ if(o.material){ (Array.isArray(o.material)?o.material:[o.material]).forEach(m=>{ if(m) m.needsUpdate=true; }); } });
   const b=document.getElementById('btn-q'); if(b){ b.textContent='Quality: '+(QUAL.high?'High':'Standard'); b.setAttribute('aria-pressed',QUAL.high?'true':'false'); b.hidden=aoPhone(); }
   try{ localStorage.setItem('hsa-q',QUAL.high?'h':'s'); }catch(e){} }
-function qualShadows(){
-  if(!QUAL.high||!tiers[0].built) return;
-  const g=tiers[0].group; if(!g.visible){ LIGHTS.key.castShadow=false; return; } LIGHTS.key.castShadow=true;
-  if(ROD.on||(QUAL.frame++%10)===0){   // v43: every drawn frame (draws are rarer with render-on-demand)   // caster/receiver flags follow ghosting and layer visibility
-    g.traverse(o=>{ if(!o.isMesh||o.isInstancedMesh) { if(o.isInstancedMesh) o.castShadow=o.receiveShadow=false; return; }
-      const m=Array.isArray(o.material)?o.material[0]:o.material; let gk=1; for(let n=o;n;n=n.parent) gk*=n.userData.ghostK??1;
-      const solid=!!m&&m.opacity>=0.97&&m.depthWrite!==false&&m.blending===THREE.NormalBlending&&gk>=1&&!o.userData.noAO;
-      o.castShadow=solid; o.receiveShadow=!!m&&m.blending===THREE.NormalBlending; }); }
-  // fit the orthographic shadow camera to the macroscopic scene in world space (it zooms)
-  const bs=QUAL.bs||(QUAL.bs=new THREE.Sphere()); new THREE.Box3().setFromObject(tiers[0].inner.userData.L.parenchyma).getBoundingSphere(bs);
-  const k=LIGHTS.key, dir=new THREE.Vector3(...R36.key.slice(2,5)).normalize(), r=bs.radius*1.35;
-  k.target.position.copy(bs.center); k.position.copy(bs.center).addScaledVector(dir,r*3); k.target.updateMatrixWorld();
-  const c=k.shadow.camera; c.left=-r; c.right=r; c.top=r; c.bottom=-r; c.near=r*0.5; c.far=r*5.5; c.updateProjectionMatrix();
-}
 document.getElementById('btn-q').addEventListener('click',()=>qualSet(!QUAL.high));
 { let q='h'; try{ q=localStorage.getItem('hsa-q')||'h'; }catch(e){} qualSet(q==='h'); }
 addEventListener('resize',()=>{ if(aoPhone()&&QUAL.high) qualSet(false); const b=document.getElementById('btn-q'); if(b) b.hidden=aoPhone(); });
 let booted=false;
 
 /* v43 render-on-demand. The frame loop still runs every animation frame (simulation ticks, flow, overlays), but the
-   WebGL render (including GTAO and shadows) is skipped when nothing visible has changed. "Changed" is measured, not
+   WebGL render (including GTAO) is skipped when nothing visible has changed. "Changed" is measured, not
    declared: a signature over the camera, canvas size, and every visible object's world matrix, material state and
    buffer versions (plus skin/shader uniforms). After any change the scene keeps rendering for ROD.tail ms so eased
    effects (the AO fade-in, cross-fades) finish, and a safety frame is drawn every ROD.idle ms regardless. */
@@ -4791,7 +4777,7 @@ function rodMat(m){ if(!m) return 0; let t=m.version*3+m.opacity*17+(m.visible?1
 function sceneSig(){
   scene.updateMatrixWorld(); camera.updateMatrixWorld();
   let a=rodNum(camera.matrixWorld)+rodNum(camera.projectionMatrix)*0.7+renderer.domElement.width*13+renderer.domElement.height*17
-    +renderer.getPixelRatio()*19+renderer.toneMappingExposure*23+(renderer.shadowMap.enabled?29:0)+rodNum(scene.background), b=0, k=0;
+    +renderer.getPixelRatio()*19+renderer.toneMappingExposure*23+rodNum(scene.background), b=0, k=0;
   const dbg=ROD.debug?new Map():null;
   const walk=o=>{ if(!o.visible) return; k++; const a0=a, b0=b;
     const e=o.matrixWorld.elements, q=x=>Math.round(x*1e6);   // quantised: controls.update() leaves ~1e-20 jitter
@@ -4802,8 +4788,7 @@ function sceneSig(){
         b+=(g.drawRange.count===Infinity?0:g.drawRange.count)+g.drawRange.start*3; }
       if(o.isInstancedMesh){ b+=o.count*41+o.instanceMatrix.version*43+(o.instanceColor?o.instanceColor.version*47:0); }
       if(o.morphTargetInfluences) for(let i=0;i<o.morphTargetInfluences.length;i++) b+=o.morphTargetInfluences[i]*(i+3);
-      b+=(o.castShadow?67:0)+(o.receiveShadow?71:0);
-    } else if(o.isLight){ b+=o.intensity*53+rodNum(o.color)+(o.castShadow?59:0); }
+    } else if(o.isLight){ b+=o.intensity*53+rodNum(o.color); }
     if(dbg) dbg.set(o,(a-a0)+'/'+(b-b0));
     const c=o.children; for(let i=0;i<c.length;i++) walk(c[i]); };
   walk(scene);
@@ -4957,7 +4942,7 @@ function frame(){
     PERF.moving = now-PERF.lastMoveT<200;
     const pr = PERF.moving ? PERF.move : PERF.full;
     if(pr!==renderer.getPixelRatio()) renderer.setPixelRatio(pr);
-    if(rodShouldDraw(now)){ ROD.drawn++; ROD.lastDraw=now; qualShadows();
+    if(rodShouldDraw(now)){ ROD.drawn++; ROD.lastDraw=now;
       const r0=performance.now(); if(!aoFrame(pr)) renderer.render(scene,camera); PERF.rMs+=performance.now()-r0; rodAfterDraw(); } else ROD.skipped++; }
 
   /* overlays */

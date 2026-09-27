@@ -1,5 +1,8 @@
 # Changelog
 
+## v44 — scene, pancreas, falciform, liver material (in progress)
+- Shadows: real-time shadow maps removed everywhere (renderer, lights, meshes); grounding comes from AO. "Quality: High" now means more AO samples.
+
 ## v43 — foundation (27 Sept 2026)
 No intended visual change from v42.
 - Source moved to this repository: split into `src/` (markup, styles, application, boot), `data/` and `assets/`; `build.py` assembles the page. Built from the published v42 page; the split build was byte-identical to v42 before any change.
