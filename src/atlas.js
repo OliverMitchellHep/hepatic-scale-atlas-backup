@@ -1358,9 +1358,16 @@ function surfaceVessels(){
 }
 
 /* CT viscera: one TotalSegmentator case, same frame and scale as the parenchyma, so contacts are native.
-   Stomach remodelled as a textbook J on this patient's landmarks (GOJ, fundus, pylorus); pancreas thinned with a
-   shortened tail. The spleen is centred on its own centroid so the portal-pressure growth scales it in place.
+   Stomach remodelled as a textbook J on this patient's landmarks (GOJ, fundus, pylorus); pancreas rebuilt in v44
+   (see PANC_MPD). The spleen is centred on its own centroid so the portal-pressure growth scales it in place.
    Each organ is one switchable object; the kidneys carry short renal artery and vein segments. */
+/* v44 pancreas remodel (pipeline/pancreas44.py): the gland is one smooth arc on this patient's landmarks (head in the C-loop
+   right of the SMV, uncinate behind it, neck in front of the confluence, body across the aorta at L1–L2 behind the stomach,
+   tail rising to the splenic hilum); it replaces the thinned CT pancreas, whose body turned ~90° straight back. The splenic
+   vein follows the posterior (tail: posterosuperior) surface of the new body and tail from the hilum to the confluence, and the
+   main pancreatic duct runs on the gland's axis, then through the head to the ampulla. CT-frame points. */
+const SPLV_PTS=(hilum,conf)=>[hilum,V3(1.423,-0.043,-0.454),V3(1.323,-0.097,-0.405),V3(1.223,-0.152,-0.366),V3(1.128,-0.206,-0.315),V3(1.029,-0.251,-0.247),V3(0.934,-0.290,-0.159),V3(0.853,-0.325,-0.064),V3(0.777,-0.370,0.035),V3(0.713,-0.411,0.135),V3(0.651,-0.447,0.228),V3(0.585,-0.481,0.318),V3(0.514,-0.488,0.407),conf];
+const PANC_MPD=[V3(1.500,-0.135,-0.430),V3(1.401,-0.199,-0.361),V3(1.294,-0.265,-0.296),V3(1.188,-0.321,-0.230),V3(1.087,-0.365,-0.148),V3(0.999,-0.401,-0.049),V3(0.921,-0.430,0.066),V3(0.852,-0.451,0.182),V3(0.781,-0.467,0.298),V3(0.702,-0.481,0.408),V3(0.610,-0.489,0.518),V3(0.503,-0.497,0.604),V3(0.372,-0.514,0.645),V3(0.243,-0.558,0.641),V3(0.137,-0.641,0.603),V3(0.050,-0.740,0.550)];
 let CT_ORGANS=null;
 function ctViscera(L,gutMat){
   const Vd=LDL.viscera, qs=LDL.qs, out={};
@@ -1614,7 +1621,7 @@ function buildMacro(){
     const m=metaMesh(metaTube(cysPts,t=>0.030+0.0095*(1-sm(t,0.06,0.26))+0.012*sm(t,0.84,1),80,24,false,0),
       mat(C.bile,{roughness:0.32,clearcoat:0.7,emissive:new THREE.Color(C.bile).multiplyScalar(0.16)}),'Cystic duct');
     flipWinding(m.geometry); L.biliary.add(m); bilMeshes.push({m,kind:'cystic'}); }
-  const MPD=[V3(1.494,-0.151,-0.469),V3(1.394,-0.249,-0.361),V3(1.275,-0.350,-0.264),V3(1.136,-0.436,-0.201),V3(0.992,-0.448,-0.149),V3(0.880,-0.428,0.011),V3(0.731,-0.382,0.295),V3(0.557,-0.392,0.612),V3(0.361,-0.511,0.617),V3(0.232,-0.651,0.540),V3(0.110,-0.790,0.510),V3(0.020,-0.950,0.480),V3(-0.100,-1.080,0.400),V3(-0.200,-1.100,0.310),amp0];
+  const MPD=[...PANC_MPD,V3(-0.050,-0.920,0.450),V3(-0.150,-1.040,0.350),amp0];
   duct(MPD,0.010,0.021,'Pancreatic duct',140,'pd');
   const amp=tag(new THREE.Mesh(new THREE.TorusGeometry(0.055,0.022,10,20),
     mat(0xD8C05C,{roughness:0.4,clearcoat:0.6,
@@ -1670,10 +1677,10 @@ function buildMacro(){
   const PVe=new Vessels();
   PVe.path([SMV0,PT(0.18,-1.80,-0.30),CONF],0.068,0.076,'Superior mesenteric vein');
   const SPL0=PT(1.62,-1.18,-0.72);
-  PVe.path([SPL0,V3(1.564,-0.071,-0.550),V3(1.470,-0.175,-0.461),V3(1.412,-0.232,-0.381),V3(1.348,-0.291,-0.336),V3(1.268,-0.333,-0.314),V3(1.192,-0.367,-0.307),V3(1.126,-0.389,-0.299),V3(1.077,-0.397,-0.281),V3(1.021,-0.397,-0.262),V3(0.968,-0.366,-0.211),V3(0.904,-0.341,-0.140),V3(0.801,-0.305,0.046),V3(0.696,-0.299,0.240),PT(0.55,-1.42,-0.55),CONF],0.054,0.064,'Splenic vein');
+  PVe.path(SPLV_PTS(SPL0,CONF),0.054,0.064,'Splenic vein');
   const nearOn=(pts,q)=>{ const c=new THREE.CatmullRomCurve3(pts); let bd=1e9,bp=null;
     for(let i=0;i<=400;i++){ const p=c.getPoint(i/400), dd=p.distanceToSquared(q); if(dd<bd){ bd=dd; bp=p; } } return bp; };
-  const SPLp=[SPL0,V3(1.564,-0.071,-0.550),V3(1.470,-0.175,-0.461),V3(1.412,-0.232,-0.381),V3(1.348,-0.291,-0.336),V3(1.268,-0.333,-0.314),V3(1.192,-0.367,-0.307),V3(1.126,-0.389,-0.299),V3(1.077,-0.397,-0.281),V3(1.021,-0.397,-0.262),V3(0.968,-0.366,-0.211),V3(0.904,-0.341,-0.140),V3(0.801,-0.305,0.046),V3(0.696,-0.299,0.240),PT(0.55,-1.42,-0.55),CONF];
+  const SPLp=SPLV_PTS(SPL0,CONF);
   const IMV0=nearOn(SPLp,PT(0.72,-1.39,-0.60)), LGV0=nearOn(SPLp,PT(0.15,-1.30,-0.37));
   PVe.path([PT(0.70,-2.10,-0.62),PT(0.72,-1.75,-0.62),PT(0.72,-1.39,-0.60).lerp(IMV0,0.5),IMV0],0.024,0.030,'Inferior mesenteric vein');
   PVe.path([PT(0.56,-0.62,-0.42),PT(0.40,-0.98,-0.42),PT(0.15,-1.30,-0.37).lerp(LGV0,0.5),LGV0],0.017,0.023,'Left gastric vein');
@@ -3634,7 +3641,7 @@ function pancBuild(P){
       const d=q.clone().sub(a).dot(dir); if(d>bs){ bs=d; best=q.clone(); } }
     m.position.copy(best||a).addScaledVector(dir,r*0.70); m.scale.set(1,0.85,1); pcy.add(m); }
   // splenic vein thrombus
-  const spc=new THREE.CatmullRomCurve3([K.SPL0,V3(1.564,-0.071,-0.550),V3(1.470,-0.175,-0.461),V3(1.412,-0.232,-0.381),V3(1.348,-0.291,-0.336),V3(1.268,-0.333,-0.314),V3(1.192,-0.367,-0.307),V3(1.126,-0.389,-0.299),V3(1.077,-0.397,-0.281),V3(1.021,-0.397,-0.262),V3(0.968,-0.366,-0.211),V3(0.904,-0.341,-0.140),V3(0.801,-0.305,0.046),V3(0.696,-0.299,0.240),PT(0.55,-1.42,-0.55),K.CONF]), sp=[]; for(let i=0;i<=24;i++) sp.push(spc.getPointAt(0.08+0.72*i/24));
+  const spc=new THREE.CatmullRomCurve3(SPLV_PTS(K.SPL0,K.CONF)), sp=[]; for(let i=0;i<=24;i++) sp.push(spc.getPointAt(0.08+0.72*i/24));
   const svt=metaMesh(metaTube(sp,t=>0.066*(1+0.07*Math.sin(t*41)+0.04*Math.sin(t*97)),120,16,true,0),mat(0x8A1024,{roughness:0.5,clearcoat:0.5,clearcoatRoughness:0.3,emissive:new THREE.Color(0x7A0E20)}),'Splenic vein thrombosis');
   svt.userData.keepInGhost=true;
   for(const o of [halo,calc,pcy]){ o.visible=false; L.viscera.add(o); }
