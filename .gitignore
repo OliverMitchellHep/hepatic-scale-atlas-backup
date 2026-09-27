@@ -3,3 +3,4 @@ __pycache__/
 *.npy
 tests/out/
 node_modules/
+pipeline/work44/

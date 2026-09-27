@@ -299,7 +299,7 @@ const SKIN_TEX=(()=>{
   }
   const t=new THREE.DataTexture(D,N,N,THREE.RGBAFormat);
   t.wrapS=t.wrapT=THREE.RepeatWrapping; t.magFilter=THREE.LinearFilter; t.minFilter=THREE.LinearMipmapLinearFilter;
-  t.generateMipmaps=true; t.anisotropy=4; t.needsUpdate=true; return t;
+  t.generateMipmaps=true; t.anisotropy=renderer.capabilities.getMaxAnisotropy(); t.needsUpdate=true; return t;   // v44: device maximum (was 4)
 })();
 /* per-organ settings. S: repeats per model unit for the fine / mid / vessel samples.
    K: bump from lobulation, bump from undulation, albedo mottling, bump from vessels.
@@ -325,7 +325,7 @@ function skin(m,kind,rest=false){
   m.envMapIntensity=(SKIN_ENV[kind]??1)*R36.env; m.userData.skinKind=kind;
   const U={tSkin:{value:SKIN_TEX}, uSkS:{value:new THREE.Vector3(...k.S)}, uSkK:{value:new THREE.Vector4(...k.K)},
            uSkK2:{value:new THREE.Vector3(...k.K2)}, uSkVein:{value:new THREE.Color(k.vein)}, uSkRim:{value:new THREE.Color(k.rim).multiplyScalar(0.22)}, uSkLob:{value:1}, uSkDbg:{value:0},
-           tLvA:{value:null}, tLvO:{value:null}, uLvTis:{value:new THREE.Color(C.tissue)}, uLvMean:{value:new THREE.Color(0x4A2023)}, uLvNod:{value:0}};
+           tLvA:{value:null}, tLvO:{value:null}, tOrgO:{value:null}, uLvTis:{value:new THREE.Color(C.tissue)}, uLvMean:{value:new THREE.Color(0x4A2023)}, uLvNod:{value:0}};
   m.userData.skin=U;
   if(rest) m.defines=Object.assign(m.defines||{},{SKIN_REST:''});
   if(lite) m.defines=Object.assign(m.defines||{},{SKIN_LITE:''});
@@ -338,7 +338,7 @@ function skin(m,kind,rest=false){
     sh.fragmentShader=sh.fragmentShader
       .replace('#include <common>',`#include <common>
 uniform sampler2D tSkin; uniform vec3 uSkS; uniform vec4 uSkK; uniform vec3 uSkK2; uniform vec3 uSkVein; uniform vec3 uSkRim; uniform float uSkLob; uniform float uSkDbg;
-uniform sampler2D tLvA; uniform sampler2D tLvO; uniform vec3 uLvTis; uniform vec3 uLvMean; uniform float uLvNod;
+uniform sampler2D tLvA; uniform sampler2D tLvO; uniform vec3 uLvTis; uniform vec3 uLvMean; uniform float uLvNod; uniform sampler2D tOrgO;
 varying vec3 vSkP; varying vec3 vSkN;
 vec4 skTri(float s, vec3 w){ vec3 p=vSkP*s;
   return texture2D(tSkin,p.yz)*w.x+texture2D(tSkin,p.zx+vec2(0.37,0.11))*w.y+texture2D(tSkin,p.xy+vec2(0.71,0.53))*w.z; }
@@ -375,17 +375,19 @@ diffuseColor.rgb*=mix(lvH,vec3(lvL),lvW)*mix(1.0,0.85+0.15*lvO.r,uLvNod);
 #endif
 diffuseColor.rgb=mix(diffuseColor.rgb,vec3(1.0,0.1,0.1),uSkDbg*skMat);
 #endif`)
-      .replace('#include <roughnessmap_fragment>','#include <roughnessmap_fragment>\nroughnessFactor=clamp(roughnessFactor*(1.0+uSkK2.y*skAF*(0.5-skF.r)*2.0),0.04,1.0);\n#ifdef SKIN_TEX42\nroughnessFactor=clamp(roughnessFactor+(lvO.g-0.36)*(1.0-0.5*lvW),0.08,1.0);\n#endif')
+      .replace('#include <roughnessmap_fragment>','#include <roughnessmap_fragment>\n#ifdef SKIN_ORG44\nvec4 orgO=texture2D(tOrgO,vNormalMapUv); roughnessFactor=orgO.g;\n#endif\nroughnessFactor=clamp(roughnessFactor*(1.0+uSkK2.y*skAF*(0.5-skF.r)*2.0),0.04,1.0);\n#ifdef SKIN_TEX42\nroughnessFactor=clamp(roughnessFactor+(lvO.g-0.36)*(1.0-0.5*lvW),0.08,1.0);\n#endif')
       .replace('#include <normal_fragment_maps>','#include <normal_fragment_maps>\nnormal=skPerturb(-vViewPosition,normal,vec2(dFdx(skH),dFdy(skH)),faceDirection);')
       .replace('#include <clearcoat_normal_fragment_begin>','#include <clearcoat_normal_fragment_begin>\n#ifdef USE_CLEARCOAT\nclearcoatNormal=normalize(mix(nonPerturbedNormal,normal,uSkK2.z));\n#endif')
-      .replace('#include <lights_physical_fragment>','#include <lights_physical_fragment>\n#ifdef SKIN_LIVER\nmaterial.roughness=mix(material.roughness,0.74,skMat);\n#ifdef USE_CLEARCOAT\nmaterial.clearcoat*=1.0-0.85*skMat; material.clearcoatRoughness=mix(material.clearcoatRoughness,0.6,skMat);\n#ifdef SKIN_TEX42\nmaterial.clearcoat*=mix(0.35,1.0,lvO.b); material.clearcoatRoughness=clamp(material.clearcoatRoughness+0.22*(1.0-lvO.b),0.0,1.0);\n#endif\n#endif\n#ifdef USE_SHEEN\nmaterial.sheenColor*=1.0-0.7*skMat;\n#endif\n#endif')
+      .replace('#include <lights_physical_fragment>','#include <lights_physical_fragment>\n#if defined(SKIN_ORG44)&&defined(USE_CLEARCOAT)\nmaterial.clearcoat*=orgO.b;\n#endif\n#ifdef SKIN_LIVER\nmaterial.roughness=mix(material.roughness,0.74,skMat);\n#ifdef USE_CLEARCOAT\nmaterial.clearcoat*=1.0-0.85*skMat; material.clearcoatRoughness=mix(material.clearcoatRoughness,0.6,skMat);\n#ifdef SKIN_TEX42\nmaterial.clearcoat*=mix(0.35,1.0,lvO.b); material.clearcoatRoughness=clamp(material.clearcoatRoughness+0.22*(1.0-lvO.b),0.0,1.0);\n#endif\n#endif\n#ifdef USE_SHEEN\nmaterial.sheenColor*=1.0-0.7*skMat;\n#endif\n#endif')
       .replace('#include <emissivemap_fragment>','#include <emissivemap_fragment>\n{ float skFr=1.0-clamp(dot(normal,normalize(vViewPosition)),0.0,1.0); totalEmissiveRadiance+=uSkRim*skFr*skFr*(0.6+0.8*skM.g); }');
   };
   if(kind==='dia'){ const ob=m.onBeforeCompile; m.onBeforeCompile=sh=>{ ob(sh); sh.fragmentShader=sh.fragmentShader.replace('#include <lights_fragment_begin>',
     '{ float tw=smoothstep(0.50,0.72,vColor.g); material.roughness=mix(material.roughness,0.26,tw); }\n#include <lights_fragment_begin>'); }; }   // v41: glossy central tendon
+  { const ob=m.onBeforeCompile; m.onBeforeCompile=sh=>{ ob(sh); sh.fragmentShader=sh.fragmentShader.replace('#include <aomap_fragment>',
+    '#include <aomap_fragment>\n#ifdef SKIN_ORG44\n{ reflectedLight.indirectDiffuse*=mix(1.0,orgO.r,0.8); reflectedLight.indirectSpecular*=mix(1.0,orgO.r,0.5); }\n#endif'); }; }
   if(liv){ const ob=m.onBeforeCompile; m.onBeforeCompile=sh=>{ ob(sh); sh.fragmentShader=sh.fragmentShader.replace('#include <aomap_fragment>',
     '#include <aomap_fragment>\n#ifdef SKIN_TEX42\n{ float lvAO=mix(1.0,lvO.r,0.85); reflectedLight.indirectDiffuse*=lvAO; reflectedLight.indirectSpecular*=mix(1.0,lvO.r,0.6); }\n#endif'); }; }
-  m.customProgramCacheKey=()=>'skin'+(rest?'R':'')+(lite?'L':'')+(liv?'V':'')+(kind==='dia'?'D':'')+(m.defines&&m.defines.SKIN_TEX42!==undefined?'T':'');
+  m.customProgramCacheKey=()=>'skin'+(rest?'R':'')+(lite?'L':'')+(liv?'V':'')+(kind==='dia'?'D':'')+(m.defines&&m.defines.SKIN_TEX42!==undefined?'T':'')+(m.defines&&m.defines.SKIN_ORG44!==undefined?'O':'');
   m.needsUpdate=true; return m;
 }
 function tube(pts,r,seg=24,rad=8){
@@ -1368,13 +1370,39 @@ function surfaceVessels(){
    main pancreatic duct runs on the gland's axis, then through the head to the ampulla. CT-frame points. */
 const SPLV_PTS=(hilum,conf)=>[hilum,V3(1.423,-0.043,-0.454),V3(1.323,-0.097,-0.405),V3(1.223,-0.152,-0.366),V3(1.128,-0.206,-0.315),V3(1.029,-0.251,-0.247),V3(0.934,-0.290,-0.159),V3(0.853,-0.325,-0.064),V3(0.777,-0.370,0.035),V3(0.713,-0.411,0.135),V3(0.651,-0.447,0.228),V3(0.585,-0.481,0.318),V3(0.514,-0.488,0.407),conf];
 const PANC_MPD=[V3(1.500,-0.135,-0.430),V3(1.401,-0.199,-0.361),V3(1.294,-0.265,-0.296),V3(1.188,-0.321,-0.230),V3(1.087,-0.365,-0.148),V3(0.999,-0.401,-0.049),V3(0.921,-0.430,0.066),V3(0.852,-0.451,0.182),V3(0.781,-0.467,0.298),V3(0.702,-0.481,0.408),V3(0.610,-0.489,0.518),V3(0.503,-0.497,0.604),V3(0.372,-0.514,0.645),V3(0.243,-0.558,0.641),V3(0.137,-0.641,0.603),V3(0.050,-0.740,0.550)];
+/* v44: baked organ maps (pipeline/bake44.py): albedo, tangent-space normal and ORM (R occlusion, G roughness, B clearcoat /
+   wetness), 2K on desktop and 1K on phones, chosen at load. They replace the organ's procedural skin detail (the shared
+   512² triplanar atlas and its screen-derivative bump, which read as a soft blur on the pancreas: its lobulation bump was
+   5–20× the other organs' and faded out at normal viewing distance). The material colour goes to white so the map carries
+   the hue; pathology tints (pancreatitis) still multiply it. Until the maps arrive the procedural skin stays. */
+const ORG_TEX={};
+function organTex44(m,organ,o){
+  const phone=innerWidth<=860||(innerHeight<=520&&matchMedia('(pointer:coarse)').matches), tag=phone?'1k':'2k';
+  const ld=new THREE.TextureLoader(), an=renderer.capabilities.getMaxAnisotropy();
+  const L=(f,cs)=>new Promise((ok,no)=>ld.load(`${organ}44_${f}_${tag}.webp`,t=>{ t.colorSpace=cs; t.anisotropy=an; ok(t); },undefined,()=>no(new Error(f))));
+  Promise.all([L('albedo',THREE.SRGBColorSpace),L('normal',THREE.NoColorSpace),L('orm',THREE.NoColorSpace)]).then(([A,N,O])=>{
+    const U=m.userData.skin; m.map=A; m.normalMap=N; m.normalScale=new THREE.Vector2(1,1);
+    if(U){ U.tOrgO.value=O; U.uSkK.value.set(0,0,0,0); U.uSkK2.value.set(0,0,0.75); }   // clearcoat follows the baked relief
+    m.color.set(0xffffff); m.emissive.copy(new THREE.Color(0xE8B080).multiplyScalar(o.emissive)); m.clearcoat=o.clearcoat; m.clearcoatRoughness=o.clearcoatRoughness;
+    m.defines=Object.assign(m.defines||{},{SKIN_ORG44:''}); m.needsUpdate=true; ORG_TEX[organ]=true;
+    const P=tiers[0].built&&tiers[0].inner.userData.P; if(organ==='pancreas'&&P&&P.panc){ P.panc.base.copy(m.color); P.panc.baseE.copy(m.emissive); P.panc.key=''; }
+  }).catch(e=>console.warn(organ+' maps unavailable:',e.message));
+  return m;
+}
 let CT_ORGANS=null;
 function ctViscera(L,gutMat){
   const Vd=LDL.viscera, qs=LDL.qs, out={};
   const geom=(d,c)=>{ const p16=new Int16Array(b64(d.pos).buffer), ix=new Uint16Array(b64(d.idx).buffer), P=new Float32Array(p16.length);
     for(let i=0;i<p16.length;i++) P[i]=p16[i]*qs-(c?c[i%3]:0);
     const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.BufferAttribute(P,3));
-    g.setIndex(new THREE.BufferAttribute(ix,1)); g.computeVertexNormals(); g.computeBoundingSphere(); return g; };
+    g.setIndex(new THREE.BufferAttribute(ix,1));
+    if(d.uv){ const q=new Uint16Array(b64(d.uv).buffer), uv=new Float32Array(q.length); for(let i=0;i<q.length;i++) uv[i]=q[i]/65535;
+      g.setAttribute('uv',new THREE.BufferAttribute(uv,2)); const dup=new Uint16Array(b64(d.dup).buffer), n0=d.n0, cvn=g.computeVertexNormals.bind(g);
+      g.computeVertexNormals=()=>{ cvn(); const N=g.attributes.normal.array;   // v44: seam copies share one normal (no lighting seam)
+        for(let k=0;k<dup.length;k++){ const a=dup[k]*3, e=(n0+k)*3; N[a]+=N[e]; N[a+1]+=N[e+1]; N[a+2]+=N[e+2]; }
+        for(let k=0;k<dup.length;k++){ const a=dup[k]*3, l=Math.hypot(N[a],N[a+1],N[a+2])||1; N[a]/=l; N[a+1]/=l; N[a+2]/=l; }
+        for(let k=0;k<dup.length;k++){ const a=dup[k]*3, e=(n0+k)*3; N[e]=N[a]; N[e+1]=N[a+1]; N[e+2]=N[a+2]; } g.attributes.normal.needsUpdate=true; }; }
+    g.computeVertexNormals(); g.computeBoundingSphere(); return g; };
   const glossy=(c,o={})=>mat(c,Object.assign({roughness:0.34,clearcoat:0.6,clearcoatRoughness:0.35,emissive:new THREE.Color(c).multiplyScalar(0.18)},o));
   const STY={
     stomach:()=>skin(mat(0xD98A7A,{roughness:0.46,clearcoat:0.85,clearcoatRoughness:0.18,sheen:0.35,sheenColor:new THREE.Color(0xF2B8A8),sheenRoughness:0.6,side:THREE.DoubleSide}),'stomach'),
@@ -1383,7 +1411,8 @@ function ctViscera(L,gutMat){
     spleen:()=>skin(mat(0x57202F,{roughness:0.48,clearcoat:0.6,clearcoatRoughness:0.28,sheen:0.25,sheenColor:new THREE.Color(0xA0506A),sheenRoughness:0.6,emissive:new THREE.Color(0x57202F).multiplyScalar(0.10)}),'spleen'),
     kidney_left:()=>skin(mat(0x8A3E32,{roughness:0.56,clearcoat:0.35,clearcoatRoughness:0.38}),'kidney'),
     kidney_right:()=>skin(mat(0x8A3E32,{roughness:0.56,clearcoat:0.35,clearcoatRoughness:0.38}),'kidney'),
-    pancreas:()=>skin(mat(0xD4A872,{roughness:0.70,clearcoat:0.15,clearcoatRoughness:0.5,emissive:new THREE.Color(0xD4A872).multiplyScalar(0.07)}),'pancreas')};
+    pancreas:()=>organTex44(skin(mat(0xD4A872,{roughness:0.70,clearcoat:0.15,clearcoatRoughness:0.5,emissive:new THREE.Color(0xD4A872).multiplyScalar(0.07)}),'pancreas'),'pancreas',
+      {clearcoat:0.55,clearcoatRoughness:0.30,emissive:0.03})};
   const mesh={};
   for(const k in Vd){ const d=Vd[k], own=k==='spleen';
     const m=tag(new THREE.Mesh(geom(d,own?d.c:null),STY[k]()),d.name);
@@ -1541,10 +1570,10 @@ function falciformBuild(body){
    Desktop only: phones keep the v41 triplanar skin. The tiling detail map replaces the generic skin atlas on the liver at
    close range (lobular micro-relief), with the macro maps carrying colour, capsular veins, creases, wetness and AO. */
 const LIVER_DETAIL_TEX=(()=>{ if(innerWidth<=860||(innerHeight<=520&&matchMedia('(pointer:coarse)').matches)) return null;
-  const t=new THREE.TextureLoader().load('liver42_detail.png'); t.wrapS=t.wrapT=THREE.RepeatWrapping; t.anisotropy=8; t.colorSpace=THREE.NoColorSpace; return t; })();
+  const t=new THREE.TextureLoader().load('liver42_detail.png'); t.wrapS=t.wrapT=THREE.RepeatWrapping; t.anisotropy=renderer.capabilities.getMaxAnisotropy(); t.colorSpace=THREE.NoColorSpace; return t; })();
 function liverTex42(...mats){
   if(!LIVER_DETAIL_TEX) return;
-  const ld=new THREE.TextureLoader(), an=Math.min(8,renderer.capabilities.getMaxAnisotropy());
+  const ld=new THREE.TextureLoader(), an=renderer.capabilities.getMaxAnisotropy();
   const L=(f,cs)=>new Promise((ok,no)=>ld.load(f,t=>{ t.colorSpace=cs; t.anisotropy=an; ok(t); },undefined,()=>no(new Error(f))));
   Promise.all([L('liver42_albedo.webp',THREE.SRGBColorSpace),L('liver42_normal.webp',THREE.NoColorSpace),L('liver42_orm.webp',THREE.NoColorSpace)])
     .then(([A,Nm,O])=>{ for(const m of mats){ const U=m.userData.skin; if(!U) continue;
@@ -5109,5 +5138,5 @@ const HARNESS_SHOTS=[
   {name:'svt_preset',        cam:{model:true,t:[1.12,-0.36,-0.22],dir:[0.30,-0.28,1],d:3.6,layers:{parenchyma:'ghost',stomach:'ghost'}},
      pre:"(()=>{document.querySelector('.segctl[data-key=\"panc\"] button[data-v=\"acute\"]').click(); const c=document.getElementById('panc-svt'); c.checked=true; c.dispatchEvent(new Event('change'));})()", settle:1.5, post:"document.getElementById('path-clear').click()"}
 ];
-window.__atlas = {spineCheck, ROD, sceneSig, ensure, QUAL, qualSet, LIVER_TEX, R36, LIGHTS, studioEnv, SKIN_ENV, scene, AO, gtao, composer, aoFrame, AO_BG, AXIS, AXIS_Q, AXIS_A, HOME, SKIN, mz, CT_ORGANS:()=>CT_ORGANS, tiers, state, snapAnnos, SEG, SEG_CENTROID, sdfLiver, insideLiver, segAt, HILUM_IN,
+window.__atlas = {ORG_TEX, spineCheck, ROD, sceneSig, ensure, QUAL, qualSet, LIVER_TEX, R36, LIGHTS, studioEnv, SKIN_ENV, scene, AO, gtao, composer, aoFrame, AO_BG, AXIS, AXIS_Q, AXIS_A, HOME, SKIN, mz, CT_ORGANS:()=>CT_ORGANS, tiers, state, snapAnnos, SEG, SEG_CENTROID, sdfLiver, insideLiver, segAt, HILUM_IN,
   CT_MODE, SEGP, falcX, SURF, LIVER_CM, UNIT_M, pins, updateOcclusion, CTP, PT, ORGAN_KEYS, SDF:{O:SO,N:[SNX,SNY,SNZ],P:SPITCH}, info, hitInfo, setSelection, camera, controls, applyModes, applySim, THREE, PERF, renderer, HVPG, hvpgStart, hvpgStop, hvpgGo, BIL, BX, bxPanel, pathCur, CTX, ctxLoad, svtView, HARNESS_SHOTS, LAYER_DEFAULTS, ribClear, DIA, diaLoad, pcView, forceRamps, frameStats, CTX_KEYS:['ribcage','diaphragm']};
