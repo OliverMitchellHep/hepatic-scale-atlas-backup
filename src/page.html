@@ -1,0 +1,302 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Hepatic Scale Atlas v42</title>
+<style>#svt-view{grid-column:1/-1;justify-self:start;margin-top:6px;font:500 12px/1 "IBM Plex Sans",system-ui,sans-serif;color:var(--ink);background:transparent;border:1px solid var(--rule);border-radius:3px;padding:6px 10px;cursor:pointer}#svt-view:hover,#svt-view:focus-visible{border-color:var(--amber);outline:none}</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,400&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+
+<style>@@INCLUDE:src/atlas.css@@</style>
+
+<div id="app">
+  <div id="stage"></div>
+  <div id="vignette"></div>
+  <div id="anno"><div id="sel"><div class="box"><b></b><span></span></div><div class="stem"></div></div></div>
+  <div id="hover"></div>
+
+  <div id="topbar">
+    <div class="brand"><b>Hepatic Scale Atlas</b><span>Macroscopic &rarr; subcellular</span></div>
+    <button class="tbtn" id="btn-lab" aria-pressed="true">Labels</button>
+    <button class="tbtn" id="btn-reset">Reset view</button>
+    <button class="tbtn" id="btn-panel">Panel</button>
+    <button class="tbtn" id="btn-q" title="Rendering quality (desktop): High adds soft and contact shadows">Quality: High</button>
+    <button class="tbtn" id="btn-intro" title="Show the introduction">Guide</button>
+  </div>
+
+  <nav id="rail" aria-label="Scale"></nav>
+
+  <div id="layerbar" aria-label="Layers"><span class="bar-k">Layers</span><div class="layers" id="layers"></div></div>
+
+  <div id="simbar" aria-label="Cirrhosis simulation">
+    <div class="sim-fib">
+      <div class="row"><label for="sl-fib" title="Macroscopic: capsular roughening, regenerative nodules, pale septa and shrinkage. Microscopic: bridging septa, collagen in Disse, loss of fenestrae.">Fibrosis &rarr; cirrhosis</label><span class="v" id="v-fib">F0 &middot; normal</span></div>
+      <input type="range" id="sl-fib" min="0" max="1" step="0.01" value="0">
+    </div>
+    <button class="toggle neutral" id="tg-flow" aria-pressed="true"><span class="led" style="background:var(--amber)"></span><span>Animate flow</span></button>
+    <div class="readout">
+      <span title="Wedged minus free hepatic venous pressure: the sinusoidal gradient. Illustrative teaching coupling.">HVPG</span><b id="r-hvpg">3 mmHg</b>
+      <span title="Illustrative vibration-controlled transient elastography for this fibrosis stage. Baveno rule of five: 10 / 15 / 20 / 25 kPa.">Liver stiffness (est.)</span><b id="r-lsm">5 kPa</b>
+      <span title="Illustrative: falls as portal pressure rises (hypersplenism)">Platelets (est.)</span><b id="r-plt">250</b>
+    </div>
+  </div>
+
+  <div id="hud">
+    <div id="scalebar"><div class="bar"></div><div class="val">&mdash;</div></div>
+    <div id="depth">depth &mdash;</div>
+    <div id="orient">view &mdash;</div>
+  </div>
+
+  <aside id="panel">
+    <div class="grip" id="grip"></div>
+    <div id="mhead"><div id="mslot-sim"></div>
+      <div id="mtabs"><button data-t="explore" data-on="1">Explore</button><button data-t="layers" data-on="0">Layers</button></div></div>
+    <div class="scroll">
+      <div id="mcard" hidden></div>
+      <div id="mpane-layers"></div>
+      <div class="eyebrow" id="p-eyebrow">Scale 01</div>
+      <h1 id="p-title">&mdash;</h1>
+      <div id="p-sub">&mdash;</div>
+      <p id="p-lede">&mdash;</p>
+      <div id="detail" hidden></div>
+
+      <details class="sec" id="path-block">
+        <summary>Pathology</summary>
+        <div class="prow" style="margin:0 0 10px"><button class="gobtn clearall" id="path-clear">Remove all pathology</button><button class="gobtn clearall" id="path-collapse">Collapse all</button></div>
+        <details class="sub" data-tiers="0">
+          <summary><i class="sw hcc"></i>Hepatocellular carcinoma</summary>
+          <div class="psim">
+            <div class="pform">
+              <label>Size <input id="hcc-size" type="number" min="0.5" max="20" step="0.1" value="3"><span>cm</span></label>
+              <label>Segment <select id="hcc-seg"></select></label>
+              <button class="gobtn" id="hcc-go">Go</button>
+            </div>
+            <ul class="hcclist" id="hcc-list"></ul>
+            <div class="readout" id="hcc-crit"></div>
+            <div class="plab">Treatment of the latest HCC</div>
+            <div class="prow"><button class="gobtn hcc" id="tace-go" disabled>TACE</button><button class="gobtn hcc" id="resect-go" disabled>Resection</button></div>
+          </div>
+        </details>
+        <details class="sub" data-tiers="0">
+          <summary><i class="sw cca"></i>Cholangiocarcinoma</summary>
+          <div class="psim">
+            <div class="pform">
+              <label>Site <select id="cca-type">
+                <option value="i">Intrahepatic (mass-forming)</option>
+                <option value="p">Extrahepatic &mdash; perihilar</option>
+                <option value="d">Extrahepatic &mdash; distal</option></select></label>
+            </div>
+            <div class="pform">
+              <label><em id="cca-sizelab">Size</em> <input id="cca-size" type="number" min="0.5" max="15" step="0.1" value="3"><span>cm</span></label>
+              <label id="cca-seg-wrap">Segment <select id="cca-seg"></select></label>
+              <label id="cca-bis-wrap" hidden>Bismuth&ndash;Corlette <select id="cca-bis">
+                <option value="I">I</option><option value="II" selected>II</option><option value="IIIa">IIIa</option>
+                <option value="IIIb">IIIb</option><option value="IV">IV</option></select></label>
+              <button class="gobtn cca" id="cca-go">Go</button>
+            </div>
+            <ul class="hcclist" id="cca-list"></ul>
+            <div class="plab">Biliary drainage</div>
+            <div class="segctl" data-key="bils"><button data-v="none">None</button><button data-v="plastic">Plastic</button><button data-v="sems" title="Self-expanding metal stent">Metal</button><button data-v="bilateral" title="Bilateral hilar metal stents">Bilateral</button><button data-v="ptc" title="Percutaneous transhepatic internal–external drain">PTC</button></div>
+            <div class="readout bilro"></div>
+            <div class="pnote" id="cca-note">Mass-forming iCCA: size is maximum diameter. Extrahepatic tumours are drawn as periductal-infiltrating strictures; size is the length of duct involved.</div>
+          </div>
+        </details>
+        <details class="sub" data-tiers="0">
+          <summary><i class="sw bll"></i>Benign liver lesions</summary>
+          <div class="psim">
+            <div class="pform">
+              <label>Lesion <select id="bll-type"><option value="abs">Liver abscess</option><option value="cyst">Liver cyst</option><option value="bfl">Benign focal lesion</option></select></label>
+              <label id="bll-sub-wrap" hidden>Type <select id="bll-sub"><option value="hem">Haemangioma</option><option value="fnh">Focal nodular hyperplasia</option><option value="hca">Hepatocellular adenoma</option></select></label>
+            </div>
+            <div class="pform">
+              <label>Size <input id="bll-size" type="number" min="0.5" max="20" step="0.1" value="4"><span>cm</span></label>
+              <label>Segment <select id="bll-seg"></select></label>
+              <button class="gobtn bll" id="bll-go">Go</button>
+            </div>
+            <ul class="hcclist" id="bll-list"></ul>
+            <div class="pnote">Click a lesion for its imaging features and management (EASL 2016 benign liver tumours; EASL 2022 cystic liver disease).</div>
+          </div>
+        </details>
+        <details class="sub" data-tiers="0">
+          <summary><i class="sw pc"></i>Pancreatic cancer</summary>
+          <div class="psim">
+            <div class="pform">
+              <label>Site <select id="pc-site"><option value="head">Head</option><option value="tail">Tail</option></select></label>
+              <label>Size <input id="pc-size" type="number" min="0.5" max="12" step="0.1" value="3"><span>cm</span></label>
+              <button class="gobtn pc" id="pc-go">Go</button>
+            </div>
+            <ul class="hcclist" id="pc-list"></ul>
+            <div class="plab">Biliary drainage</div>
+            <div class="segctl" data-key="bils"><button data-v="none">None</button><button data-v="plastic">Plastic</button><button data-v="sems" title="Self-expanding metal stent">Metal</button><button data-v="bilateral" title="Bilateral hilar metal stents">Bilateral</button><button data-v="ptc" title="Percutaneous transhepatic internal–external drain">PTC</button></div>
+            <div class="readout bilro"></div>
+            <div class="plab">Pancreatic duct drainage</div>
+            <div class="segctl" data-key="pds"><button data-v="none">None</button><button data-v="plastic" title="5–7 Fr plastic pancreatic stent">Plastic</button><button data-v="sems" title="Fully covered self-expanding metal stent">Metal</button></div>
+            <div class="pnote">Pancreatic ductal adenocarcinoma. A head tumour encases the intrapancreatic bile duct and the main pancreatic duct (double duct sign) and distends the gallbladder; a tail tumour leaves the bile duct alone. NICE NG85: resectable disease with jaundice goes straight to surgery without preoperative drainage unless surgery must wait (then an endoscopic metal stent); unresectable disease is palliated with an endoscopic metal stent. PTC is for when ERCP fails.</div>
+          </div>
+        </details>
+        <details class="sub" data-tiers="0">
+          <summary><i class="sw panc"></i>Pancreatitis</summary>
+          <div class="psim">
+            <div class="segctl" data-key="panc"><button data-v="none">None</button><button data-v="acute">Acute</button><button data-v="chronic">Chronic</button></div>
+            <label class="chk"><input type="checkbox" id="panc-svt"><span>Splenic vein thrombosis</span></label>
+            <div class="readout" id="panc-read"></div>
+            <div class="pnote">Acute: an oedematous, inflamed gland with peripancreatic fluid and fat stranding. Chronic: an atrophic, calcified gland with a dilated, irregular main duct and pseudocysts. Splenic vein thrombosis causes left-sided (sinistral) portal hypertension with isolated gastric varices. NICE NG104.</div>
+          </div>
+        </details>
+        <details class="sub" data-tiers="0">
+          <summary><i class="sw bx"></i>Liver biopsy</summary>
+          <div class="psim">
+            <div class="prow"><button class="gobtn bx" id="bx-tj">Transjugular</button><button class="gobtn bx" id="bx-pc">Percutaneous</button></div>
+            <div class="pnote">Each opens a stepped simulation with a card explaining when that route is chosen (BSG/RCR/RCPath 2020).</div>
+          </div>
+        </details>
+        <details class="sub" data-tiers="0">
+          <summary><i class="sw ercp"></i>ERCP</summary>
+          <div class="psim">
+            <div class="plab">Therapy at the final stage</div>
+            <div class="segctl" data-key="ercpT"><button data-v="trawl">Balloon trawl</button><button data-v="plastic">Plastic stent</button><button data-v="sems" title="Self-expanding metal stent">Metal stent</button></div>
+            <div class="prow"><button class="gobtn ercp" id="ercp-go">Start ERCP</button></div>
+            <div class="pnote">A stepped simulation: intubation, cannulation and cholangiogram, sphincterotomy, then the chosen therapy. Set a cause first (CBD stone, Mirizzi, cholangiocarcinoma or pancreatic head cancer) to see its effect.</div>
+          </div>
+        </details>
+        <details class="sub" data-tiers="0">
+          <summary><i class="sw ph"></i>Portal hypertension</summary>
+          <div class="psim">
+            <div class="readout" id="ph-read"></div>
+            <div class="plab">Haemodynamic measurement</div>
+            <div class="prow"><button class="gobtn hvpg" id="hvpg-btn">Measure HVPG</button></div>
+            <div class="plab">Intervention</div>
+            <div class="prow"><button class="gobtn tips" id="tips-btn">Insert TIPSS</button></div>
+          </div>
+        </details>
+        <details class="sub" data-tiers="0">
+          <summary><i class="sw pvt"></i>Portal vein thrombosis</summary>
+          <div class="psim">
+            <div class="segctl" data-key="pvt"><button data-v="none">None</button><button data-v="partial">Partial</button><button data-v="acute" title="Acute occlusive thrombus">Acute</button><button data-v="chronic" title="Chronic occlusion with cavernous transformation">Chronic</button></div>
+            <label class="chk"><input type="checkbox" id="pvt-smv"><span>Extends into the SMV</span></label>
+          </div>
+        </details>
+        <details class="sub" data-tiers="0,1,2,3">
+          <summary><i class="sw bcs"></i>Budd&ndash;Chiari syndrome</summary>
+          <div class="psim">
+            <div class="segctl" data-key="bcs"><button data-v="none">None</button><button data-v="hv">Hepatic veins</button><button data-v="ivc">IVC web</button><button data-v="mixed">Combined</button></div>
+          </div>
+        </details>
+        <details class="sub" data-tiers="0">
+          <summary><i class="sw bil"></i>Biliary obstruction</summary>
+          <div class="psim">
+            <div class="plab">Cause</div>
+            <div class="segctl" data-key="bilc"><button data-v="none">None</button><button data-v="cbd">CBD stone</button><button data-v="mirizzi">Mirizzi</button><button data-v="stricture" title="Benign common bile duct stricture">Stricture</button><button data-v="psc">PSC</button></div>
+            <div class="plab">Choledochal cyst (Todani)</div>
+            <div class="segctl" data-key="bcc"><button data-v="none">None</button><button data-v="I" title="Fusiform dilatation of the extrahepatic duct">I</button><button data-v="II" title="Supraduodenal diverticulum">II</button><button data-v="III" title="Choledochocele">III</button><button data-v="IVa" title="Intra- and extrahepatic cysts">IVa</button><button data-v="IVb" title="Multiple extrahepatic cysts">IVb</button><button data-v="V" title="Caroli disease: intrahepatic saccules">V</button></div>
+            <div class="plab">Drainage</div>
+            <div class="segctl" data-key="bils"><button data-v="none">None</button><button data-v="plastic">Plastic</button><button data-v="sems" title="Self-expanding metal stent">Metal</button><button data-v="bilateral" title="Bilateral hilar metal stents">Bilateral</button><button data-v="ptc" title="Percutaneous transhepatic internal–external drain">PTC</button></div>
+            <div class="readout bilro" id="bil-read"></div>
+          </div>
+        </details>
+        <details class="sub" data-tiers="0,1,2,3,4">
+          <summary><i class="sw fat"></i>MASLD &middot; MASH</summary>
+          <div class="psim">
+            <div class="plab">Steatosis grade &middot; S1 5&ndash;33% &middot; S2 34&ndash;66% &middot; S3 &gt;66%</div>
+            <div class="segctl" data-key="masld"><button data-v="0">S0</button><button data-v="1" title="5–33% of hepatocytes">S1</button><button data-v="2" title="34–66%">S2</button><button data-v="3" title="&gt;66%">S3</button></div>
+            <label class="chk"><input type="checkbox" id="mash"><span>Steatohepatitis (MASH): ballooning, lobular inflammation, Mallory&ndash;Denk bodies</span></label>
+            <div class="plab">Fibrosis assessment pathway</div>
+            <div class="readout" id="masld-read"></div>
+            <div class="clin-note">First line FIB-4 (&lt;1.3, or &lt;2.0 aged &ge;65: low risk). If not low, second line VCTE (&lt;8 / 8&ndash;12 / &ge;12 kPa; EASL&ndash;EASD&ndash;EASO 2024) or ELF (&ge;10.51 advanced fibrosis; NICE NG49, currently being updated). Illustrative values; drag the fibrosis slider.</div>
+          </div>
+        </details>
+        <details class="sub" data-tiers="1,2,3,4">
+          <summary><i class="sw zon"></i>Zonal injury patterns</summary>
+          <div class="psim">
+            <div class="segctl wrap" data-key="zonal"><button data-v="none">None</button><button data-v="apap">Paracetamol</button><button data-v="ischaemic">Ischaemic</button><button data-v="congestive">Congestive</button><button data-v="iron">Iron (HH)</button><button data-v="aih">Interface (AIH)</button><button data-v="yf">Yellow fever</button></div>
+            <div class="pnote" id="zon-note">Painted across the lobule, acinus and sinusoid by acinar zone.</div>
+          </div>
+        </details>
+      </details>
+
+      <details class="sec">
+        <summary>Structures &mdash; click anything in the scene</summary>
+        <div class="struct" id="p-struct"></div>
+      </details>
+
+      <details class="sec" id="seg-block" hidden>
+        <summary>Couinaud segments</summary>
+        <div class="seglegend" id="seg-legend"></div>
+      </details>
+
+
+      <details class="sec">
+        <summary>Teaching points</summary>
+        <ul class="klist" id="p-keys"></ul>
+      </details>
+
+    </div>
+  </aside>
+
+  <div id="bx" hidden role="dialog" aria-label="Liver biopsy">
+    <div class="hv-hd"><b id="bx-title">Liver biopsy</b><button id="bx-x" aria-label="End biopsy simulation">×</button></div>
+    <div class="bx-when"><em>When this route is chosen</em><ul id="bx-when"></ul></div>
+    <ol class="hv-steps" id="bx-steps"></ol>
+    <div class="hv-note" id="bx-note"></div>
+    <div class="hv-st" id="bx-st"></div>
+    <div class="hv-ft"><button class="gobtn clearall" id="bx-replay">Restart</button><span></span>
+      <button class="gobtn clearall" id="bx-prev">&#9664; Previous</button><button class="gobtn bx" id="bx-next">Next &#9654;</button></div>
+  </div>
+  <div id="hvpg" hidden role="dialog" aria-label="HVPG measurement">
+    <div class="hv-hd"><b>HVPG measurement</b><button id="hvpg-x" aria-label="End HVPG measurement">×</button></div>
+    <ol class="hv-steps">
+      <li class="hst"><em>1 · Catheterisation</em><span>A balloon catheter is passed from the right internal jugular vein through the right atrium and down the IVC to the hepatic vein ostia under fluoroscopy.</span></li>
+      <li class="hst"><em>2 · Free hepatic venous pressure</em><span>The tip is advanced 2–4 cm into the right hepatic vein with the balloon deflated. FHVP approximates IVC pressure and is the zero reference that cancels intra-abdominal pressure.</span></li>
+      <li class="hst"><em>3 · Wedged hepatic venous pressure</em><span>The balloon is inflated to occlude the vein. The static column reflects sinusoidal pressure, which approximates portal pressure in sinusoidal (e.g. cirrhotic) portal hypertension. Readings are taken once stable, in triplicate.</span></li>
+    </ol>
+    <canvas id="hv-trace" width="300" height="84"></canvas>
+    <div class="hv-calc">
+      <span>FHVP</span><b id="hv-f">—</b>
+      <span>WHVP</span><b id="hv-w">—</b>
+      <span class="hv-eq">HVPG = WHVP − FHVP</span><b id="hv-h" class="hv-res">—</b>
+    </div>
+    <div class="hv-note" id="hv-note" hidden></div>
+    <div class="hv-st" id="hv-st"></div>
+    <div class="hv-ft"><button class="gobtn clearall" id="hvpg-replay">Restart</button><span></span>
+      <button class="gobtn clearall" id="hvpg-prev">&#9664; Previous</button><button class="gobtn hvpg" id="hvpg-next">Next &#9654;</button></div>
+  </div>
+  <div id="intro" hidden>
+    <svg id="intro-svg" aria-hidden="true"><defs><marker id="intro-ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#E0A33E"/></marker></defs><g id="intro-paths"></g></svg>
+    <div class="intro-tag" data-k="top"><b>Layers</b>Switch each structure, or a whole group, On, Ghost or Off.<button class="intro-tx" aria-label="Close this pointer">&times;</button></div>
+    <div class="intro-tag" data-k="right"><b>Panel</b>Pathology simulations, a list of structures and teaching points for the current scale.<button class="intro-tx" aria-label="Close this pointer">&times;</button></div>
+    <div class="intro-tag" data-k="bottom"><b>Fibrosis slider</b>Drag from a normal liver to cirrhosis and watch the pressures, collaterals and liver change.<button class="intro-tx" aria-label="Close this pointer">&times;</button></div>
+    <div class="intro-card" role="dialog" aria-label="Introduction">
+      <button id="intro-x" aria-label="Close introduction">&times;</button>
+      <div class="eyebrow">Welcome</div>
+      <h2>Hepatic Scale Atlas</h2>
+      <p>This is a 3D render of the gastrointestinal and hepatobiliary systems of an example patient, built from a real CT.</p>
+      <ul>
+        <li><b>Click</b> any structure to identify it and learn about it.</li>
+        <li><b>Drag</b> to rotate. <b>Scroll</b> or pinch to zoom from the whole organ down to the lobule, sinusoid and hepatocyte.</li>
+        <li class="mob-only"><b>Bottom sheet</b>: drag it up for pathology, structures and teaching; tapped structures explain themselves there.</li>
+        <li class="mob-only"><b>Layers</b>: the second tab of the sheet switches each structure or group On, Ghost or Off.</li>
+        <li class="mob-only"><b>Fibrosis slider</b>: always in the top bar of the sheet.</li>
+      </ul>
+      <button class="gobtn" id="intro-go">Start exploring</button>
+    </div>
+  </div>
+  <div id="coach" hidden><svg id="coach-svg" aria-hidden="true"><defs><marker id="coach-ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+    <path d="M0,0 L10,5 L0,10 z" fill="#7FB8E6"/></marker></defs><g id="coach-paths"></g></svg></div>
+  <div id="toast" hidden><span id="toast-t"></span><button id="toast-go">Ghost parenchyma</button><button id="toast-x" aria-label="Dismiss">×</button></div>
+  <div id="boot"><span id="boot-msg">loading&hellip;</span></div>
+</div>
+
+<script type="application/json" id="liver-data">@@INCLUDE:data/liver-data.json@@</script>
+<script>@@INCLUDE:src/boot.js@@</script>
+<script type="importmap">
+{"imports":{
+  "three":"./vendor/three.module.min.js",
+  "three/addons/":"./vendor/addons/"
+}}
+</script>
+
+<script type="module">@@INCLUDE:src/atlas.js@@</script>
+
+
+
+
