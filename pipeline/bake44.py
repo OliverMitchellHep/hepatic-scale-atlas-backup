@@ -171,7 +171,9 @@ def stage_high(organ, cfg):
     for _ in range(cfg['subdiv']): Vh, Fh = subdiv(Vh, Fh)
     Vh = taubin(Vh, Fh, 20 if organ == 'liver' else 10); N = vnormals(Vh, Fh)
     h = chunked({'pancreas': panc_height, 'liver': liver_height}[organ], Vh)
-    if organ == 'liver': h = h + falciform().fields(Vh, N)[3]          # v45: the falciform / coronary relief (falc45.py)
+    if organ == 'liver':
+        h = h + falciform().fields(Vh, N)[3]          # v45: the falciform / coronary relief (falc45.py)
+        h = h + fossa_fields(Vh, N)[1]                # v45: the gallbladder bed's fibrous relief (fossa45.py)
     Vh = Vh + N * h[:, None]
     # mean curvature (signed, per vertex): Laplacian displacement along the normal, normalised by the mean edge length
     W = lap(Vh, Fh); Nh = vnormals(Vh, Fh); H = ((W @ Vh - Vh) * Nh).sum(1)
@@ -278,6 +280,32 @@ def falciform():
     return _FALC
 
 
+_GBT = None
+
+
+def fossa_fields(X, nrm=None):
+    """v45 (Task 8): the gallbladder bed (fossa45.py rebuilds its shape). Returns (mask 0..1, relief, fibre field): the bed
+    is areolar tissue, not peritoneum: matte, fibrous streaks along the gallbladder's axis, small pits, a few fine vessels"""
+    global _GBT
+    if _GBT is None:
+        from fossa45 import GBTube; _GBT = GBTube()
+    X = np.asarray(X, float); _, i = _GBT.tree.query(X); D = X - _GBT.C[i]; L = np.linalg.norm(D, axis=1)
+    g = L - _GBT.r[i]; t = i / len(_GBT.C)
+    x = np.clip((g - 7 / MM) / (6 / MM), 0, 1); m = 1 - x * x * (3 - 2 * x)
+    m *= np.clip((0.86 - t) / 0.08, 0, 1)                                   # fundus + body (the neck's bed is left)
+    if nrm is not None: m *= np.clip((np.einsum('ij,ij->i', nrm, -D / np.maximum(L, 1e-9)[:, None]) - 0.05) / 0.3, 0, 1)
+    k = m > 0; rel = np.zeros(len(X)); fib = np.zeros(len(X))
+    if k.any():
+        ax = _GBT.C[np.minimum(i[k] + 3, len(_GBT.C) - 1)] - _GBT.C[np.maximum(i[k] - 3, 0)]; ax /= np.linalg.norm(ax, axis=1, keepdims=True)
+        along = np.einsum('ij,ij->i', X[k], ax); Xp = X[k] - ax * along[:, None]
+        f1 = fbm(Xp * 160 + along[:, None] * 12, 3, seed=301)                  # streaks along the gallbladder's axis
+        pits = np.clip(worley_f2f1(X[k] * 90, seed=303) / 0.25, 0, 1)
+        ves = np.clip(1 - np.abs(fbm(X[k] * 9, 3, seed=305)) * 6, 0, 1) ** 3
+        rel[k] = m[k] * (0.10 * f1 - 0.12 * (1 - pits) + 0.10 * ves) / MM
+        fib[k] = np.clip(0.5 + 0.5 * f1, 0, 1) * (1 - 0.35 * ves)
+    return m, rel, fib
+
+
 FALC_COL = '#DDCDAF'   # v45: pale cream / off-white fibrous tissue, clearly paler than the liver
 
 
@@ -306,6 +334,12 @@ def compose_liver(X, ao, cav, curv, thick, onrm=None):
     wetn = np.clip(0.55 + 0.9 * wet + 0.4 * (1 - ao) - 0.25 * np.clip(curv - 0.6, 0, 1) - 0.15 * (1 - thick), 0, 1)
     # v45 (Task 7): falciform band, fan and coronary ligament: pale cream fibrous tissue with fine striations along the
     # fibres; the thin fan membrane lets a little of the liver show through; slightly less glossy than the capsule
+    bm, _, bf = fossa_fields(X, onrm)                                                # v45 (Task 8): the gallbladder bed
+    b = bm > 0
+    if b.any():
+        bc = lin('#9A5A52')[None] * (0.82 + 0.30 * bf[b])[:, None] * (0.80 + 0.20 * ao[b] ** 0.8)[:, None]
+        col[b] = col[b] * (1 - 0.55 * bm[b])[:, None] + bc * (0.55 * bm[b])[:, None]
+        rough[b] = rough[b] * (1 - bm[b]) + (0.62 + 0.08 * bf[b]) * bm[b]; wetn[b] = wetn[b] * (1 - 0.8 * bm[b])
     fm, fk, fb, _ = falciform().fields(X, onrm)
     k = fm > 0
     if k.any():
