@@ -395,6 +395,57 @@ diffuseColor.rgb=mix(diffuseColor.rgb,vec3(1.0,0.1,0.1),uSkDbg*skMat);
   m.customProgramCacheKey=()=>'skin'+(rest?'R':'')+(lite?'L':'')+(liv?'V':'')+(kind==='dia'?'D':'')+(m.defines&&m.defines.SKIN_TEX42!==undefined?'T':'')+(m.defines&&m.defines.SKIN_ORG44!==undefined?'O':'');
   m.needsUpdate=true; return m;
 }
+/* ── surface vessels (v46) ──
+   pipeline/vessels46.py grows one seamless tile of small branching vessels the way the gastric serosal vessels are grown
+   (organs45.py: wandering trunks dividing at ~35°; dark core, pale edge, slightly raised) and adds a smooth irregularity
+   field: R core, G edge, B relief, A irregularity. vesSkin() samples it triplanar in object space, at the rest position
+   (vsP), so the pattern holds still while a vessel dilates or the camera moves. Detail below ~1/16 px fades out
+   (screen-derivative footprint), so it cannot shimmer; mipmaps and anisotropic filtering do the rest.
+   VES: S tile repeats per model unit (1 unit ≈ 70 mm; tile vessels are 0.9–4.9 texels in radius), core / edge colours,
+   K = core, edge, relief (units), albedo irregularity; B irregular relief (units); mask: 1 = inferior surface only. */
+const VES={
+  gb:{S:0.42, core:0x5A1216, edge:0xC86E68, K:[1.00,0.60,0.0030,0.04], B:0.0005, mask:1}   // the stomach's vessels (Task 6)
+};
+const VES_MATS=new Set();
+const VES_TEX=(()=>{ const t=new THREE.TextureLoader().load('vessels46.webp',()=>{ ORG_TEX.vessels46=true; VES_MATS.forEach(m=>m.needsUpdate=true); },
+  undefined,()=>console.warn('vessels46.webp unavailable'));
+  t.wrapS=t.wrapT=THREE.RepeatWrapping; t.colorSpace=THREE.NoColorSpace; t.anisotropy=renderer.capabilities.getMaxAnisotropy(); return t; })();
+function vesSkin(mesh,kind){
+  const m=mesh.material, k=VES[kind], g=mesh.geometry; if(!k||!m||m.userData.ves) return mesh;
+  if(!g.attributes.vsP) g.setAttribute('vsP',g.attributes.position.clone());
+  const U={tVes:{value:VES_TEX}, uVsS:{value:k.S}, uVsCore:{value:new THREE.Color(k.core)}, uVsEdge:{value:new THREE.Color(k.edge)},
+           uVsK:{value:new THREE.Vector4(...k.K)}, uVsB:{value:k.B}};
+  m.userData.ves=U; VES_MATS.add(m);
+  if(k.mask) m.defines=Object.assign(m.defines||{},{VES_INF:''});
+  const ob=m.onBeforeCompile, ck=m.customProgramCacheKey;
+  m.onBeforeCompile=sh=>{ if(ob) ob.call(m,sh); Object.assign(sh.uniforms,U);
+    sh.vertexShader=sh.vertexShader
+      .replace('#include <common>','#include <common>\nattribute vec3 vsP; varying vec3 vVsP; varying vec3 vVsN;')
+      .replace('#include <begin_vertex>','#include <begin_vertex>\nvVsP=vsP; vVsN=objectNormal;');
+    sh.fragmentShader=sh.fragmentShader
+      .replace('#include <common>',`#include <common>
+uniform sampler2D tVes; uniform float uVsS; uniform vec3 uVsCore; uniform vec3 uVsEdge; uniform vec4 uVsK; uniform float uVsB;
+varying vec3 vVsP; varying vec3 vVsN;
+vec3 vsPerturb(vec3 sp, vec3 sn, vec2 dH, float fd){ vec3 sx=dFdx(sp), sy=dFdy(sp); vec3 r1=cross(sy,sn), r2=cross(sn,sx);
+  float det=dot(sx,r1)*fd; vec3 gr=sign(det)*(dH.x*r1+dH.y*r2); return normalize(abs(det)*sn-gr); }`)
+      .replace('#include <color_fragment>',`#include <color_fragment>
+vec3 vsN=normalize(vVsN), vsW=pow(abs(vsN),vec3(4.0)); vsW/=(vsW.x+vsW.y+vsW.z);
+vec3 vsQ=vVsP*uVsS;
+vec4 vsT=texture2D(tVes,vsQ.yz)*vsW.x+texture2D(tVes,vsQ.zx+vec2(0.37,0.11))*vsW.y+texture2D(tVes,vsQ.xy+vec2(0.71,0.53))*vsW.z;
+float vsFw=length(fwidth(vsQ))*1024.0;                       // tile texels per pixel
+float vsA=1.0-smoothstep(6.0,16.0,vsFw);
+#ifdef VES_INF
+vsA*=smoothstep(0.02,0.45,-vsN.y);                           // the inferior (free) surface only
+#endif
+diffuseColor.rgb=mix(diffuseColor.rgb,uVsEdge,clamp(vsT.g*uVsK.y*vsA,0.0,1.0));
+diffuseColor.rgb=mix(diffuseColor.rgb,uVsCore,clamp(vsT.r*uVsK.x*vsA,0.0,1.0));
+diffuseColor.rgb*=1.0+uVsK.w*(vsT.a-0.5)*2.0;
+float vsH=uVsK.z*vsT.b*vsA+uVsB*vsT.a*(1.0-smoothstep(6.0,16.0,vsFw));`)
+      .replace('#include <normal_fragment_maps>','#include <normal_fragment_maps>\nnormal=vsPerturb(-vViewPosition,normal,vec2(dFdx(vsH),dFdy(vsH)),faceDirection);');
+  };
+  m.customProgramCacheKey=()=>(ck?ck.call(m):'')+'|ves:'+kind;
+  m.needsUpdate=true; return mesh;
+}
 function tube(pts,r,seg=24,rad=8){
   return new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), seg, r, rad, false);
 }
@@ -1762,7 +1813,7 @@ function buildMacro(){
       const s=(t-dome)/(1-dome), body=R*(1-0.62*Math.pow(s,1.6))+0.012*s; return THREE.MathUtils.lerp(body,0.040,THREE.MathUtils.smoothstep(s,0.70,1)); },84,28,false,0),
     skin(mat(0x8FA457,{roughness:0.30,clearcoat:0.9,clearcoatRoughness:0.18,
       emissive:new THREE.Color(0x8FA457).multiplyScalar(0.07)}),'gb'),'Gallbladder');
-  flipWinding(gbMesh.geometry); L.biliary.add(gbMesh);
+  flipWinding(gbMesh.geometry); vesSkin(gbMesh,'gb'); L.biliary.add(gbMesh);   // v46: the stomach's serosal vessels on its inferior surface
   const bilMeshes=[{m:gbMesh,kind:'gb'}];
   const conf=V3(-0.34,-0.22,0.33), cysJ=V3(-0.27,-0.37,0.37), BD_HI=V3(-0.335,-0.145,0.31);
   const BD_CHD=[V3(-0.315,-0.30,0.36)], BD_CBD=[V3(-0.13,-0.49,0.38),V3(-0.08,-0.66,0.40),V3(-0.11,-0.82,0.44),V3(-0.17,-0.93,0.40),V3(-0.23,-1.00,0.33)];

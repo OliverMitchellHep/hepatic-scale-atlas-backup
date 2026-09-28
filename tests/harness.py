@@ -52,8 +52,8 @@ class Atlas:
         # desktop liver maps load after boot; wait for them (or give up after 60 s and let the diff catch it)
         try: await self.page.wait_for_function("window.__atlas&&window.__atlas.LIVER_TEX&&window.__atlas.LIVER_TEX.ready", timeout=60000)
         except Exception: self.errors.append('warning: liver maps not ready after 60 s')
-        # v45: the organ map sets (stomach, duodenum, oesophagus, spleen, pancreas, both kidneys) load after boot too
-        try: await self.page.wait_for_function("window.__atlas&&Object.keys(window.__atlas.ORG_TEX).length>=7", timeout=120000)
+        # v45: the organ map sets (stomach, duodenum, oesophagus, spleen, pancreas, both kidneys) load after boot too; v46: + vessels46
+        try: await self.page.wait_for_function("window.__atlas&&Object.keys(window.__atlas.ORG_TEX).length>=8", timeout=120000)
         except Exception: self.errors.append('warning: organ maps not all ready after 120 s')
         await self.page.wait_for_timeout(self.settle)
         return self
