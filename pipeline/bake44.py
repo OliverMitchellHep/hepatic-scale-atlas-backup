@@ -170,7 +170,9 @@ def stage_high(organ, cfg):
     Vh = taubin(P0, F0, 12 if organ == 'liver' else 4); Fh = F0
     for _ in range(cfg['subdiv']): Vh, Fh = subdiv(Vh, Fh)
     Vh = taubin(Vh, Fh, 20 if organ == 'liver' else 10); N = vnormals(Vh, Fh)
-    h = chunked({'pancreas': panc_height, 'liver': liver_height}[organ], Vh); Vh = Vh + N * h[:, None]
+    h = chunked({'pancreas': panc_height, 'liver': liver_height}[organ], Vh)
+    if organ == 'liver': h = h + falciform().fields(Vh, N)[3]          # v45: the falciform / coronary relief (falc45.py)
+    Vh = Vh + N * h[:, None]
     # mean curvature (signed, per vertex): Laplacian displacement along the normal, normalised by the mean edge length
     W = lap(Vh, Fh); Nh = vnormals(Vh, Fh); H = ((W @ Vh - Vh) * Nh).sum(1)
     e = np.linalg.norm(Vh[Fh[:, 0]] - Vh[Fh[:, 1]], axis=1).mean(); H = H / (e * e)
@@ -265,6 +267,20 @@ def liver_veins(x):
     return np.maximum(np.clip((r - 0.80) / 0.2, 0, 1) ** 2, 0.5 * np.clip((r2 - 0.82) / 0.18, 0, 1) ** 2)
 
 
+_FALC = None
+
+
+def falciform():
+    """v45: the falciform ligament's fan and coronary continuation, painted into the liver maps (pipeline/falc45.py)"""
+    global _FALC
+    if _FALC is None:
+        from falc45 import Falciform; _FALC = Falciform()
+    return _FALC
+
+
+FALC_COL = '#DDCDAF'   # v45: pale cream / off-white fibrous tissue, clearly paler than the liver
+
+
 LIVER_SUP, LIVER_INF = '#7A3B2E', '#5A2433'   # v44 (Task 8): browner diaphragmatic surface, deeper purple-red visceral surface
 
 
@@ -288,6 +304,16 @@ def compose_liver(X, ao, cav, curv, thick, onrm=None):
     col *= (0.72 + 0.28 * ao ** 0.8)[:, None]; col *= (0.85 + 0.15 * cav)[:, None]
     rough = np.clip(0.40 - 0.126 * np.clip(wet * 1.8 + 0.1, -1, 1) - 0.10 * (1 - cav) + 0.05 * m3, 0.16, 0.62)
     wetn = np.clip(0.55 + 0.9 * wet + 0.4 * (1 - ao) - 0.25 * np.clip(curv - 0.6, 0, 1) - 0.15 * (1 - thick), 0, 1)
+    # v45 (Task 7): falciform band, fan and coronary ligament: pale cream fibrous tissue with fine striations along the
+    # fibres; the thin fan membrane lets a little of the liver show through; slightly less glossy than the capsule
+    fm, fk, fb, _ = falciform().fields(X, onrm)
+    k = fm > 0
+    if k.any():
+        lc = lin(FALC_COL)[None] * (1 + 0.11 * fb[k] + 0.05 * m2[k])[:, None] * (0.78 + 0.22 * ao[k] ** 0.8)[:, None]
+        lc = lc * (1 - 0.08 * (1 - fm[k]))[:, None] + lin('#C89A86')[None] * (0.08 * (1 - fm[k]))[:, None]   # translucent edges
+        a = fm[k] * np.where(fk[k] == 1, 0.78, 0.92)
+        col[k] = col[k] * (1 - a)[:, None] + lc * a[:, None]
+        rough[k] = rough[k] * (1 - fm[k]) + (0.46 + 0.05 * fb[k]) * fm[k]; wetn[k] = wetn[k] * (1 - 0.45 * fm[k])
     return np.clip(col, 0, 1), rough, wetn
 
 

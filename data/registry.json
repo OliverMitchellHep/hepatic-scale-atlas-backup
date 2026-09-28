@@ -2099,6 +2099,18 @@
    ]
   },
   {
+   "id": "coronary-ligament",
+   "name": "Coronary ligament",
+   "info": "Where the two layers of the falciform diverge at the top of the liver, they run right and left across the superior surface as the coronary ligament, the peritoneal reflection onto the diaphragm; between its layers on the right lies the bare area, in direct contact with the diaphragm. Its lateral ends form the triangular ligaments (not modelled).",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "parenchyma"
+   ]
+  },
+  {
    "id": "ligamentum-teres",
    "name": "Ligamentum teres",
    "info": "The obliterated left umbilical vein, carried in the free inferior edge of the falciform and running into the umbilical fissure. It recanalises in portal hypertension — the caput medusae.",

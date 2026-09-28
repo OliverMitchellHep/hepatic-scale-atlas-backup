@@ -1560,7 +1560,23 @@ function ribClear(a,b){   // closest approach (model units) of segment a→b to 
    about 0.7 mm high on a ~1.2 cm base, its flanks tucked under the capsule at ~25° (no coplanar overlap, so no z-fighting),
    fading in at the notch and out towards the dome. Colour: the liver's own red-brown, slightly paler.
    The ligamentum teres (stump at the notch, cord in the fissure) is still built and kept in the scene graph but hidden
-   (visible=false, userData.teachingHidden) for later teaching use. */
+   (visible=false, userData.teachingHidden) for later teaching use.
+   v45: the falciform is no longer a separate fold mesh. It is painted into the liver bake (pipeline/falc45.py → bake44.py:
+   relief in the normal map, pale cream fibrous colour, lower gloss): a 10 mm band with irregular edges and fine striations
+   from the umbilical notch up the anterior surface, flaring at the superior margin into a fan whose two layers diverge
+   into the coronary ligament across the top of the liver (no triangular ligaments). No z-fighting or halo is possible,
+   and it follows the cirrhotic morph with the capsule. FALC45 (below) is the same centreline, for picking. */
+const FALC45={s:[0.0000,0.0500,0.0929,0.1429,0.1858,0.2358,0.2858,0.3287,0.3787,0.4216,0.4716,0.5145,0.5645,0.6145,0.6574,0.7074,0.7503,0.8003,0.8503,0.8932,0.9432,0.9861,1.0361,1.0861,1.1290,1.1790,1.2219,1.2719,1.3219,1.3648,1.4148,1.4576,1.5077,1.5505,1.6006,1.6506,1.6934,1.7435,1.7863,1.8364],C:[[-0.4824,-0.5301,1.2944],[-0.4875,-0.4827,1.3094],[-0.4887,-0.4412,1.3129],[-0.4834,-0.3939,1.2975],[-0.4785,-0.3539,1.2830],[-0.4719,-0.3083,1.2636],[-0.4653,-0.2626,1.2443],[-0.4600,-0.2230,1.2286],[-0.4539,-0.1766,1.2110],[-0.4488,-0.1369,1.1958],[-0.4425,-0.0908,1.1775],[-0.4368,-0.0517,1.1607],[-0.4298,-0.0066,1.1402],[-0.4228,0.0384,1.1195],[-0.4165,0.0766,1.1012],[-0.4085,0.1200,1.0778],[-0.4008,0.1555,1.0550],[-0.3904,0.1940,1.0248],[-0.3791,0.2295,0.9914],[-0.3688,0.2583,0.9614],[-0.3566,0.2909,0.9255],[-0.3459,0.3181,0.8941],[-0.3333,0.3494,0.8572],[-0.3207,0.3806,0.8202],[-0.3099,0.4073,0.7884],[-0.2970,0.4374,0.7506],[-0.2857,0.4621,0.7175],[-0.2722,0.4895,0.6779],[-0.2583,0.5151,0.6372],[-0.2463,0.5362,0.6019],[-0.2320,0.5594,0.5600],[-0.2195,0.5783,0.5236],[-0.2048,0.5990,0.4805],[-0.1920,0.6150,0.4428],[-0.1767,0.6313,0.3981],[-0.1612,0.6449,0.3525],[-0.1477,0.6542,0.3129],[-0.1317,0.6605,0.2660],[-0.1179,0.6609,0.2254],[-0.1019,0.6541,0.1786]],sA:0.7646,sB:1.5077,CB:[-0.2027,0.6018,0.4742],TB:[0.2981,0.3831,-0.8743],AB:[0.8361,-0.5467,0.0455],W0:0.0715,WB:0.5430,CW:0.0457,CL:0.6860};
+function falcPick(q,n){   // v45: label of a parenchyma hit on the painted falciform / coronary ligament (null if none)
+  const F=FALC45, v=new THREE.Vector3(); let bi=0,bd=1e9;
+  for(let i=0;i<F.C.length;i++){ const d=v.set(...F.C[i]).distanceToSquared(q); if(d<bd){ bd=d; bi=i; } }
+  const i0=Math.max(0,bi-1), i1=Math.min(F.C.length-1,bi+1), T=new THREE.Vector3(...F.C[i1]).sub(new THREE.Vector3(...F.C[i0])).normalize();
+  const D=q.clone().sub(v.set(...F.C[bi])), s=F.s[bi]+D.dot(T), dd=D.addScaledVector(T,-D.dot(T)).length();
+  if(s<=F.sA && dd<F.W0*1.25) return 'Falciform ligament';
+  if(s>F.sA && s<=F.sB+0.02 && dd<F.W0+(s-F.sA)/(F.sB-F.sA)*(F.WB-F.W0)) return 'Falciform ligament';
+  const B=q.clone().sub(new THREE.Vector3(...F.CB)), t=B.dot(new THREE.Vector3(...F.TB)), lat=Math.abs(B.dot(new THREE.Vector3(...F.AB)));
+  if((!n||n.y>0.25) && Math.abs(t+0.5*F.CW)<F.CW*1.3 && lat>F.WB*0.35 && lat<F.WB+F.CL) return 'Coronary ligament';
+  return null; }
 function falciformBuild(body){
   const g=new THREE.Group(), rc=new THREE.Raycaster(), C0=new THREE.Vector2(-0.15,0.25), hit=(th)=>{
     const dy=Math.sin(th), dz=Math.cos(th), zo=C0.y+dz*3, yo=C0.x+dy*3;
@@ -1578,24 +1594,6 @@ function falciformBuild(body){
   for(let i=0;i<=NS;i++){ const u=i/NS, p=curve.getPointAt(u); let best=null,bd=9;
     for(const h of up){ const d=h.p.distanceToSquared(p); if(d<bd){ bd=d; best=h; } } P.push(p); Nn.push(best.n.clone()); }
   for(let it=0;it<8;it++) for(let i=1;i<NS;i++) Nn[i].add(Nn[i-1]).add(Nn[i+1]).normalize();
-  const sm=THREE.MathUtils.smoothstep, H=0.010, W=0.085, INS=0.020, SINK=0.004, J=12;
-  const pos=[], uvs=[], idx=[], ring=2*J+1;
-  for(let i=0;i<=NS;i++){ const u=i/NS, t=curve.getTangentAt(u), s=new THREE.Vector3().crossVectors(t,Nn[i]).normalize(), n=new THREE.Vector3().crossVectors(s,t).normalize();
-    const ends=sm(u,0.0,0.05)*(1-sm(u,0.90,1.0)), top=1-sm(Nn[i].y,0.70,0.92);          // fade in at the notch, out onto the dome
-    const h=H*ends*top, w=W*(0.80+0.20*ends);
-    for(let q=0;q<ring;q++){ const tl=(q-J)/J, a=1-tl*tl;
-      const hh=h*a*a-INS*tl*tl*tl*tl-SINK*(1-ends*top);                                  // soft dome, flanks under the capsule
-      const p=P[i].clone().addScaledVector(s,tl*w).addScaledVector(n,hh); pos.push(p.x,p.y,p.z); uvs.push(u,(tl+1)/2); } }
-  for(let i=0;i<NS;i++) for(let q=0;q<ring-1;q++){ const a=i*ring+q, b=a+ring; idx.push(a,b,a+1, a+1,b,b+1); }
-  const geo=new THREE.BufferGeometry(); geo.setAttribute('position',new THREE.Float32BufferAttribute(pos,3)); geo.setAttribute('uv',new THREE.Float32BufferAttribute(uvs,2));
-  geo.setIndex(idx); geo.computeVertexNormals();
-  { const nA=geo.attributes.normal, nn=new THREE.Vector3();   // face outward (along the capsule normal)
-    let k=0; for(let i=0;i<nA.count;i+=ring){ nn.fromBufferAttribute(nA,i+J); k+=nn.dot(Nn[Math.round(i/ring)]); }
-    if(k<0){ const I=geo.index.array; for(let f=0;f<I.length;f+=3){ const tmp=I[f+1]; I[f+1]=I[f+2]; I[f+2]=tmp; } geo.index.needsUpdate=true; geo.computeVertexNormals(); } }
-  const FALC_COL=0x8E4F40;   // v44: the liver's red-brown (Task 8 palette, #7A3B2E superior), a step paler; liver skin, not the warm serosa rim
-  const fm=skin(mat(FALC_COL,{roughness:0.42,clearcoat:0.55,clearcoatRoughness:0.26,sheen:0.10,sheenColor:new THREE.Color(0xB88078),sheenRoughness:0.6,
-    emissive:new THREE.Color(FALC_COL).multiplyScalar(0.02)}),'liver');
-  const fmesh=tag(new THREE.Mesh(geo,fm),'Falciform ligament'); g.add(fmesh);
   // ligamentum teres: cut stump from the free edge at the notch, then back along the umbilical fissure (hidden, see above)
   const n0=Nn[0].clone(), p0=P[0].clone(), outD=V3(0,-0.55,0.84).addScaledVector(n0,0.6).normalize();
   const stump=[p0.clone().addScaledVector(n0,-0.03)];
@@ -3334,9 +3332,8 @@ function hitInfo(ev){
     if(o.userData.segmentPick){
       const q=t.group.worldToLocal(h.point.clone());
       label='Segment '+SEG[segAt(q.x,q.y,q.z)];
-      // the model's falciform ridge runs along the umbilical fissure line
-      if(Math.abs(q.x-falcX(q.z))<0.030 && falcZone(q.x,q.y,q.z) && (!h.face || (h.face.normal.y>-0.30 && h.face.normal.z>0.22 && h.face.normal.y<0.92)))   // v44: anterior course only
-        label='Falciform ligament';
+      // v45: the painted falciform band, its fan and the coronary ligament (FALC45)
+      { const fl=falcPick(q,h.face?h.face.normal:null); if(fl) label=fl; }
       // ghosted parenchyma must not shadow the vessels behind it
       if(o.userData.ghost){
         if(!fallback) fallback={tier:t.index,local:q,label};
