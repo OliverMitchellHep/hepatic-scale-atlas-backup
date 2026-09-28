@@ -16,6 +16,7 @@ Stages (work files in pipeline/work44/<organ>/, not committed):
              cav        cavity: AO at ~1–2 mm
              curv       mean curvature of the high mesh (vertex colour → emission bake)
              thick      thickness: AO baked from inside (normals flipped) — thin rims read bright
+             onrm       object-space normal (orientation-driven colour: superior vs visceral surface)
              pos        object-space position (so compose noise is 3D and continuous across UV seams)
   compose  numpy: albedo (sRGB), tangent normal, ORM (R ambient occlusion, G roughness, B clearcoat / wetness mask),
            each at the desktop and the mobile resolution; WebP (the artifact host refuses .ktx2, see CLAUDE.md).
@@ -202,7 +203,10 @@ def stage_bake(organ, cfg):
     def img(name, res, float_=False):
         im = bpy.data.images.new(name, res, res, alpha=False, float_buffer=float_); im.colorspace_settings.name = 'Non-Color'; return im
 
+    only = [k for k in os.environ.get('BAKE_ONLY', '').split(',') if k]   # e.g. BAKE_ONLY=onrm: re-bake a subset
+
     def bake(kind, res, target=lo, float_=False, type_=None, sel=True, **kw):
+        if only and kind not in only: return
         im = img(kind, res, float_); tn.image = im; nt.nodes.active = tn
         bpy.ops.object.select_all(action='DESELECT'); target.select_set(True); bpy.context.view_layer.objects.active = target
         if sel: hi.select_set(True); kw.update(use_selected_to_active=True, cage_extrusion=cfg['cage'], max_ray_distance=cfg['ray'])
@@ -211,6 +215,7 @@ def stage_bake(organ, cfg):
         np.save(w / f'bake_{kind}.npy', px.astype(np.float32 if float_ else np.float16)); print(f'bake {kind} {res}² {time.time()-t:.0f} s', flush=True)
 
     bake('normal', R, normal_space='TANGENT')
+    bake('onrm', r, type_='NORMAL', normal_space='OBJECT')           # object-space normal (colour = n·0.5 + 0.5), for orientation-driven colour
     bake('curv', r, type_='EMIT')
     sc.cycles.samples = 64; sc.world.light_settings.distance = cfg['ao_dist']; bake('ao', r, type_='AO')
     sc.cycles.samples = 32; sc.world.light_settings.distance = cfg['cav_dist']; bake('cav', r, type_='AO')
@@ -253,19 +258,27 @@ def liver_veins(x):
     return np.maximum(np.clip((r - 0.80) / 0.2, 0, 1) ** 2, 0.5 * np.clip((r2 - 0.82) / 0.18, 0, 1) ** 2)
 
 
-def compose_liver(X, ao, cav, curv, thick):
-    """liver, v42 recipe (compose42.py): deep red-brown with purple/brown drift, mottling, lobular speckle, capsular veins;
-    wetness now also follows the baked curvature (drier on convex ridges and the thin inferior border)"""
+LIVER_SUP, LIVER_INF = '#7A3B2E', '#5A2433'   # v44 (Task 8): browner diaphragmatic surface, deeper purple-red visceral surface
+
+
+def compose_liver(X, ao, cav, curv, thick, onrm=None):
+    """liver colour (v44): heterogeneous red-brown. The base colour blends from the superior / diaphragmatic surface
+    (LIVER_SUP) to the inferior / visceral surface (LIVER_INF) by surface orientation (the texel's object-space normal,
+    +y superior) plus low-frequency 3D noise, through a wide smoothstep, so there is no boundary. On top: patchy mottling,
+    fine mottle, lobular speckle, capsular veins, cavity and a light AO term (the page also occludes indirect light).
+    Wetness also follows the baked curvature (drier on convex ridges and the thin inferior border)."""
     ev = lambda fn: chunked(fn, X, 1_000_000)
-    base, purp, brown, dark = lin('#4C2024'), lin('#44202E'), lin('#582A20'), lin('#301218')
-    m1 = ev(lambda x: fbm(x * 1.6, 3, seed=21)); m2 = ev(lambda x: fbm(x * 6.0, 4, seed=33)); m3 = ev(lambda x: fbm(x * 30.0, 2, seed=45))
+    sup, inf, dark = lin(LIVER_SUP), lin(LIVER_INF), lin('#2E1018')
+    ny = onrm[:, 1] if onrm is not None else np.zeros(len(X))
+    lf = ev(lambda x: fbm(x * 1.3, 3, seed=91))                                    # ~5 cm drift of the transition
+    t = np.clip((ny + 0.50 * lf + 0.15 - (-0.55)) / (0.60 - (-0.55)), 0, 1); wgt = t * t * (3 - 2 * t)
+    col = inf[None] * (1 - wgt)[:, None] + sup[None] * wgt[:, None]
+    m2 = ev(lambda x: fbm(x * 6.0, 4, seed=33)); m3 = ev(lambda x: fbm(x * 30.0, 2, seed=45))
     lob = ev(lambda x: worley_f2f1(x * 42.0, seed=57)); vn = ev(liver_veins); wet = ev(lambda x: fbm(x * 2.2, 3, seed=81))
-    col = np.tile(base, (len(X), 1))
-    t = np.clip(m1 * 1.6, -1, 1)[:, None]; col = np.where(t > 0, col * (1 - t * 0.55) + purp * t * 0.55, col * (1 + t * 0.5) - brown * t * 0.5)
-    col *= (1 + 0.10 * m2)[:, None]; col *= (1 + 0.05 * m3)[:, None]
+    col *= (1 + 0.09 * m2)[:, None]; col *= (1 + 0.05 * m3)[:, None]
     col *= (1 - 0.035 * np.exp(-(lob / 0.08) ** 2))[:, None]
-    col = col * (1 - 0.22 * vn[:, None]) + dark * 0.22 * vn[:, None]
-    col *= (0.55 + 0.45 * ao ** 0.8)[:, None]; col *= (0.80 + 0.20 * cav)[:, None]
+    col = col * (1 - 0.20 * vn[:, None]) + dark * 0.20 * vn[:, None]
+    col *= (0.72 + 0.28 * ao ** 0.8)[:, None]; col *= (0.85 + 0.15 * cav)[:, None]
     rough = np.clip(0.40 - 0.126 * np.clip(wet * 1.8 + 0.1, -1, 1) - 0.10 * (1 - cav) + 0.05 * m3, 0.16, 0.62)
     wetn = np.clip(0.55 + 0.9 * wet + 0.4 * (1 - ao) - 0.25 * np.clip(curv - 0.6, 0, 1) - 0.15 * (1 - thick), 0, 1)
     return np.clip(col, 0, 1), rough, wetn
@@ -279,13 +292,19 @@ def stage_compose(organ, cfg):
     from scipy.ndimage import zoom
     g = {k: np.load(w / f'bake_{k}.npy').astype(np.float32)[..., 0] for k in ('ao', 'cav', 'curv', 'thick')}
     g = {k: (zoom(v, R / v.shape[0], order=1) if v.shape[0] != R else v) for k, v in g.items()}
+    on = None
+    if (w / 'bake_onrm.npy').exists():
+        on = np.load(w / 'bake_onrm.npy').astype(np.float32) * 2 - 1
+        if on.shape[0] != R: on = zoom(on, (R / on.shape[0], R / on.shape[0], 1), order=1)
     cov = np.abs(pos).sum(-1) > 1e-6
     n = nrm * 2 - 1; bad = cov & ((n[..., 2] < 0.35) | (np.linalg.norm(n, axis=-1) < 0.6))
     print(f'compose: {cov.sum()} texels, {100*bad.sum()/cov.sum():.3f}% implausible normals repaired', flush=True)
     n[bad] = [0, 0, 1]; n /= np.linalg.norm(n, axis=-1, keepdims=True)
     X = pos[cov].astype(np.float64)
     th = g['thick'][cov]; th = (th - np.percentile(th, 2)) / (np.percentile(th, 98) - np.percentile(th, 2) + 1e-6)
-    col, rough, wet = {'pancreas': compose_pancreas, 'liver': compose_liver}[organ](X, g['ao'][cov], g['cav'][cov], g['curv'][cov], np.clip(th, 0, 1))
+    args = (X, g['ao'][cov], g['cav'][cov], g['curv'][cov], np.clip(th, 0, 1))
+    col, rough, wet = compose_pancreas(*args) if organ == 'pancreas' else compose_liver(*args, onrm=on[cov] if on is not None else None)
+    mean = col.mean(0); print('compose: mean albedo (linear)', mean.round(4), 'sRGB #%02X%02X%02X' % tuple((mean ** (1 / 2.2) * 255 + 0.5).astype(int)), flush=True)
     A = np.zeros((R, R, 3), np.float32); A[cov] = col
     ORM = np.zeros((R, R, 3), np.float32); ORM[cov] = np.stack([g['ao'][cov], rough, wet], 1)
     _, ind = distance_transform_edt(~cov, return_indices=True)            # bleed charts into the gutters (no mip halos)

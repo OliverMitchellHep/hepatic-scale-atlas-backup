@@ -325,7 +325,7 @@ function skin(m,kind,rest=false){
   m.envMapIntensity=(SKIN_ENV[kind]??1)*R36.env; m.userData.skinKind=kind;
   const U={tSkin:{value:SKIN_TEX}, uSkS:{value:new THREE.Vector3(...k.S)}, uSkK:{value:new THREE.Vector4(...k.K)},
            uSkK2:{value:new THREE.Vector3(...k.K2)}, uSkVein:{value:new THREE.Color(k.vein)}, uSkRim:{value:new THREE.Color(k.rim).multiplyScalar(0.22)}, uSkLob:{value:1}, uSkDbg:{value:0},
-           tLvA:{value:null}, tLvO:{value:null}, tOrgO:{value:null}, uLvTis:{value:new THREE.Color(C.tissue)}, uLvMean:{value:new THREE.Color(0x4A2023)}, uLvNod:{value:0}};
+           tLvA:{value:null}, tLvO:{value:null}, tOrgO:{value:null}, uLvTis:{value:new THREE.Color(C.tissue)}, uLvMean:{value:new THREE.Color(0x6A3130)}, uLvNod:{value:0}};
   m.userData.skin=U;
   if(rest) m.defines=Object.assign(m.defines||{},{SKIN_REST:''});
   if(lite) m.defines=Object.assign(m.defines||{},{SKIN_LITE:''});
@@ -1562,7 +1562,7 @@ function falciformBuild(body){
   { const nA=geo.attributes.normal, nn=new THREE.Vector3();   // face outward (along the capsule normal)
     let k=0; for(let i=0;i<nA.count;i+=ring){ nn.fromBufferAttribute(nA,i+J); k+=nn.dot(Nn[Math.round(i/ring)]); }
     if(k<0){ const I=geo.index.array; for(let f=0;f<I.length;f+=3){ const tmp=I[f+1]; I[f+1]=I[f+2]; I[f+2]=tmp; } geo.index.needsUpdate=true; geo.computeVertexNormals(); } }
-  const FALC_COL=0x66302C;   // v44: the liver's red-brown, a step paler than the surrounding capsule; liver skin, not the warm serosa rim
+  const FALC_COL=0x8E4F40;   // v44: the liver's red-brown (Task 8 palette, #7A3B2E superior), a step paler; liver skin, not the warm serosa rim
   const fm=skin(mat(FALC_COL,{roughness:0.42,clearcoat:0.55,clearcoatRoughness:0.26,sheen:0.10,sheenColor:new THREE.Color(0xB88078),sheenRoughness:0.6,
     emissive:new THREE.Color(FALC_COL).multiplyScalar(0.02)}),'liver');
   const fmesh=tag(new THREE.Mesh(geo,fm),'Falciform ligament'); g.add(fmesh);
@@ -1583,6 +1583,8 @@ function falciformBuild(body){
    thickness and position bakes → albedo, normal and ORM = R occlusion, G roughness, B clearcoat / wetness), 4K on desktop
    and 2K on phones, chosen at load (phones had no liver maps before). The tiling detail map replaces the generic skin atlas
    on the liver at close range (desktop), with the macro maps carrying colour, capsular veins, creases, wetness and AO. */
+/* v44: uLvMean (skin uniforms) is the mean of the composed liver albedo (bake44.py prints it), so pathology colours keep
+   their luminance when they take only the map's light/dark pattern */
 const LIVER_PHONE=innerWidth<=860||(innerHeight<=520&&matchMedia('(pointer:coarse)').matches);
 const LIVER_DETAIL_TEX=(()=>{ if(LIVER_PHONE) return null;
   const t=new THREE.TextureLoader().load('liver42_detail.png'); t.wrapS=t.wrapT=THREE.RepeatWrapping; t.anisotropy=renderer.capabilities.getMaxAnisotropy(); t.colorSpace=THREE.NoColorSpace; return t; })();
