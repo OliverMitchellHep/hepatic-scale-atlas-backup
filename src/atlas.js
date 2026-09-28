@@ -732,6 +732,11 @@ function treeMesh(seeds, colour, rad0, len0, depth, spread, limit, opacity){
 }
 const HILUM_IN  = PT(-0.28, 0.06, 0.00);   // inside the parenchyma, above the porta
 const HILUM_OUT = PT(-0.28,-0.16, 0.00);   // porta hepatis, roof of the visceral bowl
+/* v45: the portal trunk's course, shared by the vessel, the thrombus / cavernoma sweeps and the flow routes. v44 ran
+   PT_UP → HILUM_OUT → HILUM_IN: the trunk dipped to the porta and turned sharply up into the bifurcation (41.8°/mm).
+   HILUM_OUT is replaced on the trunk by a point on the straight run from PT_UP, so the trunk rises smoothly into the
+   unchanged bifurcation (HILUM_IN); max bend 41.8 → 4.3°/mm. CONF → SMV–splenic confluence. */
+const TRUNK_UP = new THREE.Vector3(-0.215,-0.180,0.222);
 const HV_IN     = new THREE.Vector3(-0.12, 0.72,-0.02);   // beneath the model's hepatic venous outflow
 
 /* ════════════ smooth vessel systems ════════════ */
@@ -1183,7 +1188,7 @@ function buildPatho(g,L,K){
   umb.position.copy(UMBIL); umb.lookAt(UMBIL.clone().add(nrm)); umb.visible=false; L.portal.add(umb); cap.extra=[umb];
 
   /* — portal cavernoma (chronic PVT): tortuous periportal channels bypassing the occluded trunk — */
-  const trunkC=new THREE.CatmullRomCurve3([K.CONF,PT(0.08,-1.12,-0.32),K.PT_MID,K.PT_UP,HILUM_OUT,HILUM_IN]);
+  const trunkC=new THREE.CatmullRomCurve3([K.CONF,PT(0.08,-1.12,-0.32),K.PT_MID,K.PT_UP,TRUNK_UP,HILUM_IN]);
   const tfr=trunkC.computeFrenetFrames(80,false);
   const cav=col('cav',L.portal,'Portal cavernoma'), cavList=[];
   for(let j=0;j<8;j++){ const pts=[];
@@ -1288,7 +1293,7 @@ function buildPatho(g,L,K){
   const lil=new THREE.Color(0xC2AEF2), blu=new THREE.Color(0x9DBBF2);
   const SRC_S=[K.SMV0,PT(0.18,-1.80,-0.30),K.CONF];
   const SRC_P=[K.SPL0,V3(1.564,-0.071,-0.550),V3(1.470,-0.175,-0.461),V3(1.412,-0.232,-0.381),V3(1.348,-0.291,-0.336),V3(1.268,-0.333,-0.314),V3(1.192,-0.367,-0.307),V3(1.126,-0.389,-0.299),V3(1.077,-0.397,-0.281),V3(1.021,-0.397,-0.262),V3(0.968,-0.366,-0.211),V3(0.904,-0.341,-0.140),V3(0.801,-0.305,0.046),V3(0.696,-0.299,0.240),PT(0.55,-1.42,-0.55),K.CONF];
-  const TRUNK=[PT(0.08,-1.12,-0.32),K.PT_MID,K.PT_UP,HILUM_OUT,HILUM_IN];
+  const TRUNK=[PT(0.08,-1.12,-0.32),K.PT_MID,K.PT_UP,TRUNK_UP,HILUM_IN];
   const IVC_UP=[PT(-0.33,0.97,0.00),PT(-0.33,1.30,0.06)];
   P.routes={hp:[],cav:[],tips:[],col:{},hf:[],hv:{}};
   K.tails.forEach((tl,i)=>{ const src=i%3===2?SRC_P:SRC_S;
@@ -1757,7 +1762,7 @@ function buildMacro(){
   const IMV0=nearOn(SPLp,PT(0.72,-1.39,-0.60)), LGV0=nearOn(SPLp,PT(0.15,-1.30,-0.37));
   PVe.path([PT(0.70,-2.10,-0.62),PT(0.72,-1.75,-0.62),PT(0.72,-1.39,-0.60).lerp(IMV0,0.5),IMV0],0.024,0.030,'Inferior mesenteric vein');
   PVe.path([PT(0.56,-0.62,-0.42),PT(0.40,-0.98,-0.42),PT(0.15,-1.30,-0.37).lerp(LGV0,0.5),LGV0],0.017,0.023,'Left gastric vein');
-  PVe.path([CONF,PT(0.08,-1.12,-0.32),PT_MID,PT_UP,HILUM_OUT,HILUM_IN],0.084,0.078,'Portal trunk');
+  PVe.path([CONF,PT(0.08,-1.12,-0.32),PT_MID,PT_UP,TRUNK_UP,HILUM_IN],0.084,0.078,'Portal trunk');
 
   const PVi=new Vessels();
   const RPV_D=PT(-0.66,0.04,-0.05), RA=PT(-0.82,0.02,0.24), RP=PT(-0.92,0.02,-0.34);
