@@ -1579,17 +1579,19 @@ function falciformBuild(body){
   g.userData.P0=P; g.userData.teres=teres; return g;
 }
 /* v42: baked liver maps (Blender, see v42 pipeline doc). WebP: the artifact host does not serve .ktx2 (tested 27 Sept).
-   Desktop only: phones keep the v41 triplanar skin. The tiling detail map replaces the generic skin atlas on the liver at
-   close range (lobular micro-relief), with the macro maps carrying colour, capsular veins, creases, wetness and AO. */
-const LIVER_DETAIL_TEX=(()=>{ if(innerWidth<=860||(innerHeight<=520&&matchMedia('(pointer:coarse)').matches)) return null;
+   v44: the maps come from pipeline/bake44.py (one scripted headless run: tangent normal, self-AO, cavity, curvature,
+   thickness and position bakes → albedo, normal and ORM = R occlusion, G roughness, B clearcoat / wetness), 4K on desktop
+   and 2K on phones, chosen at load (phones had no liver maps before). The tiling detail map replaces the generic skin atlas
+   on the liver at close range (desktop), with the macro maps carrying colour, capsular veins, creases, wetness and AO. */
+const LIVER_PHONE=innerWidth<=860||(innerHeight<=520&&matchMedia('(pointer:coarse)').matches);
+const LIVER_DETAIL_TEX=(()=>{ if(LIVER_PHONE) return null;
   const t=new THREE.TextureLoader().load('liver42_detail.png'); t.wrapS=t.wrapT=THREE.RepeatWrapping; t.anisotropy=renderer.capabilities.getMaxAnisotropy(); t.colorSpace=THREE.NoColorSpace; return t; })();
 function liverTex42(...mats){
-  if(!LIVER_DETAIL_TEX) return;
-  const ld=new THREE.TextureLoader(), an=renderer.capabilities.getMaxAnisotropy();
+  const ld=new THREE.TextureLoader(), an=renderer.capabilities.getMaxAnisotropy(), tag=LIVER_PHONE?'2k':'4k';
   const L=(f,cs)=>new Promise((ok,no)=>ld.load(f,t=>{ t.colorSpace=cs; t.anisotropy=an; ok(t); },undefined,()=>no(new Error(f))));
-  Promise.all([L('liver42_albedo.webp',THREE.SRGBColorSpace),L('liver42_normal.webp',THREE.NoColorSpace),L('liver42_orm.webp',THREE.NoColorSpace)])
+  Promise.all([L(`liver44_albedo_${tag}.webp`,THREE.SRGBColorSpace),L(`liver44_normal_${tag}.webp`,THREE.NoColorSpace),L(`liver44_orm_${tag}.webp`,THREE.NoColorSpace)])
     .then(([A,Nm,O])=>{ for(const m of mats){ const U=m.userData.skin; if(!U) continue;
-        U.tLvA.value=A; U.tLvO.value=O; U.tSkin.value=LIVER_DETAIL_TEX; U.uSkS.value.set(3.9,9,1); U.uSkK.value.set(0.00006,0.00012,0.04,0);
+        U.tLvA.value=A; U.tLvO.value=O; if(LIVER_DETAIL_TEX) U.tSkin.value=LIVER_DETAIL_TEX; U.uSkS.value.set(3.9,9,1); U.uSkK.value.set(0.00006,0.00012,0.04,0);
         U.uSkK2.value.set(0,0.10,0.35); U.uLvNod.value=1; if(m.clearcoat>0.5){ m.userData.cc42=true; }
         m.normalMap=Nm; m.normalScale=new THREE.Vector2(1,1); m.userData.nScale=1; m.defines=Object.assign(m.defines||{},{SKIN_TEX42:''}); m.needsUpdate=true; }
       LIVER_TEX.ready=true; const u=tiers[0].inner&&tiers[0].inner.userData; if(u&&u.plainMat){ u.forceCirr=true; applyCirrhosis(u,state.fibrosis); } })
