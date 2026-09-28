@@ -95,21 +95,21 @@ class Falciform:
         m = np.zeros(n); rel = np.zeros(n); fib = np.zeros(n); kind = np.zeros(n)
         dist, i = self.tree.query(X, distance_upper_bound=W_B + COR_L + 0.3)
         near = np.isfinite(dist); ii = i[near]; Xn = X[near]
-        s = self.s[ii]; D = X[near] - self.C[ii]
+        D = X[near] - self.C[ii]; s = self.s[ii] + np.einsum('ij,ij->i', D, self.T[ii])   # continuous (sample steps sawed the edge)
         d = np.einsum('ij,ij->i', D, self.A[ii]); h = np.einsum('ij,ij->i', D, self.N[ii])
-        onsurf = np.abs(h) < 0.06
-        if nrm is not None: onsurf &= np.einsum('ij,ij->i', nrm[near], self.N[ii]) > 0.2
+        ss = lambda x, e0, e1: np.clip((x - e0) / (e1 - e0), 0, 1) ** 2 * (3 - 2 * np.clip((x - e0) / (e1 - e0), 0, 1))
+        onsurf = 1 - ss(np.abs(h), 0.035, 0.07)                           # smooth (a hard cut here jagged the fan's edge)
+        if nrm is not None: onsurf = onsurf * ss(np.einsum('ij,ij->i', nrm[near], self.N[ii]), 0.10, 0.30)
         # irregular edges: slow wobble along the length and fine jitter
         wob = 1 + 0.10 * fbm(np.c_[s * 9, np.zeros_like(s), np.full_like(s, 3.1)], 2, seed=201)
         jit = 0.22 / MM * fbm(Xn * 60.0, 2, seed=203)                     # gently irregular, not serrated
-        ss = lambda x, e0, e1: np.clip((x - e0) / (e1 - e0), 0, 1) ** 2 * (3 - 2 * np.clip((x - e0) / (e1 - e0), 0, 1))
         # band
         w = W0 * wob + jit; u = np.abs(d) / w
-        band = (1 - ss(u, 0.80, 1.12)) * (1 - ss(s, self.sA + 1 / MM, self.sA + 5 / MM)) * ss(s, 0, 1.5 / MM)
+        band = (1 - ss(u, 0.74, 1.16)) * (1 - ss(s, self.sA + 1 / MM, self.sA + 5 / MM)) * ss(s, 0, 1.5 / MM)
         # fan
         f = np.clip((s - self.sA) / (self.sB - self.sA), 0, 1); wf = W0 + f * (W_B - W0) + jit; inF = (s >= self.sA - 2 / MM) & (s <= self.sB + 0.5 / MM)
-        ef = 1 - ss(np.abs(d), wf - 0.4 / MM, wf + 0.6 / MM)                               # inside the fan outline
-        lay = ef * (1 - ss(np.abs(d), wf - LAYER - 0.6 / MM, wf - LAYER + 0.6 / MM))         # the two diverging layers
+        ef = 1 - ss(np.abs(d), wf - 0.7 / MM, wf + 0.8 / MM)                               # inside the fan outline (v45 T10: softer, no sawtooth)
+        lay = ef * (1 - ss(np.abs(d), wf - LAYER - 0.8 / MM, wf - LAYER + 0.8 / MM))         # the two diverging layers
         fan = inF * np.maximum(lay, ef * (0.62 + 0.38 * (1 - ss(s, self.sA, self.sA + 12 / MM))))   # membrane thins away from the apex
         # coronary: a transverse band on the superior surface through the fan's base, running out beyond its corners
         Db = Xn - self.CB; t = Db @ self.TB; lat = np.abs(Db @ self.AB)
@@ -129,7 +129,9 @@ class Falciform:
         fv = np.select([k == 0, k == 3], [s * 14, lat * 14], (s - self.sA) * 14)
         fb = fbm(np.c_[fu, fv, np.full_like(fu, 7.7)], 3, seed=207)
         m[near] = mm; kind[near] = k; fib[near] = fb * (mm > 0)
-        rel[near] = mm * (hgt * prof + 0.05 / MM * fb)
+        # relief tapers over ~3 mm inside the fan's outline (a plateau ending in a 1.5 mm cliff stair-stepped in the normal map)
+        taper = np.where((k == 1) | (k == 2), 1 - ss(np.abs(d), wf - 3.5 / MM, wf + 0.5 / MM), 1.0)
+        rel[near] = mm * (hgt * prof * taper + 0.05 / MM * fb)
         return m, kind, fib, rel
 
 

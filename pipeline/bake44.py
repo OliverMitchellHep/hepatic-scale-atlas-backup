@@ -29,7 +29,7 @@ import numpy as np
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from noise3 import fbm, worley_f2f1
+from noise3 import fbm, worley_f2f1, worley_f1
 
 DATA = ROOT / 'data/liver-data.json'
 MM = 69.9757
@@ -161,7 +161,19 @@ def liver_height(X):
     g = fbm(wx * 2.6, 3, seed=7); allow = np.clip((fbm(X * 1.1, 2, seed=8) + 0.05) / 0.35, 0, 1)
     h += -0.0022 * np.exp(-(g / 0.045) ** 2) * allow
     h += 0.0009 * liver_veins(X)                                                         # veins, faintly raised
-    return h + 0.0017 * fbm(X * 52.0, 3, seed=11)                                        # coarse capsular grain
+    h += 0.0080 * liver_nodules(X)                                                       # v45 (Task 10): surface nodularity
+    return h + 0.0011 * fbm(X * 52.0, 3, seed=11)                                        # capsular grain (v44 0.0017: shimmered)
+
+
+def liver_nodules(X):
+    """v45: soft surface nodularity, ~6-8 mm: rounded domes (a Gaussian of the distance to jittered, domain-warped nodule
+    centres, Worley F1) with shallow valleys between them, in [0, 1] x a slow amplitude drift. No grooves between cells
+    (the F2-F1 crease field read as a cellular net). Sized to read at the default distance; the normal map is mip-mapped,
+    so there is no finer-than-a-pixel detail to shimmer"""
+    w = X + 0.035 * np.stack([fbm(X * 4.0, 2, seed=401), fbm(X * 4.0 + 2.7, 2, seed=402), fbm(X * 4.0 + 5.9, 2, seed=403)], -1)
+    f1 = worley_f1(w * 9.0, seed=405); dome = np.exp(-(f1 / 0.36) ** 2)
+    amp = np.clip(0.65 + 0.5 * fbm(X * 1.6, 2, seed=407), 0.3, 1.0)
+    return (dome - 0.5) * amp
 
 
 def stage_high(organ, cfg):
@@ -309,7 +321,8 @@ def fossa_fields(X, nrm=None):
 FALC_COL = '#DDCDAF'   # v45: pale cream / off-white fibrous tissue, clearly paler than the liver
 
 
-LIVER_SUP, LIVER_INF = '#7A3B2E', '#5A2433'   # v44 (Task 8): browner diaphragmatic surface, deeper purple-red visceral surface
+LIVER_SUP, LIVER_INF = '#5E2A1F', '#431628'   # v45 (Task 10): deeper brown superior, deeper purple inferior (v44 #7A3B2E / #5A2433)
+TRANS_SHIFT = 0.25   # v45: the superior→inferior transition sits 0.25 higher in normal-y (same smoothstep width, 1.15)
 
 
 def compose_liver(X, ao, cav, curv, thick, onrm=None):
@@ -323,7 +336,7 @@ def compose_liver(X, ao, cav, curv, thick, onrm=None):
     sup, inf, dark = lin(LIVER_SUP), lin(LIVER_INF), lin('#2E1018')
     ny = onrm[:, 1] if onrm is not None else np.zeros(len(X))
     lf = ev(lambda x: fbm(x * 1.3, 3, seed=91))                                    # ~5 cm drift of the transition
-    t = np.clip((ny + 0.50 * lf + 0.15 - (-0.55)) / (0.60 - (-0.55)), 0, 1); wgt = t * t * (3 - 2 * t)
+    t = np.clip((ny + 0.50 * lf + 0.15 - TRANS_SHIFT - (-0.55)) / (0.60 - (-0.55)), 0, 1); wgt = t * t * (3 - 2 * t)
     col = inf[None] * (1 - wgt)[:, None] + sup[None] * wgt[:, None]
     m2 = ev(lambda x: fbm(x * 6.0, 4, seed=33)); m3 = ev(lambda x: fbm(x * 30.0, 2, seed=45))
     vn = ev(liver_veins); wet = ev(lambda x: fbm(x * 2.2, 3, seed=81))
@@ -372,6 +385,10 @@ def stage_compose(organ, cfg):
     args = (X, g['ao'][cov], g['cav'][cov], g['curv'][cov], np.clip(th, 0, 1))
     col, rough, wet = compose_pancreas(*args) if organ == 'pancreas' else compose_liver(*args, onrm=on[cov] if on is not None else None)
     mean = col.mean(0); print('compose: mean albedo (linear)', mean.round(4), 'sRGB #%02X%02X%02X' % tuple((mean ** (1 / 2.2) * 255 + 0.5).astype(int)), flush=True)
+    if organ == 'liver':   # v45: the page's reference (uLvMean) is the tissue mean, without the falciform and the gallbladder bed
+        sub = slice(None, None, 20); Xs = X[sub]; Ns = on[cov][sub] if on is not None else None   # subsample (memory)
+        tis = (falciform().fields(Xs, Ns)[0] < 0.01) & (fossa_fields(Xs, Ns)[0] < 0.01)
+        mt = col[sub][tis].mean(0); print('compose: liver tissue mean albedo sRGB #%02X%02X%02X (uLvMean)' % tuple((mt ** (1 / 2.2) * 255 + 0.5).astype(int)), flush=True)
     A = np.zeros((R, R, 3), np.float32); A[cov] = col
     ORM = np.zeros((R, R, 3), np.float32); ORM[cov] = np.stack([g['ao'][cov], rough, wet], 1)
     _, ind = distance_transform_edt(~cov, return_indices=True)            # bleed charts into the gutters (no mip halos)

@@ -330,7 +330,7 @@ function skin(m,kind,rest=false){
   m.envMapIntensity=(SKIN_ENV[kind]??1)*R36.env; m.userData.skinKind=kind;
   const U={tSkin:{value:SKIN_TEX}, uSkS:{value:new THREE.Vector3(...k.S)}, uSkK:{value:new THREE.Vector4(...k.K)},
            uSkK2:{value:new THREE.Vector3(...k.K2)}, uSkVein:{value:new THREE.Color(k.vein)}, uSkRim:{value:new THREE.Color(k.rim).multiplyScalar(0.22)}, uSkLob:{value:1}, uSkDbg:{value:0},
-           tLvA:{value:null}, tLvO:{value:null}, tOrgO:{value:null}, uLvTis:{value:new THREE.Color(C.tissue)}, uLvMean:{value:new THREE.Color(0x6A3130)}, uLvNod:{value:0}};
+           tLvA:{value:null}, tLvO:{value:null}, tOrgO:{value:null}, uLvTis:{value:new THREE.Color(C.tissue)}, uLvMean:{value:new THREE.Color(0x4E2024)}, uLvNod:{value:0}};
   m.userData.skin=U;
   if(rest) m.defines=Object.assign(m.defines||{},{SKIN_REST:''});
   if(lite) m.defines=Object.assign(m.defines||{},{SKIN_LITE:''});

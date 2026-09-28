@@ -27,3 +27,11 @@ def worley_f2f1(X,seed=0):
                 c=I+np.array([dx,dy,dz]); fp=np.stack([_hash(c[...,0],c[...,1],c[...,2],seed+s) for s in (0,1,2)],-1)
                 d=np.linalg.norm(c+fp-X,axis=-1); m1=d<f1; f2=np.where(m1,f1,np.minimum(f2,d)); f1=np.where(m1,d,f1)
     return f2-f1
+def worley_f1(X,seed=0):
+    X=np.asarray(X,np.float64); I=np.floor(X).astype(np.int64); f1=np.full(X.shape[:-1],9.0)
+    for dx in (-1,0,1):
+        for dy in (-1,0,1):
+            for dz in (-1,0,1):
+                c=I+np.array([dx,dy,dz]); fp=np.stack([_hash(c[...,0],c[...,1],c[...,2],seed+s) for s in (0,1,2)],-1)
+                f1=np.minimum(f1,np.linalg.norm(c+fp-X,axis=-1))
+    return f1
