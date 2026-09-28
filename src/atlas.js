@@ -221,7 +221,10 @@ scene.background = new THREE.Color(0x070A0E);
 scene.fog = new THREE.FogExp2(0x070A0E, 0.020);
 
 const camera = new THREE.PerspectiveCamera(42, 1, 0.05, 500);
-const HOME = new THREE.Vector3(0.061, -0.145, 7.137);   // v38: 22% further out than v37 (0.05,−0.20,5.85)
+/* v45: pulled back along the v38 direction (×2.04 from the orbit target) so the whole ribcage (ribs 1–12, costal cartilages,
+   sternum, T1–T12) fits a 16:9 desktop frame with the side panel open; the orbit target (0,−0.45,0) is unchanged.
+   v38–v44: (0.061,−0.145,7.137). */
+const HOME = new THREE.Vector3(0.124, 0.172, 14.559);
 camera.position.copy(HOME);
 
 const pmrem = new THREE.PMREMGenerator(renderer);
