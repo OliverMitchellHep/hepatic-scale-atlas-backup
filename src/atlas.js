@@ -1197,7 +1197,7 @@ function buildPatho(g,L,K){
   /* — Budd–Chiari: hepatic vein thrombosis, IVC web, intrahepatic 'spider-web' collaterals — */
   const clotM=mat(0x6E1A26,{roughness:0.78,clearcoat:0.12,emissive:new THREE.Color(0x6E1A26).multiplyScalar(0.28)});
   const cap5=u=>Math.pow(Math.min(1,u/0.08,(1-u)/0.08),0.45);
-  const hvClot=[[K.rhv,0.45,0.063],[K.mhv,0.45,0.055],[K.lhv,0.40,0.052],[[K.OST,K.CT],1,0.068]].map(([pts,b,r],i)=>
+  const hvClot=[[K.rhv,0.45,0.063],[K.mhv,0.45,0.055],[K.lhv,0.40,0.052],[[K.OSTM,K.CT],1,0.068]].map(([pts,b,r],i)=>
     sweep(new THREE.CatmullRomCurve3(pts),0,b,(u,th)=>r*(0.55+0.45*cap5(u))*(1+0.05*Math.sin(th*4+u*20)),40,16,i));
   P.bcs.hv=metaMesh(mergeMeta(hvClot),clotM,'Hepatic vein thrombosis'); P.bcs.hv.visible=false; L.hepaticVein.add(P.bcs.hv);
   const IVCC=new THREE.CatmullRomCurve3([PT(-0.33,0.55,-0.40),PT(-0.33,0.97,0.00)]);
@@ -1319,8 +1319,8 @@ function buildPatho(g,L,K){
     return all.filter(p=>p.y>y); };
   const hv=P.routes.hv;
   hv.rhv=hf.route('rhv',rev(K.rhv).concat(IVC_UP),{c0:blu});
-  hv.mhv=hf.route('mhv',rev(K.mhv).concat([K.OST],IVC_UP),{c0:blu});
-  hv.lhv=hf.route('lhv',rev(K.lhv).concat([K.OST],IVC_UP),{c0:blu});
+  hv.mhv=hf.route('mhv',rev(K.mhv).concat([K.OSTM],IVC_UP),{c0:blu});
+  hv.lhv=hf.route('lhv',rev(K.lhv).concat([K.OSTM],IVC_UP),{c0:blu});
   hv.cau=hf.route('cau',caudVeins[0].concat(IVC_FROM(caudVeins[0][2].y+0.01)),{c0:blu});
   hv.cau2=hf.route('cau2',caudVeins[1].concat(IVC_FROM(caudVeins[1][2].y+0.01)),{c0:blu});
   hv.ivc=hf.route('ivc',IVC_FROM(-3),{c0:blu});
@@ -1815,9 +1815,14 @@ function buildMacro(){
   const HV=new Vessels();
   HV.path([PT(-0.33,0.97,0.00),PT(-0.33,0.55,-0.40),PT(-0.31,-0.10,-0.60),PT(-0.29,-0.70,-0.60),PT(-0.27,-1.40,-0.52)],
           0.090,0.088,'IVC');
-  const OST=PT(-0.33,0.80,-0.16), CT=PT(-0.20,0.80,-0.10);
-  const rhv=HV.path([OST,PT(-0.60,0.66,-0.20),PT(-0.95,0.40,-0.14),PT(-1.15,0.02,-0.04),PT(-1.28,-0.45,0.04)],0.066,0.028,'Right hepatic vein');
-  HV.path([OST,CT],0.070,0.066,'Middle and left hepatic vein trunk');
+  /* v45: the ostia sit on the anterior / anterolateral wall of the suprahepatic IVC at y 0.71, just below the caval
+     opening of the diaphragm (centre y 0.83). The right hepatic vein has its own ostium, anterolateral right (azimuth
+     +49° from anterior; v44 left the IVC straight laterally, +112°), and curves out through segment VIII to its v44 course.
+     The middle and left veins join a short common trunk (≈10 mm) that enters anterolateral left (−29°) from anteroinferior.
+     CT-frame points; OST = right hepatic vein ostium, OSTM = common trunk ostium, CT = MHV/LHV confluence. */
+  const OST=V3(0.131,0.71,0.073), OSTM=V3(0.214,0.71,0.092), CT=V3(0.23,0.62,0.21);
+  const rhv=HV.path([OST,V3(0.03,0.71,0.165),V3(-0.25,0.64,0.10),V3(-0.62,0.52,-0.08),PT(-0.95,0.40,-0.14),PT(-1.15,0.02,-0.04),PT(-1.28,-0.45,0.04)],0.066,0.028,'Right hepatic vein');
+  HV.path([OSTM,CT],0.070,0.066,'Middle and left hepatic vein trunk');
   const mhv=HV.path([CT,PT(-0.16,0.52,0.08),PT(-0.20,0.15,0.30),PT(-0.28,-0.14,0.58)],0.058,0.026,'Middle hepatic vein');
   const lhv=HV.path([CT,PT(0.18,0.62,-0.06),PT(0.62,0.34,0.02),PT(1.08,0.20,0.08)],0.054,0.022,'Left hepatic vein');
   HV.path([PT(-0.27,-1.40,-0.52),PT(-0.25,-1.80,-0.50),PT(-0.24,-2.20,-0.48)],0.088,0.090,'IVC');
@@ -1854,7 +1859,7 @@ function buildMacro(){
     rhd:firstSeg('Right hepatic duct'), lhd:firstSeg('Left hepatic duct')};
 
   /* ── pathology engine: collaterals, thrombus, TIPSS, Budd–Chiari, biliary obstruction, flow ── */
-  const K={LGV0,MPD,SMV0,CONF,PT_MID,PT_UP,SPL0,RPV_D,RA,RP,LT,UMB_MID,UMB,OST,CT,rhv:rhv.pts,mhv:mhv.pts,lhv:lhv.pts,
+  const K={LGV0,MPD,SMV0,CONF,PT_MID,PT_UP,SPL0,RPV_D,RA,RP,LT,UMB_MID,UMB,OST,OSTM,CT,rhv:rhv.pts,mhv:mhv.pts,lhv:lhv.pts,
     OES,GOJ,SPLEEN_C,spleen,LRV_PTS,ducts,gbPts,cysPts,conf,cysJ,amp0,BD_ROOT,bilMeshes,HVsegs:HV.segs,HAsegs:HA.segs.concat(HAi.segs),HA_ROOT,
     tails:[[PT(-0.48,0.06,-0.04),RPV_D,RA,segTarget(5)],[PT(-0.48,0.06,-0.04),RPV_D,RA,segTarget(8)],
            [PT(-0.48,0.06,-0.04),RPV_D,RP,segTarget(6)],[PT(-0.48,0.06,-0.04),RPV_D,RP,segTarget(7)],
