@@ -614,6 +614,24 @@ function applyCirrhosis(u,f){
   for(const mm of [u.plainMat,u.segMat]) if(mm.normalMap) mm.normalScale.setScalar(1-0.7*THREE.MathUtils.smoothstep(step,0.2,0.8));
   if(u.surfVeins) u.surfVeins.userData.cirrFade=1-THREE.MathUtils.smoothstep(step,0.25,0.70);
 }
+/* v44: the falciform fold follows the parenchyma's morph (cirrhotic nodules move the capsule by up to ~±3 mm, far more
+   than the 0.7 mm fold, so a rigidly scaled fold floated or sank at F3–F4): each fold vertex takes the shrink, nodule
+   displacement and caudate morph of its nearest parenchyma vertex (nearest found once, on the rest shape). */
+function falcFollow(MG,sc,cw,CC){
+  const f=MG.falcG&&MG.falcG.children.find(o=>o.userData.pick==='Falciform ligament'); if(!f) return;
+  const g=f.geometry, A=g.attributes.position, P0=MG.P0, N0=MG.N0, pv=MG.pv;
+  if(!g.userData.rest){ g.userData.rest=A.array.slice(); const near=new Int32Array(A.count);
+    // candidates: parenchyma vertices near the fold's bounding box
+    g.computeBoundingBox(); const bb=g.boundingBox.clone().expandByScalar(0.08), cand=[];
+    for(const v of pv){ const x=P0[v*3],y=P0[v*3+1],z=P0[v*3+2]; if(x>=bb.min.x&&x<=bb.max.x&&y>=bb.min.y&&y<=bb.max.y&&z>=bb.min.z&&z<=bb.max.z) cand.push(v); }
+    const R=g.userData.rest; for(let i=0;i<A.count;i++){ let bd=1e9,bi=cand[0]; const x=R[i*3],y=R[i*3+1],z=R[i*3+2];
+      for(const v of cand){ const d=(P0[v*3]-x)**2+(P0[v*3+1]-y)**2+(P0[v*3+2]-z)**2; if(d<bd){ bd=d; bi=v; } } near[i]=bi; }
+    g.userData.near=near; }
+  const R=g.userData.rest, near=g.userData.near, Q=A.array;
+  for(let i=0;i<A.count;i++){ const v=near[i], d=MG.dispV[v], w=MG.caudW[v]*cw;
+    for(let a=0;a<3;a++) Q[i*3+a]=R[i*3+a]*sc + N0[v*3+a]*d + (P0[v*3+a]-CC[a])*w; }
+  A.needsUpdate=true; g.computeVertexNormals(); g.computeBoundingSphere();
+}
 /* parenchymal surface = anatomy × cirrhosis × pathology morphs (caudate hypertrophy, steatotic swelling)
    and colour = tissue → tawny cirrhosis → fatty yellow → rust (iron) → nutmeg congestion → septa */
 function surfaceUpdate(u){
@@ -628,10 +646,12 @@ function surfaceUpdate(u){
       const a=Math.sin(x*44+1.3)*Math.sin(y*41+0.7)*Math.sin(z*47+2.1), b=Math.sin(x*23+0.4)*Math.sin(y*27+2.2)*Math.sin(z*25+1.1);
       MG.mott[v]=a*0.75+b*0.35; } }
   const sc=cz.shrink*(1+0.035*m.fat+0.02*m.cong), cw=0.24*m.caud, CC=[SEGP.cx,SEGP.cy,SEGP.cz];
+  if(!MG.dispV) MG.dispV=new Float32Array(n);
   for(const v of pv){
-    const b = nod ? Math.sqrt(nod[v]) : 0.5, disp=cz.amp*(b-0.55)+cz.rough*(b-0.5), w=MG.caudW[v]*cw;
+    const b = nod ? Math.sqrt(nod[v]) : 0.5, disp=cz.amp*(b-0.55)+cz.rough*(b-0.5), w=MG.caudW[v]*cw; MG.dispV[v]=disp;
     for(let a=0;a<3;a++) P[v*3+a]=P0[v*3+a]*sc + N0[v*3+a]*disp + (P0[v*3+a]-CC[a])*w;
   }
+  falcFollow(MG,sc,cw,CC);
   MG.posAttr.needsUpdate=true;
   MG.parenchyma.computeVertexNormals(); MG.parenchyma.computeBoundingSphere();
   const col=u.fibCol, base=new THREE.Color(C.tissue), tan=new THREE.Color(0x724431),
@@ -652,7 +672,7 @@ function surfaceUpdate(u){
     if(nod){ const b=nod[v]; c.lerp(sept,Math.pow(1-b,2.2)*cz.sW*0.80); c.lerp(node,b*b*cz.sW*0.45); }
     col[v*3]=c.r; col[v*3+1]=c.g; col[v*3+2]=c.b;
   }
-  if(MG.falcG){ MG.falcG.visible=!!ligOn; MG.falcG.scale.setScalar(cz.shrink); }
+  if(MG.falcG){ MG.falcG.visible=!!ligOn; for(const t of MG.falcG.userData.teres||[]) t.scale.setScalar(cz.shrink); }
   if(!state.layers.segments){ MG.parenchyma.attributes.color.array.set(col); MG.parenchyma.attributes.color.needsUpdate=true; }
 }
 
@@ -4793,7 +4813,7 @@ const tmp=new THREE.Vector3(), clock=new THREE.Clock();
 const PERF={full:Math.min(devicePixelRatio,(innerWidth<=860||innerHeight<=520)?1.5:2), move:1, lastMoveT:-1e9, moving:false,
   cam:new THREE.Vector3(), q:new THREE.Quaternion(), fps:0, n:0, t0:performance.now(), occMs:0, rMs:0,
   el:null, on:false};
-PERF.move=Math.min(PERF.full,1);
+PERF.move=PERF.full;   // v44: same pixel ratio while moving (v43 dropped to 1× in motion: sharper at rest than rotating)
 const acA=new THREE.Color(0xE0574A), acB=new THREE.Color(0x9A4E92), accol=new THREE.Color();
 /* ── ambient occlusion (v37) ──
    RenderPass → GTAOPass → OutputPass (tone mapping and sRGB move into OutputPass) into a 4× MSAA half-float target.
@@ -4803,7 +4823,10 @@ const acA=new THREE.Color(0xE0574A), acB=new THREE.Color(0x9A4E92), accol=new TH
    units (0.07 ≈ 5 mm) and follows the macroscopic zoom. Phones (the MOBQ test) skip it: headless cost at 390×844 was +19% at full and +13% at half resolution
    against no change with it off, and real mobile GPUs pay more for full-screen passes. AO.half remains available. */
 const aoPhone=()=>innerWidth<=860||(innerHeight<=520&&matchMedia('(pointer:coarse)').matches);
-const AO={enabled:!aoPhone(), half:false, k:0, base:0.8, radius:0.07, w:0, h:0, pr:0, active:false};
+/* v44 acceptance: the image must not change between rotating and at rest. GTAO only ran at rest (fading in ~200 ms after
+   the camera stopped), so it is off; contact grounding and crease darkening come from the baked self-AO in the organ
+   maps (bake44.py), which is identical in motion. AO.enabled can still be set by hand for comparison. */
+const AO={enabled:false, half:false, k:0, base:0.8, radius:0.07, w:0, h:0, pr:0, active:false};
 const aoRT=new THREE.WebGLRenderTarget(1,1,{type:THREE.HalfFloatType,samples:4});
 const composer=new EffectComposer(renderer,aoRT);
 composer.addPass(new RenderPass(scene,camera));
@@ -4821,7 +4844,7 @@ gtao.overrideVisibility=function(){
   for(let i=1;i<tiers.length;i++) tiers[i].group.visible=false;
 };
 composer.addPass(gtao);
-addEventListener('resize',()=>{ AO.enabled=!aoPhone(); });
+
 composer.addPass(new OutputPass());
 /* the composer tone-maps the cleared background too (the direct path clears in output space), so feed it the linear
    colour that ACES maps back to the instrument background */
@@ -4853,11 +4876,11 @@ renderer.shadowMap.enabled=false;
 for(const k in LIGHTS) if(LIGHTS[k].isLight) LIGHTS[k].castShadow=false;
 function qualSet(h){ QUAL.high=!!h&&!aoPhone();
   AO.base=QUAL.high?1.0:0.8; gtao.updateGtaoMaterial({samples:QUAL.high?24:16});
-  const b=document.getElementById('btn-q'); if(b){ b.textContent='Quality: '+(QUAL.high?'High':'Standard'); b.setAttribute('aria-pressed',QUAL.high?'true':'false'); b.hidden=aoPhone(); }
+  const b=document.getElementById('btn-q'); if(b){ b.textContent='Quality: '+(QUAL.high?'High':'Standard'); b.setAttribute('aria-pressed',QUAL.high?'true':'false'); b.hidden=true; }   // v44: hidden: with GTAO off the setting no longer changes the image
   try{ localStorage.setItem('hsa-q',QUAL.high?'h':'s'); }catch(e){} }
 document.getElementById('btn-q').addEventListener('click',()=>qualSet(!QUAL.high));
 { let q='h'; try{ q=localStorage.getItem('hsa-q')||'h'; }catch(e){} qualSet(q==='h'); }
-addEventListener('resize',()=>{ if(aoPhone()&&QUAL.high) qualSet(false); const b=document.getElementById('btn-q'); if(b) b.hidden=aoPhone(); });
+addEventListener('resize',()=>{ if(aoPhone()&&QUAL.high) qualSet(false); const b=document.getElementById('btn-q'); if(b) b.hidden=true; });
 let booted=false;
 
 /* v43 render-on-demand. The frame loop still runs every animation frame (simulation ticks, flow, overlays), but the

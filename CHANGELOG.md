@@ -1,6 +1,6 @@
 # Changelog
 
-## v44 — scene, pancreas, falciform, liver material (in progress)
+## v44 — scene, pancreas, falciform, liver material (28 Sept 2026)
 - Shadows: real-time shadow maps removed everywhere (renderer, lights, meshes); grounding comes from AO. "Quality: High" now means more AO samples.
 - Spine alignment: the macroscopic scene root is rotated so the least-squares centreline through the T1–L5 vertebral body centroids is vertical. Drift from vertical over its 442 mm: before 68 mm (x) / 91 mm (z) (v43 tilted the model 14.4°), after 0.00 / 0.00 mm (`validate.py` spine-axis check, < 2 mm). Default orbit target = spine axis at liver mid-height. `pipeline/spine44.py` derives the constants.
 - Percutaneous biopsy view: same viewing angle, zoom removed: distance and target are fitted so the whole liver, right ribs 7–12 and the full needle path fit on screen (allowing for the side panel). The per-frame target-height follow now applies only as the zoom changes, so preset views (biopsy, SVT) keep their target.
@@ -10,6 +10,8 @@
 - Liver bake (`pipeline/bake44.py liver`, headless, reproducible): tangent-space normal, self-AO, cavity, curvature and thickness (plus position) baked from the high mesh; albedo, roughness and a clearcoat/wetness mask composed from them. 4K on desktop, 2K on phones, chosen at load (phones previously had no liver maps). WebP, not KTX2: the artifact host refuses `.ktx2`. `dist` budget 9 → 10 MB for the per-device sets.
 - Liver colour: heterogeneous, blending smoothly from a browner superior/diaphragmatic surface (#7A3B2E) to a deeper purple-red inferior/visceral surface (#5A2433), driven by each texel's baked object-space normal plus low-frequency 3D noise through a wide smoothstep (no boundary). Falciform re-matched a step paler than the new palette.
 - Liver surface: the lobule pattern is gone (the Worley lobule speckle in the albedo and the lobular close-range detail map, which read as blur at mid distance). New relief after maleinternalorans3dsmodel25 / tissue-liver-5: a slightly coarse capsular grain (~1.3 mm), broad contouring with a few long soft creases (v42's Worley creases made a cellular net once deepened), subcapsular veins faintly raised and darkened. Close range only: `liver44_micro.webp` (fine grain and soft pits, no cells), faded by screen footprint. Wet serosal clearcoat from the baked wetness mask; matte bare area, IVC groove and gallbladder fossa (checked in place). Lighting: environment map + key (world key and viewer headlight); the blue fill and amber rim lights are removed (the rim left gold streaks on the visceral surface), ambient lowered, environment raised.
+- Acceptance: the image no longer changes between rotating and at rest (v43 dropped to 1× pixel ratio in motion and faded GTAO in only at rest; GTAO is now off, the baked self-AO grounds the organs, and the Quality toggle is hidden). `validate.py` gains a hard `motion` check (moving frame vs rest frame) and reports rotation frame times. At F4 the falciform fold follows the cirrhotic nodules (it floated or sank before); no seam gaps at F4 (2,660 seam pairs, 0 mm).
+- Review screenshots per task in `review/<task>/` (`tests/review.py`); `review/0` is v43.
 
 ## v43 — foundation (27 Sept 2026)
 No intended visual change from v42.

@@ -14,6 +14,7 @@ Hard checks (fail the run):
   draw budget   draw calls / triangles with every default layer plus the context structures, under budget
   idle          render-on-demand: the page stops redrawing when nothing changes
   spine axis    the vertebral-body centreline is vertical in world space (X/Z drift < 2 mm over its length)
+  motion        a frame drawn while moving matches the frame at rest (rotation frame times are reported)
   screenshots   fixed views match tests/baseline/ within tolerance
 Warnings (reported, do not fail): registry entries not found in the scene (pathology-only or per-face names the census
 cannot reach), citations to guideline versions known to be superseded.
@@ -119,6 +120,21 @@ async def browser_checks(reg, update_census, rebaseline):
         fs = await page.evaluate('window.__atlas.frameStats()')
         check('draw budget', fs['calls'] <= BUDGET['calls'] and fs['triangles'] / 1000 <= BUDGET['triangles_k'],
               f'{fs["calls"]} calls (≤ {BUDGET["calls"]}), {fs["triangles"]/1000:.0f}k triangles (≤ {BUDGET["triangles_k"]}k)')
+        # motion: a frame drawn while the camera is moving must look the same as the frame at rest (no resolution drop, no
+        # AO that only exists at rest); and the frame-time profile while rotating (reported: SwiftShader times are not GPU times)
+        await page.evaluate("async()=>{ const A=window.__atlas; A.PERF.lastMoveT=-1e9; for(let i=0;i<6;i++) await new Promise(r=>requestAnimationFrame(r)); }")
+        await page.wait_for_timeout(1500); rest = OUT / 'motion_rest.png'; await page.screenshot(path=str(rest), timeout=180000)
+        await page.evaluate("async()=>{ const A=window.__atlas; A.PERF.lastMoveT=1e15; for(let i=0;i<6;i++) await new Promise(r=>requestAnimationFrame(r)); }")
+        mov = OUT / 'motion_moving.png'; await page.screenshot(path=str(mov), timeout=180000)
+        await page.evaluate("()=>{ window.__atlas.PERF.lastMoveT=-1e9; }")
+        A_ = np.asarray(Image.open(rest).convert('RGB'), np.int16); B_ = np.asarray(Image.open(mov).convert('RGB'), np.int16)
+        md = float(np.abs(A_ - B_).mean()); mf = float((np.abs(A_ - B_).max(-1) > 24).mean())
+        check('motion', md <= TOL['mean'] and mf <= TOL['frac_over_24'], f'moving vs at rest: mean {md:.2f}, {100*mf:.2f}% px > 24')
+        ft = await page.evaluate("""async()=>{ const A=window.__atlas, T=A.THREE, t=A.controls.target, c=A.camera, q=new T.Quaternion(), ax=new T.Vector3(0,1,0), ms=[];
+            let last=performance.now(); for(let i=0;i<40;i++){ const v=c.position.clone().sub(t).applyQuaternion(q.setFromAxisAngle(ax,Math.PI/40)); c.position.copy(t).add(v); c.lookAt(t);
+              await new Promise(r=>requestAnimationFrame(r)); const now=performance.now(); ms.push(now-last); last=now; }
+            ms.sort((a,b)=>a-b); return {med:ms[20], p95:ms[37], max:ms[39]}; }""")
+        notes.append(f'rotation (40 frames, 180°): median {ft["med"]:.0f} ms, p95 {ft["p95"]:.0f} ms, max {ft["max"]:.0f} ms per frame (SwiftShader, CPU); p95/median {ft["p95"]/max(ft["med"],1e-6):.2f}')
         # spine: the scene root is rotated so the vertebral-body centreline is vertical (world Y) within 2 mm over its length
         sp = await page.evaluate("async()=>{ const A=window.__atlas; await A.ctxLoad(); return A.spineCheck(); }")
         check('spine axis', sp and max(abs(sp['dxMm']), abs(sp['dzMm'])) < 2.0,

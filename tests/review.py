@@ -30,6 +30,10 @@ EXTRA = {
     'pancreas_close': {'t': [0.80, -0.46, 0.25], 'dir': [0.1, 0.15, 1], 'd': 1.3, 'layers': {'parenchyma': 'off', 'stomach': 'off', 'esophagus': 'off'}},
     'falciform_ant': {'t': [-0.30, 0.05, 0.75], 'dir': [0.05, 0.12, 1], 'd': 2.3, 'layers': {'stomach': 'off', 'esophagus': 'off', 'duodenum': 'off', 'pancreas': 'off', 'spleen': 'off', 'kidneys': 'off'}},
     'falciform_obl': {'t': [-0.30, 0.05, 0.75], 'dir': [0.75, -0.10, 1], 'd': 1.4, 'layers': {'stomach': 'off', 'esophagus': 'off', 'duodenum': 'off', 'pancreas': 'off', 'spleen': 'off', 'kidneys': 'off'}},
+    'f4_ant': {'t': [-0.2, 0.05, 0.2], 'dir': [0, 0.05, 1], 'd': 4.6, 'fib': 1, 'layers': {'stomach': 'off', 'esophagus': 'off', 'duodenum': 'off', 'pancreas': 'off', 'spleen': 'off', 'kidneys': 'off'}},
+    'f4_falciform': {'t': [-0.30, 0.05, 0.75], 'dir': [0.75, -0.10, 1], 'd': 1.4, 'fib': 1, 'layers': {'stomach': 'off', 'esophagus': 'off', 'duodenum': 'off', 'pancreas': 'off', 'spleen': 'off', 'kidneys': 'off'}},
+    'f4_inf': {'t': [-0.2, -0.2, 0.1], 'dir': [0.0, -0.85, 0.55], 'd': 4.6, 'fib': 1, 'layers': {'stomach': 'off', 'esophagus': 'off', 'duodenum': 'off', 'pancreas': 'off', 'spleen': 'off', 'kidneys': 'off'}},
+    'ghost_vessels': {'t': [-0.2, 0.05, 0.2], 'dir': [0.2, 0.15, 1], 'd': 4.2, 'layers': {'parenchyma': 'ghost'}},
     'liver_close': {'t': [-0.75, 0.25, 0.55], 'dir': [-0.15, 0.25, 1], 'd': 1.25, 'layers': {}},
 }
 
@@ -63,6 +67,7 @@ async def main(label, extra, only_extra=False):
         if extra:
             for name, v in EXTRA.items():
                 await p.evaluate("""(v)=>{ const A=window.__atlas, T=A.THREE; Object.assign(A.state.layers, A.LAYER_DEFAULTS, v.layers); A.applyModes();
+                    const sl=document.getElementById('sl-fib'); if(+sl.value!==(v.fib||0)){ sl.value=v.fib||0; sl.dispatchEvent(new Event('input')); }
                     const inner=A.tiers[0].inner; inner.updateMatrixWorld(true); const sc=new T.Vector3(); inner.getWorldScale(sc);
                     const t=inner.localToWorld(new T.Vector3(...v.t)), d=new T.Vector3(...v.dir).normalize().transformDirection(inner.matrixWorld);
                     A.controls.target.copy(t); A.camera.position.copy(t).addScaledVector(d,v.d*sc.x); A.camera.lookAt(t); A.controls.update(); A.PERF.lastMoveT=-1e9; }""", v)
