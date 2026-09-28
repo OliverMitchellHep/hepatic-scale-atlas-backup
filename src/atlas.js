@@ -402,13 +402,14 @@ diffuseColor.rgb=mix(diffuseColor.rgb,vec3(1.0,0.1,0.1),uSkDbg*skMat);
    (vsP), so the pattern holds still while a vessel dilates or the camera moves. Detail below ~1/16 px fades out
    (screen-derivative footprint), so it cannot shimmer; mipmaps and anisotropic filtering do the rest.
    VES: S tile repeats per model unit (1 unit ≈ 70 mm; tile vessels are 0.9–4.9 texels in radius), core / edge colours,
-   K = core, edge, relief (units), albedo irregularity; B irregular relief (units); mask: 1 = inferior surface only. */
+   K = core, edge, relief (units), albedo irregularity; B irregular relief (units); mask: 1 = inferior surface only.
+   v46b: D darkens the wall (albedo and emissive); H varies its darkness along the course (low-frequency field, ±H·~0.9). */
 const VES={
   gb:{S:0.42, core:0x5A1216, edge:0xC86E68, K:[1.00,0.60,0.0030,0.04], B:0.0005, mask:1},  // the stomach's vessels (Task 6)
-  artery:{S:1.5, core:0x5C0E14, edge:0xD8756A, K:[0.42,0.24,0.0007,0.04], B:0.0003},       // vasa vasorum: fine and faint (Task 9)
+  artery:{S:1.5, core:0x5C0E14, edge:0xD8756A, K:[0.42,0.24,0.0007,0.04], B:0.0003, D:0.84, H:0.28},       // vasa vasorum: fine and faint (Task 9)
   // surface vessels and irregular relief / mottling so the tubes do not read as clay (Task 10)
-  portal:{S:1.0, core:0x4A1838, edge:0x9C82CC, K:[0.55,0.30,0.0012,0.10], B:0.0012},
-  vein:  {S:1.0, core:0x3A1636, edge:0x6A8ACC, K:[0.55,0.30,0.0012,0.10], B:0.0012},
+  portal:{S:1.0, core:0x4A1838, edge:0x9C82CC, K:[0.55,0.30,0.0012,0.10], B:0.0012, D:0.82, H:0.30},
+  vein:  {S:1.0, core:0x3A1636, edge:0x6A8ACC, K:[0.55,0.30,0.0012,0.10], B:0.0012, D:0.82, H:0.30},
   bile:  {S:1.1, core:0x8A2E22, edge:0xDCCF8E, K:[0.50,0.30,0.0010,0.08], B:0.0010}
 };
 const VES_MATS=new Set();
@@ -419,7 +420,8 @@ function vesSkin(mesh,kind){
   const m=mesh.material, k=VES[kind], g=mesh.geometry; if(!k||!m||m.userData.ves) return mesh;
   if(!g.attributes.vsP) g.setAttribute('vsP',g.attributes.position.clone());
   const U={tVes:{value:VES_TEX}, uVsS:{value:k.S}, uVsCore:{value:new THREE.Color(k.core)}, uVsEdge:{value:new THREE.Color(k.edge)},
-           uVsK:{value:new THREE.Vector4(...k.K)}, uVsB:{value:k.B}};
+           uVsK:{value:new THREE.Vector4(...k.K)}, uVsB:{value:k.B}, uVsDH:{value:new THREE.Vector2(k.D??1,k.H??0)}};
+  if(k.D&&m.emissive) m.emissive.multiplyScalar(k.D);
   m.userData.ves=U; VES_MATS.add(m);
   if(k.mask) m.defines=Object.assign(m.defines||{},{VES_INF:''});
   const ob=m.onBeforeCompile, ck=m.customProgramCacheKey;
@@ -429,7 +431,7 @@ function vesSkin(mesh,kind){
       .replace('#include <begin_vertex>','#include <begin_vertex>\nvVsP=vsP; vVsN=objectNormal;');
     sh.fragmentShader=sh.fragmentShader
       .replace('#include <common>',`#include <common>
-uniform sampler2D tVes; uniform float uVsS; uniform vec3 uVsCore; uniform vec3 uVsEdge; uniform vec4 uVsK; uniform float uVsB;
+uniform sampler2D tVes; uniform float uVsS; uniform vec3 uVsCore; uniform vec3 uVsEdge; uniform vec4 uVsK; uniform float uVsB; uniform vec2 uVsDH;
 varying vec3 vVsP; varying vec3 vVsN;
 vec3 vsPerturb(vec3 sp, vec3 sn, vec2 dH, float fd){ vec3 sx=dFdx(sp), sy=dFdy(sp); vec3 r1=cross(sy,sn), r2=cross(sn,sx);
   float det=dot(sx,r1)*fd; vec3 gr=sign(det)*(dH.x*r1+dH.y*r2); return normalize(abs(det)*sn-gr); }`)
@@ -437,6 +439,9 @@ vec3 vsPerturb(vec3 sp, vec3 sn, vec2 dH, float fd){ vec3 sx=dFdx(sp), sy=dFdy(s
 vec3 vsN=normalize(vVsN), vsW=pow(abs(vsN),vec3(4.0)); vsW/=(vsW.x+vsW.y+vsW.z);
 vec3 vsQ=vVsP*uVsS;
 vec4 vsT=texture2D(tVes,vsQ.yz)*vsW.x+texture2D(tVes,vsQ.zx+vec2(0.37,0.11))*vsW.y+texture2D(tVes,vsQ.xy+vec2(0.71,0.53))*vsW.z;
+{ vec3 q=vVsP*uVsS*0.35;                                     // v46b: darker wall, darkness varying along the course
+  float lo=texture2D(tVes,q.yz+vec2(0.13,0.61)).a*vsW.x+texture2D(tVes,q.zx+vec2(0.52,0.29)).a*vsW.y+texture2D(tVes,q.xy+vec2(0.83,0.07)).a*vsW.z;
+  diffuseColor.rgb*=uVsDH.x*clamp(1.0+uVsDH.y*(lo-0.5)*4.0,0.4,1.6); }
 float vsFw=length(fwidth(vsQ))*1024.0;                       // tile texels per pixel
 float vsA=1.0-smoothstep(6.0,16.0,vsFw);
 #ifdef VES_INF
@@ -979,7 +984,8 @@ class Vessels{
         const rf = c ? segs[chain[c-1]].r1 : (sg.rf||endR.get(key(sg.pts[0]))||0);
         const rFn=rFnOf(sg,rf,c>0), ua=uAt(k0[c]), ub=uAt(k1[c]);
         for(let i=(c?1:0);i<=Ni;i++){ const t=i/Ni; rings.push({u:ua+(ub-ua)*t,t,si,r:Math.max(0.002,rFn(t))}); } });
-      const nr=rings.length, nv=nr*(R+1)+2;
+      const flatEnd=!!segs[chain[chain.length-1]].flat;   // v46b: a square-cut end (hard rim) instead of a shaded dome
+      const nr=rings.length, nv=nr*(R+1)+2+(flatEnd?R+1:0);
       const pos=new Float32Array(nv*3), nor=new Float32Array(nv*3), ctr=meta?new Float32Array(nv*3):null, bt=meta?new Float32Array(nv*2):null;
       // parallel-transport frame: no twist along the chain
       curve.getTangentAt(0,T); Nv.set(Math.abs(T.x)<0.9?1:0, Math.abs(T.x)<0.9?0:1, 0); Nv.addScaledVector(T,-Nv.dot(T)).normalize();
@@ -1004,7 +1010,13 @@ class Vessels{
         pos[c*3]=rg.p.x; pos[c*3+1]=rg.p.y; pos[c*3+2]=rg.p.z; const sgn=end?1:-1;
         nor[c*3]=rg.T.x*sgn; nor[c*3+1]=rg.T.y*sgn; nor[c*3+2]=rg.T.z*sgn;
         if(meta){ ctr[c*3]=rg.p.x; ctr[c*3+1]=rg.p.y; ctr[c*3+2]=rg.p.z; bt[c*2]=rg.t; bt[c*2+1]=rg.si; }
-        v++; const base=ri*(R+1);
+        v++; let base=ri*(R+1);
+        if(end&&flatEnd){ const b0=v;   // rim copies with the cap's (axial) normal: a crisp square edge
+          for(let j=0;j<=R;j++){ const q=(base+j)*3; pos[v*3]=pos[q]; pos[v*3+1]=pos[q+1]; pos[v*3+2]=pos[q+2];
+            nor[v*3]=rg.T.x; nor[v*3+1]=rg.T.y; nor[v*3+2]=rg.T.z;
+            if(meta){ ctr[v*3]=ctr[q]; ctr[v*3+1]=ctr[q+1]; ctr[v*3+2]=ctr[q+2]; bt[v*2]=1.0001; bt[v*2+1]=bt[(base+j)*2+1]; }   // t > 1 marks a flat-cap rim (metaNormals keeps its normal)
+            v++; }
+          base=b0; }
         for(let j=0;j<R;j++){ if(end) idx.push(c,base+j,base+j+1); else idx.push(c,base+j+1,base+j); fs.push(rg.si); } }
       const g=new THREE.BufferGeometry();
       g.setAttribute('position',new THREE.BufferAttribute(pos,3)); g.setAttribute('normal',new THREE.BufferAttribute(nor,3));
@@ -1130,8 +1142,9 @@ function flipWinding(g){ return g; }   // v19 per-mesh fix, superseded: tubes ar
 /* normals after a centreline deformation: radial for tubes (no seam or cap artefacts), recomputed otherwise */
 function metaNormals(m,radial=m.userData.radialN){ const g=m.geometry;
   if(!radial||!g.attributes.ctr){ g.computeVertexNormals(); return; }
-  const P=g.attributes.position.array, C=g.attributes.ctr.array, N=g.attributes.normal.array;
-  for(let v=0;v<P.length/3;v++){ const x=P[v*3]-C[v*3], y=P[v*3+1]-C[v*3+1], z=P[v*3+2]-C[v*3+2], l=Math.hypot(x,y,z);
+  const P=g.attributes.position.array, C=g.attributes.ctr.array, N=g.attributes.normal.array, B=g.attributes.bt?g.attributes.bt.array:null;
+  for(let v=0;v<P.length/3;v++){ if(B&&B[v*2]>1.00005) continue;   // v46b: flat-cap rim keeps its axial normal
+    const x=P[v*3]-C[v*3], y=P[v*3+1]-C[v*3+1], z=P[v*3+2]-C[v*3+2], l=Math.hypot(x,y,z);
     if(l>1e-6){ N[v*3]=x/l; N[v*3+1]=y/l; N[v*3+2]=z/l; } }
   g.attributes.normal.needsUpdate=true; }
 function metaMesh(geo,material,name){
@@ -1239,7 +1252,7 @@ function buildPatho(g,L,K){
   const col=(key,parent,label)=>(P.cols[key]={key,parent,label,meshes:[],open:0,target:0});
   const strands=(G,list,m,name)=>{
     const geos=list.map((q,i)=>metaTube(q.pts,t=>q.r*(0.82+0.18*Math.sin(Math.PI*t)),Math.max(24,q.pts.length-1),8,true,i));
-    const me=metaMesh(mergeMeta(geos),m,name); me.visible=false; G.parent.add(me); G.meshes.push(me); return me; };
+    const me=metaMesh(mergeMeta(geos),m,name); me.visible=false; vesSkin(me,'portal'); G.parent.add(me); G.meshes.push(me); return me; };   // v46b: the portal surface pattern on varices and shunts
   const V=(x,y,z)=>new THREE.Vector3(x,y,z);
 
   /* — oesophageal and GOV1 varices: left gastric (coronary) vein → submucosal columns → azygos — */
@@ -1928,7 +1941,7 @@ function buildMacro(){
      hepatic arteries running with the portal pedicles; cystic artery from the right. */
   const HA=new Vessels();
   HA.path([PT(-0.07,0.97,0.03),PT(-0.04,0.70,-0.62),PT(0.02,0.10,-1.08),PT(0.05,-1.00,-1.12),PT(0.06,-2.15,-1.02)],
-          0.110,0.100,'Aorta');
+          0.110,0.100,'Aorta').flat=true;   // v46b: square-cut inferior end
   /* v46: the common hepatic artery runs to the right along the upper border of the pancreas and passes in front of and
      above the portal trunk (it ran through the trunk and grazed the splenic vein); it divides into the GDA and the proper
      hepatic artery in front of the portal vein, and the proper hepatic artery ascends anteromedial to the vein, left of the
@@ -1958,7 +1971,7 @@ function buildMacro(){
   const aortaStub=new THREE.Mesh(MG.aortaStub,mat(C.artery,{roughness:0.3,clearcoat:0.6,
     emissive:new THREE.Color(C.artery).multiplyScalar(0.14)}));
   tag(aortaStub,'Aorta'); L.artery.add(aortaStub);
-  { const s=HA.segs.find(q=>q.name==='Aorta'), e=s.pts[s.pts.length-1]; const cap=new THREE.Mesh(new THREE.SphereGeometry(s.r1*0.99,24,16),mat(C.artery,{roughness:0.3,clearcoat:0.6,emissive:new THREE.Color(C.artery).multiplyScalar(0.14)})); cap.position.copy(e); tag(cap,'Aorta'); L.artery.add(cap); }   // v41: no flat cut
+  // v46b: the aorta's inferior end is square-cut (the v41 sphere cap is removed)
 
   /* ═══ hepatic venous system ═══
      Right, middle and left hepatic veins run in the intersegmental planes (right sectoral plane,
@@ -1974,10 +1987,13 @@ function buildMacro(){
      CT-frame points; OST = right hepatic vein ostium, OSTM = common trunk ostium, CT = MHV/LHV confluence. */
   const OST=V3(0.131,0.71,0.073), OSTM=V3(0.214,0.71,0.092), CT=V3(0.23,0.62,0.21);
   const rhv=HV.path([OST,V3(0.03,0.71,0.165),V3(-0.25,0.64,0.10),V3(-0.62,0.52,-0.08),PT(-0.95,0.40,-0.14),PT(-1.15,0.02,-0.04),PT(-1.28,-0.45,0.04)],0.066,0.028,'Right hepatic vein');
-  HV.path([OSTM,CT],0.070,0.066,'Middle and left hepatic vein trunk');
+  /* v46b: the common trunk starts on the IVC's axis and flares from the IVC's calibre, so it joins the cava smoothly
+     (it started 5 mm off-axis with its own rounded end, which bulged through the caval wall) */
+  const IVC_AX=V3(0.183,0.708,0.029);
+  HV.path([IVC_AX,OSTM.clone().lerp(CT,0.35),CT],0.070,0.066,'Middle and left hepatic vein trunk',0.090);
   const mhv=HV.path([CT,PT(-0.16,0.52,0.08),PT(-0.20,0.15,0.30),PT(-0.28,-0.14,0.58)],0.058,0.026,'Middle hepatic vein');
   const lhv=HV.path([CT,PT(0.18,0.62,-0.06),PT(0.62,0.34,0.02),PT(1.08,0.20,0.08)],0.054,0.022,'Left hepatic vein');
-  HV.path([PT(-0.27,-1.40,-0.52),PT(-0.25,-1.80,-0.50),PT(-0.24,-2.20,-0.48)],0.088,0.090,'IVC');
+  HV.path([PT(-0.27,-1.40,-0.52),PT(-0.25,-1.80,-0.50),PT(-0.24,-2.20,-0.48)],0.088,0.090,'IVC').flat=true;   // v46b: square-cut inferior end
   const LRV_PTS=[V3(1.07,-0.67,-0.62),V3(0.86,-0.70,-0.24),V3(0.69,-0.715,0.10),V3(0.52,-0.72,0.213),V3(0.26,-0.72,0.18),V3(0.04,-0.72,0.12)];
   HV.path(LRV_PTS,0.034,0.042,'Left renal vein');
   HV.path([PT(-0.02,0.32,-0.62),PT(-0.16,0.28,-0.60),PT(-0.30,0.24,-0.56)],0.018,0.024,'Caudate veins');
@@ -1991,7 +2007,7 @@ function buildMacro(){
   const stubs=new THREE.Mesh(MG.stubs,mat(C.vein,{roughness:0.3,clearcoat:0.6,
     emissive:new THREE.Color(C.vein).multiplyScalar(0.14)}));
   tag(stubs,'IVC'); L.hepaticVein.add(stubs);
-  { const s=HV.segs.filter(q=>q.name==='IVC').pop(), e=s.pts[s.pts.length-1]; const cap=new THREE.Mesh(new THREE.SphereGeometry(s.r1*0.99,24,16),mat(C.vein,{roughness:0.3,clearcoat:0.6,emissive:new THREE.Color(C.vein).multiplyScalar(0.14)})); cap.position.copy(e); tag(cap,'IVC'); L.hepaticVein.add(cap); }
+  // v46b: the IVC's inferior end is square-cut (the v41 sphere cap is removed)
 
   /* ═══ intrahepatic bile ducts: companions of the portal pedicles, draining to the hilar confluence ═══ */
   const BDi=PVi.companion(offB,0.30,0.018,n=>n==='Right portal vein'?'Right hepatic duct':
