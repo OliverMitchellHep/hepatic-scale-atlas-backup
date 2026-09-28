@@ -128,7 +128,7 @@ class Falciform:
         k = np.where(cor > np.maximum(band, fan), 3, np.where(band >= fan, 0, np.where(lay > 0.5 * ef, 2, 1)))
         # relief: soft dome across the band; layers and coronary a little raised, fan membrane lower
         prof = np.where(k == 0, 1 - np.clip(u, 0, 1) ** 2, np.where(k == 3, 1 - np.clip(np.abs(t + 0.5 * COR_W) / cw, 0, 1) ** 2, 1.0))
-        hgt = np.select([k == 0, k == 1, k == 2, k == 3], [0.75, 0.15, 0.30, 0.28]) / MM   # v46: band 0.60 → 0.75, the rest lower
+        hgt = np.select([k == 0, k == 1, k == 2, k == 3], [2.0, 0.25, 0.60, 0.55]) / MM   # v46b: band raised ~2 mm (v46 0.75, v45 0.60)
         # fibres: along the band and the coronary, radiating from the apex across the fan
         ang = np.arctan2(d, np.maximum(s - self.sA, 1e-3) + 4 / MM)
         fu = np.select([k == 0, k == 3], [d * 420, t * 420], ang * 55)
