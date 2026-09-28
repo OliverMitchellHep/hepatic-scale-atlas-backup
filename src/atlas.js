@@ -1524,47 +1524,59 @@ function ribClear(a,b){   // closest approach (model units) of segment a→b to 
 
 
 /* v35: the falciform is found by ray-casting the parenchyma in the umbilical-fissure plane (x = falcX(z)), so the fold
-   stands exactly on this liver: a thin double layer of peritoneum with a flared base, cut ~7 mm from the surface,
-   tallest anteriorly and fading out posteriorly where its layers part into the coronary / left triangular ligaments.
-   The ligamentum teres leaves the free edge at the umbilical notch as a cut stump and runs back in the umbilical fissure. */
+   stands exactly on this liver.
+   v44 (after the tissue-liver-4 reference): only the ANTERIOR course is modelled, from where the anterior surface turns
+   onto the dome down to the umbilical notch; the wide superior / posterior section is gone. The fold is low and soft:
+   about 0.7 mm high on a ~1.2 cm base, its flanks tucked under the capsule at ~25° (no coplanar overlap, so no z-fighting),
+   fading in at the notch and out towards the dome. Colour: the liver's own red-brown, slightly paler.
+   The ligamentum teres (stump at the notch, cord in the fissure) is still built and kept in the scene graph but hidden
+   (visible=false, userData.teachingHidden) for later teaching use. */
 function falciformBuild(body){
   const g=new THREE.Group(), rc=new THREE.Raycaster(), C0=new THREE.Vector2(-0.15,0.25), hit=(th)=>{
     const dy=Math.sin(th), dz=Math.cos(th), zo=C0.y+dz*3, yo=C0.x+dy*3;
     const o=V3(falcX(zo),yo,zo), c=V3(falcX(C0.y),C0.x,C0.y);
     rc.set(o,c.clone().sub(o).normalize()); rc.far=4; const h=rc.intersectObject(body,false)[0];
     return h&&h.face ? {p:h.point.clone(), n:h.face.normal.clone()} : null; };
-  const up=[], fis=[];
-  for(let i=0;i<=460;i++){ const th=THREE.MathUtils.degToRad(-80+i*0.5), h=hit(th); if(!h) continue;
-    const {p,n}=h, onTop=falcZone(p.x,p.y,p.z) && n.y>-0.05 && (n.y>0.25||n.z>0.45);
-    if(onTop) up.push(h); else if(!up.length && n.y<-0.2 && p.z>0.55) fis.push(h); }
-  if(up.length<20) return g;
-  // resample by arc length, smooth the normals
-  const curve=new THREE.CatmullRomCurve3(up.map(h=>h.p),false,'centripetal'), NS=110, P=[], Nn=[];
+  // the anterior course = the longest run of consecutive anterior-facing hits (gaps of ≤ 3 steps bridged)
+  const hs=[]; for(let i=0;i<=460;i++){ const h=hit(THREE.MathUtils.degToRad(-80+i*0.5)); if(h){ h.i=i; hs.push(h); } }
+  const ant=h=>falcZone(h.p.x,h.p.y,h.p.z) && h.n.y>-0.30 && h.n.z>0.22 && h.n.y<0.92;
+  let run=[], best=[]; for(const h of hs){ if(!ant(h)) continue; if(run.length&&h.i-run[run.length-1].i>4) run=[]; run.push(h); if(run.length>best.length) best=run; }
+  const up=best, i0=up.length?up[0].i:0, fis=hs.filter(h=>h.i<i0 && h.n.y<-0.2 && h.p.z>0.55);
+  if(up.length<12) return g;
+  // resample by arc length (u = 0 at the notch, 1 towards the dome), smooth the normals
+  const curve=new THREE.CatmullRomCurve3(up.map(h=>h.p),false,'centripetal'), NS=90, P=[], Nn=[];
   for(let i=0;i<=NS;i++){ const u=i/NS, p=curve.getPointAt(u); let best=null,bd=9;
     for(const h of up){ const d=h.p.distanceToSquared(p); if(d<bd){ bd=d; best=h; } } P.push(p); Nn.push(best.n.clone()); }
-  for(let it=0;it<6;it++) for(let i=1;i<NS;i++) Nn[i].add(Nn[i-1]).add(Nn[i+1]).normalize();
-  const sm=THREE.MathUtils.smoothstep, H=0.024, TH=0.009, FL=0.055, INS=0.020, J=10;   // v42: ~1.7 mm fold on a ~8 mm flared base
-  const pos=[], idx=[], ring=2*J+1;
+  for(let it=0;it<8;it++) for(let i=1;i<NS;i++) Nn[i].add(Nn[i-1]).add(Nn[i+1]).normalize();
+  const sm=THREE.MathUtils.smoothstep, H=0.010, W=0.085, INS=0.020, SINK=0.004, J=12;
+  const pos=[], uvs=[], idx=[], ring=2*J+1;
   for(let i=0;i<=NS;i++){ const u=i/NS, t=curve.getTangentAt(u), s=new THREE.Vector3().crossVectors(t,Nn[i]).normalize(), n=new THREE.Vector3().crossVectors(s,t).normalize();
-    const h=H*(0.70+0.30*(1-u))*sm(u,0.0,0.04)*(1-sm(u,0.72,1.0))+0.003;
-    for(let q=0;q<ring;q++){ const side=q<J?-1:q>J?1:0, v=q<=J?q/J:(2*J-q)/J;
-      const w=side===0?0:(TH*(1-0.4*v*v)+FL*Math.pow(1-v,3)), hh=side===0?h+TH:v*h-INS*(1-v)*(1-v);
-      const p=P[i].clone().addScaledVector(s,side*w).addScaledVector(n,hh); pos.push(p.x,p.y,p.z); } }
+    const ends=sm(u,0.0,0.05)*(1-sm(u,0.90,1.0)), top=1-sm(Nn[i].y,0.70,0.92);          // fade in at the notch, out onto the dome
+    const h=H*ends*top, w=W*(0.80+0.20*ends);
+    for(let q=0;q<ring;q++){ const tl=(q-J)/J, a=1-tl*tl;
+      const hh=h*a*a-INS*tl*tl*tl*tl-SINK*(1-ends*top);                                  // soft dome, flanks under the capsule
+      const p=P[i].clone().addScaledVector(s,tl*w).addScaledVector(n,hh); pos.push(p.x,p.y,p.z); uvs.push(u,(tl+1)/2); } }
   for(let i=0;i<NS;i++) for(let q=0;q<ring-1;q++){ const a=i*ring+q, b=a+ring; idx.push(a,b,a+1, a+1,b,b+1); }
-  const geo=new THREE.BufferGeometry(); geo.setAttribute('position',new THREE.Float32BufferAttribute(pos,3)); geo.setIndex(idx); geo.computeVertexNormals();
-  const fm=skin(mat(0x6C3830,{roughness:0.36,clearcoat:0.7,clearcoatRoughness:0.22,sheen:0.25,sheenColor:new THREE.Color(0xE8C2B2),sheenRoughness:0.5,
-    side:THREE.DoubleSide,emissive:new THREE.Color(0x6C3830).multiplyScalar(0.04)}),'serosa');
+  const geo=new THREE.BufferGeometry(); geo.setAttribute('position',new THREE.Float32BufferAttribute(pos,3)); geo.setAttribute('uv',new THREE.Float32BufferAttribute(uvs,2));
+  geo.setIndex(idx); geo.computeVertexNormals();
+  { const nA=geo.attributes.normal, nn=new THREE.Vector3();   // face outward (along the capsule normal)
+    let k=0; for(let i=0;i<nA.count;i+=ring){ nn.fromBufferAttribute(nA,i+J); k+=nn.dot(Nn[Math.round(i/ring)]); }
+    if(k<0){ const I=geo.index.array; for(let f=0;f<I.length;f+=3){ const tmp=I[f+1]; I[f+1]=I[f+2]; I[f+2]=tmp; } geo.index.needsUpdate=true; geo.computeVertexNormals(); } }
+  const FALC_COL=0x66302C;   // v44: the liver's red-brown, a step paler than the surrounding capsule; liver skin, not the warm serosa rim
+  const fm=skin(mat(FALC_COL,{roughness:0.42,clearcoat:0.55,clearcoatRoughness:0.26,sheen:0.10,sheenColor:new THREE.Color(0xB88078),sheenRoughness:0.6,
+    emissive:new THREE.Color(FALC_COL).multiplyScalar(0.02)}),'liver');
   const fmesh=tag(new THREE.Mesh(geo,fm),'Falciform ligament'); g.add(fmesh);
-  // ligamentum teres: cut stump from the free edge at the notch, then back along the umbilical fissure
+  // ligamentum teres: cut stump from the free edge at the notch, then back along the umbilical fissure (hidden, see above)
   const n0=Nn[0].clone(), p0=P[0].clone(), outD=V3(0,-0.55,0.84).addScaledVector(n0,0.6).normalize();
   const stump=[p0.clone().addScaledVector(n0,-0.03)];
   for(let k=1;k<=4;k++) stump.push(p0.clone().addScaledVector(outD,0.042*k).add(V3(0,-0.010*k*k/4,0)));   // v42: ~1.2 cm stub
   const tm=skin(mat(0xB88A74,{roughness:0.40,clearcoat:0.7,clearcoatRoughness:0.2,emissive:new THREE.Color(0xB88A74).multiplyScalar(0.05)}),'serosa');
-  const tt=varTube(stump,t=>0.021*(1-0.15*t),30,14,true); g.add(tag(new THREE.Mesh(tt,tm),'Ligamentum teres'));
+  const teres=[]; const tt=varTube(stump,t=>0.021*(1-0.15*t),30,14,true); teres.push(tag(new THREE.Mesh(tt,tm),'Ligamentum teres'));
   if(fis.length>4){ fis.sort((a,b)=>b.p.z-a.p.z); const fp=[p0.clone().addScaledVector(n0,-0.02)];
     for(const h of fis){ if(h.p.distanceTo(fp[fp.length-1])>0.06) fp.push(h.p.clone().addScaledVector(h.n,-0.012)); if(fp.length>7) break; }
-    if(fp.length>2) g.add(tag(new THREE.Mesh(varTube(fp,t=>0.022*(1-0.3*t),40,12,true),tm),'Ligamentum teres')); }
-  g.userData.P0=P; return g;
+    if(fp.length>2) teres.push(tag(new THREE.Mesh(varTube(fp,t=>0.022*(1-0.3*t),40,12,true),tm),'Ligamentum teres')); }
+  for(const m of teres){ m.visible=false; m.userData.teachingHidden=true; g.add(m); }
+  g.userData.P0=P; g.userData.teres=teres; return g;
 }
 /* v42: baked liver maps (Blender, see v42 pipeline doc). WebP: the artifact host does not serve .ktx2 (tested 27 Sept).
    Desktop only: phones keep the v41 triplanar skin. The tiling detail map replaces the generic skin atlas on the liver at
@@ -3274,7 +3286,7 @@ function hitInfo(ev){
       const q=t.group.worldToLocal(h.point.clone());
       label='Segment '+SEG[segAt(q.x,q.y,q.z)];
       // the model's falciform ridge runs along the umbilical fissure line
-      if(Math.abs(q.x-falcX(q.z))<0.012 && falcZone(q.x,q.y,q.z) && (!h.face || (h.face.normal.y>-0.05 && (h.face.normal.y>0.25||h.face.normal.z>0.45))))
+      if(Math.abs(q.x-falcX(q.z))<0.030 && falcZone(q.x,q.y,q.z) && (!h.face || (h.face.normal.y>-0.30 && h.face.normal.z>0.22 && h.face.normal.y<0.92)))   // v44: anterior course only
         label='Falciform ligament';
       // ghosted parenchyma must not shadow the vessels behind it
       if(o.userData.ghost){

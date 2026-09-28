@@ -28,6 +28,8 @@ EXTRA = {
     'pancreas_sup': {'t': [0.55, -0.55, -0.05], 'dir': [0, 1, 0.18], 'd': 3.6,
                      'layers': {'parenchyma': 'off', 'stomach': 'ghost', 'portal': 'on', 'artery': 'on', 'hepaticVein': 'off', 'biliary': 'off', 'esophagus': 'off'}},
     'pancreas_close': {'t': [0.80, -0.46, 0.25], 'dir': [0.1, 0.15, 1], 'd': 1.3, 'layers': {'parenchyma': 'off', 'stomach': 'off', 'esophagus': 'off'}},
+    'falciform_ant': {'t': [-0.30, 0.05, 0.75], 'dir': [0.05, 0.12, 1], 'd': 2.3, 'layers': {'stomach': 'off', 'esophagus': 'off', 'duodenum': 'off', 'pancreas': 'off', 'spleen': 'off', 'kidneys': 'off'}},
+    'falciform_obl': {'t': [-0.30, 0.05, 0.75], 'dir': [0.75, -0.10, 1], 'd': 1.4, 'layers': {'stomach': 'off', 'esophagus': 'off', 'duodenum': 'off', 'pancreas': 'off', 'spleen': 'off', 'kidneys': 'off'}},
     'liver_close': {'t': [-0.75, 0.25, 0.55], 'dir': [-0.15, 0.25, 1], 'd': 1.25, 'layers': {}},
 }
 
