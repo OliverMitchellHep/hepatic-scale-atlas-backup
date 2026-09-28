@@ -523,7 +523,7 @@ const FALC = CT_MODE ? LDL.falc : {a:0.155,b:0.10};
 const falcX = z => FALC.a + FALC.b*z;
 const falcZone = CT_MODE ? (x,y,z)=> y>-0.75 && (z>0.30 || (y>0.45 && z>-0.35)) : (x,y,z)=> y>-0.42 && (z>0.35||y>0.55);
 if(CT_MODE){
-  TIERS[0].annos.splice(0,TIERS[0].annos.length,...[{"p": [-1.05, 0.25, 0.3], "l": "Right lobe", "layer": "parenchyma", "surface": 1}, {"p": [0.6, 0.3, 0.45], "l": "Left lobe", "layer": "parenchyma", "surface": 1}, {"p": [0.26, 0.1, 0.217], "l": "Caudate lobe", "layer": "parenchyma", "chip": 1}, {"p": [-0.26, -0.3, 0.22], "l": "Porta hepatis", "layer": "parenchyma"}, {"p": [-0.6, 0.55, 0.3], "l": "Glisson’s capsule", "layer": "parenchyma", "chip": 1, "surface": 1}, {"p": [-0.314, 0.25, 0.8], "l": "Falciform ligament", "layer": "parenchyma", "surface": 1}, {"p": [-0.593, -0.633, 0.693], "l": "Gallbladder", "layer": "biliary"}, {"p": [-0.08, -0.66, 0.40], "l": "Common bile duct", "layer": "biliary"}, {"p": [-0.273, -1.049, 0.259], "l": "Ampulla of Vater", "layer": "biliary", "chip": 1}, {"p": [0.1, -0.36, 0.37], "l": "Portal trunk", "layer": "portal"}, {"p": [-0.45, -0.11, 0.115], "l": "Right portal vein", "layer": "portal"}, {"p": [-0.24, -0.05, 0.3], "l": "Left portal vein", "layer": "portal"}, {"p": [0.35, -0.9, 0.6], "l": "Superior mesenteric vein", "layer": "portal"}, {"p": [1.348, -0.291, -0.336], "l": "Splenic vein", "layer": "portal"}, {"p": [0.66, -0.12, 0.32], "l": "Left gastric vein", "layer": "portal", "chip": 1}, {"p": [0.78, 0.7, -0.45], "l": "Aorta", "layer": "artery"}, {"p": [0.58, -0.38, 0.22], "l": "Coeliac trunk", "layer": "artery", "chip": 1}, {"p": [0.36, -0.4, 0.32], "l": "Common hepatic artery", "layer": "artery", "chip": 1}, {"p": [-0.08, -0.26, 0.4], "l": "Proper hepatic artery", "layer": "artery"}, {"p": [1.082, -0.291, -0.213], "l": "Splenic artery", "layer": "artery"}, {"p": [0.5, -0.95, 0.48], "l": "Superior mesenteric artery", "layer": "artery", "chip": 1}, {"p": [-0.12, -0.62, 0.462], "l": "Gastroduodenal artery", "layer": "artery", "chip": 1}, {"p": [-0.5, -0.26, 0.31], "l": "Cystic artery", "layer": "artery", "chip": 1}, {"p": [0.26, 0.93, -0.03], "l": "IVC", "layer": "hepaticVein"}, {"p": [-1.0, 0.4, -0.19], "l": "Right hepatic vein", "layer": "hepaticVein"}, {"p": [-0.12, 0.52, 0.28], "l": "Middle hepatic vein", "layer": "hepaticVein"}, {"p": [0.45, 0.15, 0.78], "l": "Left hepatic vein", "layer": "hepaticVein"}, {"p": [0.8, -0.7, -0.35], "l": "Left renal vein", "layer": "hepaticVein", "chip": 1}, {"p": [2.407, 0.449, -0.028], "l": "Spleen", "layer": "spleen"}, {"p": [0.932, -0.796, 1.265], "l": "Stomach", "layer": "stomach"}, {"p": [0.099, -1.224, 0.424], "l": "Pancreas", "layer": "pancreas"}, {"p": [0.228, -1.817, 0.444], "l": "Duodenum", "layer": "duodenum"}, {"p": [-0.658, -1.528, -0.387], "l": "Right kidney", "layer": "kidneys"}, {"p": [0.335, 1.245, -0.412], "l": "Oesophagus", "layer": "esophagus", "chip": 1}, {"p": [1.584, -1.468, -0.635], "l": "Left kidney", "layer": "kidneys", "chip": 1}, {"p": [-0.02, -0.6, -0.4], "l": "Renal artery", "layer": "kidneys", "chip": 1}, {"p": [-0.1, -0.69, -0.25], "l": "Renal vein", "layer": "kidneys", "chip": 1}, {"p": [0, 0, 0], "l": "About this anatomy", "chip": 1}]);
+  TIERS[0].annos.splice(0,TIERS[0].annos.length,...[{"p": [-1.05, 0.25, 0.3], "l": "Right lobe", "layer": "parenchyma", "surface": 1}, {"p": [0.6, 0.3, 0.45], "l": "Left lobe", "layer": "parenchyma", "surface": 1}, {"p": [0.26, 0.1, 0.217], "l": "Caudate lobe", "layer": "parenchyma", "chip": 1}, {"p": [-0.26, -0.3, 0.22], "l": "Porta hepatis", "layer": "parenchyma"}, {"p": [-0.6, 0.55, 0.3], "l": "Glisson’s capsule", "layer": "parenchyma", "chip": 1, "surface": 1}, {"p": [-0.314, 0.25, 0.8], "l": "Falciform ligament", "layer": "parenchyma", "surface": 1}, {"p": [-0.593, -0.633, 0.693], "l": "Gallbladder", "layer": "biliary"}, {"p": [-0.08, -0.66, 0.40], "l": "Common bile duct", "layer": "biliary"}, {"p": [-0.273, -1.049, 0.259], "l": "Ampulla of Vater", "layer": "biliary", "chip": 1}, {"p": [0.1, -0.36, 0.37], "l": "Portal trunk", "layer": "portal"}, {"p": [-0.45, -0.11, 0.115], "l": "Right portal vein", "layer": "portal"}, {"p": [-0.24, -0.05, 0.3], "l": "Left portal vein", "layer": "portal"}, {"p": [0.35, -0.9, 0.6], "l": "Superior mesenteric vein", "layer": "portal"}, {"p": [1.348, -0.291, -0.336], "l": "Splenic vein", "layer": "portal"}, {"p": [0.66, -0.12, 0.32], "l": "Left gastric vein", "layer": "portal", "chip": 1}, {"p": [0.78, 0.7, -0.45], "l": "Aorta", "layer": "artery"}, {"p": [0.58, -0.35, 0.21], "l": "Coeliac trunk", "layer": "artery", "chip": 1}, {"p": [0.36, -0.305, 0.43], "l": "Common hepatic artery", "layer": "artery", "chip": 1}, {"p": [-0.08, -0.22, 0.45], "l": "Proper hepatic artery", "layer": "artery"}, {"p": [1.082, -0.291, -0.213], "l": "Splenic artery", "layer": "artery"}, {"p": [0.5, -0.95, 0.48], "l": "Superior mesenteric artery", "layer": "artery", "chip": 1}, {"p": [-0.12, -0.62, 0.462], "l": "Gastroduodenal artery", "layer": "artery", "chip": 1}, {"p": [-0.5, -0.26, 0.31], "l": "Cystic artery", "layer": "artery", "chip": 1}, {"p": [0.26, 0.93, -0.03], "l": "IVC", "layer": "hepaticVein"}, {"p": [-1.0, 0.4, -0.19], "l": "Right hepatic vein", "layer": "hepaticVein"}, {"p": [-0.12, 0.52, 0.28], "l": "Middle hepatic vein", "layer": "hepaticVein"}, {"p": [0.45, 0.15, 0.78], "l": "Left hepatic vein", "layer": "hepaticVein"}, {"p": [0.8, -0.7, -0.35], "l": "Left renal vein", "layer": "hepaticVein", "chip": 1}, {"p": [2.407, 0.449, -0.028], "l": "Spleen", "layer": "spleen"}, {"p": [0.932, -0.796, 1.265], "l": "Stomach", "layer": "stomach"}, {"p": [0.099, -1.224, 0.424], "l": "Pancreas", "layer": "pancreas"}, {"p": [0.228, -1.817, 0.444], "l": "Duodenum", "layer": "duodenum"}, {"p": [-0.658, -1.528, -0.387], "l": "Right kidney", "layer": "kidneys"}, {"p": [0.335, 1.245, -0.412], "l": "Oesophagus", "layer": "esophagus", "chip": 1}, {"p": [1.584, -1.468, -0.635], "l": "Left kidney", "layer": "kidneys", "chip": 1}, {"p": [-0.02, -0.6, -0.4], "l": "Renal artery", "layer": "kidneys", "chip": 1}, {"p": [-0.1, -0.69, -0.25], "l": "Renal vein", "layer": "kidneys", "chip": 1}, {"p": [0, 0, 0], "l": "About this anatomy", "chip": 1}]);
   TIERS[0].sub='≈ 19 cm transverse · CT-derived · layered';
   TIERS[0].lede='A macroscopic view of the hepatobiliary and gastrointestinal systems of an example patient.';
 }
@@ -796,11 +796,78 @@ class Vessels{
     }
   }
   /* a companion system (artery or duct) running beside this one */
-  companion(off,scale,minR,rename){
-    const c=new Vessels(), o=off.clone().normalize();
+  /* ortho (v46, arteries): each companion follows its parent at 9 points, offset perpendicular to the parent; at a branch
+     point the offset takes the freest direction (farthest from every vessel meeting there, preferring off) at the largest
+     calibre there, and between branch points it turns steadily from one end's direction to the other's. A final relaxation
+     pushes any point that still touches a parent-system vessel clear of it. So a companion cannot run inside a parent that
+     heads along the offset (the left hepatic artery ran within the left portal vein) or cut a sibling at a junction.
+     ctx: further segments (not followed) that count as vessels, e.g. the portal trunk at the hilum. root: [point, position] pins
+     the companion branch point that belongs to that parent point (e.g. the hepatic artery bifurcation, below the portal one). */
+  companion(off,scale,minR,rename,ortho,ctx=[],root=null){
+    const c=new Vessels(), o=off.clone().normalize(), t=new THREE.Vector3();
     const key=q=>`${Math.round(q.x*100)},${Math.round(q.y*100)},${Math.round(q.z*100)}`;
     const kept=[], endAt=new Map();
-    for(const sg of this.segs){
+    if(ortho){
+      const all=this.segs.concat(ctx), node=new Map(), nodeR=new Map();
+      const add=(q,d,r)=>{ const k=key(q); if(!node.has(k)) node.set(k,[]); node.get(k).push(d.normalize()); nodeR.set(k,Math.max(nodeR.get(k)||0,r)); };
+      for(const sg of all){ const P=sg.pts, n=P.length; if(n<2) continue;
+        add(P[0],P[1].clone().sub(P[0]),sg.r0); add(P[n-1],P[n-2].clone().sub(P[n-1]),sg.r1); }
+      const G=[]; for(let i=0;i<400;i++){ const y=1-2*(i+0.5)/400, r=Math.sqrt(1-y*y), a=i*2.399963;
+        G.push(new THREE.Vector3(Math.cos(a)*r,y,Math.sin(a)*r)); }
+      // branch points are visited parent → daughter; each prefers the side its parent companion is on, so an artery does not
+      // swap sides (and loop round its vein) from one branch point to the next
+      const dirs=node, free=(D,pref)=>{
+        if(D.length===1){ const d=D[0], g=pref.clone().addScaledVector(d,-pref.dot(d)); if(g.length()<0.35) g.set(0,-1,0).addScaledVector(d,-d.y);
+          return g.normalize(); }   // a vessel's free end: beside it, not beyond the tip
+        let best=null,bs=-1e9;
+        for(const g of G){ let m=4; for(const d of D) m=Math.min(m,Math.acos(THREE.MathUtils.clamp(g.dot(d),-1,1)));
+          const sc=Math.min(m,1.0)+0.7*g.dot(pref); if(sc>bs){ bs=sc; best=g; } }
+        return best.clone(); };
+      const nd=new Map(); if(root) nd.set(key(root[0]),root[1].clone().sub(root[0]).normalize());
+      for(const sg of this.segs){ const n=sg.pts.length; if(n<2) continue; const k0=key(sg.pts[0]), k1=key(sg.pts[n-1]);
+        if(!nd.has(k0)) nd.set(k0,free(dirs.get(k0),o));
+        if(!nd.has(k1)) nd.set(k1,free(dirs.get(k1),o.clone().add(nd.get(k0).clone().multiplyScalar(1.5)).normalize())); }
+      const H=new Map(), hd=[];            // handles: one per branch point (shared by every companion meeting there), one per inner point
+      const handle=(k,p,r)=>{ let h=k&&H.get(k); if(!h){ h={p,r}; hd.push(h); if(k) H.set(k,h); } h.r=Math.max(h.r,r); return h; };
+      if(root){ const h={p:root[1].clone(),r:0,fixed:true}; hd.push(h); H.set(key(root[0]),h); }
+      for(const sg of this.segs){
+        if(sg.r0<minR||sg.pts.length<2) continue;
+        const cv=new THREE.CatmullRomCurve3(sg.pts), k0=key(sg.pts[0]), k1=key(sg.pts[sg.pts.length-1]), n0=nd.get(k0), n1=nd.get(k1), pts=[];
+        for(let i=0;i<=8;i++){ const u=i/8, q=cv.getPointAt(u), rp=THREE.MathUtils.lerp(sg.r0,sg.r1,u), end=i===0||i===8;
+          let oi;
+          if(end) oi=(i?n1:n0).clone();
+          else { cv.getTangentAt(u,t); oi=(n0.dot(n1)>-0.5)?n0.clone().lerp(n1,u):o.clone();
+            oi.addScaledVector(t,-oi.dot(t)); if(oi.length()<0.35) oi.set(0,-1,0).addScaledVector(t,-t.y); oi.normalize(); }
+          const rr=end?Math.max(rp,nodeR.get(i?k1:k0)):rp;
+          pts.push(handle(end?(i?k1:k0):null,q.addScaledVector(oi,rr*(1+scale)+0.008),rp*scale).p); }
+        kept.push({sg,pts}); }
+      // relaxation: sample every parent-system vessel; push points out of any vessel they come within 0.6 mm of. Where the
+      // curve between two clear points still cuts a vessel, a point is added there; then the inner points are smoothed and
+      // pushed clear again, so a companion bends smoothly past a branch instead of looping round it.
+      const V=[], cell=0.1, grid=new Map(), gk=(x,y,z)=>(x+64)*16384+(y+64)*128+(z+64);
+      for(const sg of all){ if(sg.pts.length<2) continue; const cv=new THREE.CatmullRomCurve3(sg.pts), n=Math.max(4,Math.ceil(cv.getLength()/0.012));
+        for(let i=0;i<=n;i++){ const q=cv.getPointAt(i/n), e=[q,THREE.MathUtils.lerp(sg.r0,sg.r1,i/n)], k=gk(Math.floor(q.x/cell),Math.floor(q.y/cell),Math.floor(q.z/cell));
+          V.push(e); if(!grid.has(k)) grid.set(k,[]); grid.get(k).push(e); } }
+      const near=(p,f)=>{ const x=Math.floor(p.x/cell), y=Math.floor(p.y/cell), z=Math.floor(p.z/cell);
+        for(let i=-1;i<=1;i++) for(let j=-1;j<=1;j++) for(let l=-1;l<=1;l++){ const g=grid.get(gk(x+i,y+j,z+l)); if(g) for(const e of g) if(f(e)) return true; } return false; };
+      const dv=new THREE.Vector3(), clash=(p,r)=>near(p,([q,rv])=>p.distanceTo(q)<rv+r+0.004);
+      const relax=(hs,n=24)=>{ for(let it=0;it<n;it++){ let moved=false;
+        for(const h of hs) if(!h.fixed) near(h.p,([q,r])=>{ dv.subVectors(h.p,q); const d=dv.length(), need=r+h.r+0.009;
+          if(d<need&&d>1e-6){ h.p.addScaledVector(dv,(need-d)/d); moved=true; } return false; });
+        if(!moved) break; } };
+      relax(hd);
+      for(let round=0;round<3;round++){ let added=false;
+        for(const K of kept){ const P=K.pts, out=[P[0]];
+          for(let i=1;i<P.length;i++){ const r=THREE.MathUtils.lerp(K.sg.r0,K.sg.r1,(i-0.5)/(P.length-1))*scale, m=P[i-1].clone().lerp(P[i],0.5);
+            if(clash(m,r)){ out.push(m); added=true; } out.push(P[i]); }
+          K.pts=out; }
+        const inner=[]; for(const K of kept) for(let i=1;i<K.pts.length-1;i++) inner.push({p:K.pts[i],r:THREE.MathUtils.lerp(K.sg.r0,K.sg.r1,i/(K.pts.length-1))*scale});
+        for(let sm=0;sm<8;sm++){
+          for(const K of kept){ const P=K.pts, Q=P.map(p=>p.clone()); for(let i=1;i<P.length-1;i++) P[i].lerp(Q[i-1].add(Q[i+1]).multiplyScalar(0.5),0.5); }
+          relax(inner,6); }
+        if(!added&&round) break; }
+      for(const K of kept){ K.pts=K.pts.map(p=>p.clone()); const ek=key(K.sg.pts[K.sg.pts.length-1]); if(!endAt.has(ek)) endAt.set(ek,K.pts[K.pts.length-1]); }
+    } else for(const sg of this.segs){
       if(sg.r0<minR) continue;
       const k=sg.pts.length;
       const pts=sg.pts.map((q,i)=>{ const rp=THREE.MathUtils.lerp(sg.r0,sg.r1,k>1?i/(k-1):0);
@@ -1802,12 +1869,16 @@ function buildMacro(){
   const HA=new Vessels();
   HA.path([PT(-0.07,0.97,0.03),PT(-0.04,0.70,-0.62),PT(0.02,0.10,-1.08),PT(0.05,-1.00,-1.12),PT(0.06,-2.15,-1.02)],
           0.110,0.100,'Aorta');
-  const CTD=PT(0.07,-1.08,-0.86), CHAD=PT(-0.12,-1.12,-0.56);
-  HA.path([PT(0.05,-1.02,-1.10),PT(0.06,-1.06,-0.98),CTD],0.050,0.046,'Coeliac trunk');
+  /* v46: the common hepatic artery runs to the right along the upper border of the pancreas and passes in front of and
+     above the portal trunk (it ran through the trunk and grazed the splenic vein); it divides into the GDA and the proper
+     hepatic artery in front of the portal vein, and the proper hepatic artery ascends anteromedial to the vein, left of the
+     CBD, to the hilum. CT-frame points; the coeliac division is raised 1.5 mm off the splenic vein. */
+  const CTD=V3(0.58,-0.35,0.21), CHAD=V3(0.16,-0.31,0.54);
+  HA.path([V3(0.58,-0.36,0.02),V3(0.58,-0.355,0.12),CTD],0.050,0.046,'Coeliac trunk');
   HA.path([CTD,PT(0.30,-0.92,-0.74),PT(0.50,-0.66,-0.52)],0.020,0.015,'Left gastric artery');
   HA.path([CTD,PT(0.35,-1.12,-0.90),V3(0.957,-0.252,-0.075),V3(0.988,-0.287,-0.151),V3(1.039,-0.293,-0.195),V3(1.082,-0.291,-0.213),V3(1.127,-0.284,-0.251),V3(1.207,-0.239,-0.294),V3(1.279,-0.176,-0.351),V3(1.373,-0.127,-0.451),V3(1.509,-0.008,-0.456),V3(1.644,0.081,-0.460)],
           0.034,0.029,'Splenic artery');
-  HA.path([CTD,PT(-0.04,-1.10,-0.74),CHAD],0.036,0.034,'Common hepatic artery');
+  HA.path([CTD,V3(0.46,-0.315,0.35),V3(0.31,-0.30,0.47),CHAD],0.036,0.034,'Common hepatic artery');
   /* v45: the GDA leaves the CHA, crosses behind the pyloroduodenal junction / first part of the duodenum (between it and
      the head) and descends on the anterior surface of the pancreatic head, then divides into the (anterior) superior
      pancreaticoduodenal artery, down the head towards the D2 groove, and the right gastroepiploic artery, which passes
@@ -1816,13 +1887,13 @@ function buildMacro(){
   HA.path([CHAD,V3(0.1,-0.51,0.49),V3(-0.02,-0.57,0.48),V3(-0.12,-0.62,0.462),V3(-0.15,-0.68,0.462),V3(-0.135,-0.77,0.497),V3(-0.08,-0.84,0.572)],0.022,0.018,'Gastroduodenal artery');
   HA.path([V3(-0.08,-0.84,0.572),V3(-0.14,-0.92,0.582),V3(-0.19,-1.02,0.578),V3(-0.21,-1.14,0.535)],0.013,0.010,'Superior pancreaticoduodenal artery');
   HA.path([V3(-0.08,-0.84,0.572),V3(-0.055,-0.98,0.612),V3(-0.04,-1.11,0.745),V3(0.03,-1.18,0.895),V3(0.2,-1.245,0.955),V3(0.4,-1.31,0.995)],0.016,0.012,'Right gastroepiploic artery');
-  const offA=V3(0.35,0.35,0.87).normalize(), offB=V3(-0.40,0.25,0.88).normalize();
-  const HA_ROOT=HILUM_IN.clone().addScaledVector(offA,0.078*1.34+0.008);
-  HA.path([CHAD,PT(-0.02,-0.80,0.02),PT(-0.06,-0.45,0.14),PT(-0.18,-0.15,0.15),HA_ROOT],0.032,0.027,'Proper hepatic artery');
+  const offA=V3(0.25,-0.35,0.90).normalize(), offB=V3(-0.40,0.25,0.88).normalize();   // v46: arteries anteroinferior to their portal branches (were anterosuperior)
+  const HA_ROOT=V3(-0.21,-0.15,0.365);   // v46: hepatic artery bifurcation, in front of the portal trunk below its bifurcation
+  const HAi=PVi.companion(offA,0.34,0.018,n=>n==='Right portal vein'?'Right hepatic artery':
+    (n==='Left portal vein'||n==='Umbilical portion')?'Left hepatic artery':'Segmental hepatic artery',true,PVe.segs,[HILUM_IN,HA_ROOT]);
+  HA.path([CHAD,V3(0.04,-0.27,0.52),V3(-0.08,-0.22,0.45),HA_ROOT],0.032,0.027,'Proper hepatic artery');
   HA.path([PT(-0.40,0.10,0.07),PT(-0.38,-0.12,0.18),PT(-0.31,-0.38,0.23)],0.013,0.011,'Cystic artery');
   HA.path([PT(0.05,-1.26,-1.12),PT(0.22,-1.42,-0.84),PT(0.33,-1.78,-0.56),PT(0.36,-2.15,-0.44)],0.044,0.040,'Superior mesenteric artery');
-  const HAi=PVi.companion(offA,0.34,0.018,n=>n==='Right portal vein'?'Right hepatic artery':
-    (n==='Left portal vein'||n==='Umbilical portion')?'Left hepatic artery':'Segmental hepatic artery');
   { const HAall=new Vessels(); HAall.segs=HA.segs.concat(HAi.segs); L.artery.add(HAall.mesh(C.artery)); }
   const aortaStub=new THREE.Mesh(MG.aortaStub,mat(C.artery,{roughness:0.3,clearcoat:0.6,
     emissive:new THREE.Color(C.artery).multiplyScalar(0.14)}));
