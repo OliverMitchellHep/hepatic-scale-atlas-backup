@@ -3270,7 +3270,7 @@ $('#tg-flow').addEventListener('click',e=>{
 renderer.domElement.addEventListener('wheel',e=>{
   e.preventDefault();
   if(e.deltaY>0) setMacroFocus(e.clientX,e.clientY);
-  const k=state.zTarget<1?0.6:1;               // finer steps through the long macroscopic zoom
+  const k=state.zTarget<1?MACRO_STEP:1;        // finer steps through the long macroscopic zoom
   state.zTarget=THREE.MathUtils.clamp(
     state.zTarget+k*e.deltaY*(e.deltaMode===1?0.03:0.0011),0,tiers.length-1);
 },{passive:false});
@@ -3280,7 +3280,7 @@ renderer.domElement.addEventListener('touchstart',e=>{
     setMacroFocus((e.touches[0].clientX+e.touches[1].clientX)/2,(e.touches[0].clientY+e.touches[1].clientY)/2);}},{passive:true});
 renderer.domElement.addEventListener('touchmove',e=>{
   if(e.touches.length===2&&pinchStart)
-    state.zTarget=THREE.MathUtils.clamp(pinchStart.z+Math.log2(touchDist(e)/pinchStart.d)*1.4,
+    state.zTarget=THREE.MathUtils.clamp(pinchStart.z+Math.log2(touchDist(e)/pinchStart.d)*1.4*(pinchStart.z<1?MACRO_STEP/0.6:1),
       0,tiers.length-1);},{passive:true});
 renderer.domElement.addEventListener('touchend',()=>{pinchStart=null;},{passive:true});
 function touchDist(e){const a=e.touches[0],b=e.touches[1];
@@ -4582,7 +4582,11 @@ function declutter(list){
 
 /* macroscopic zoom goes toward the point under the cursor (kept fixed on screen), and relaxes
    back to centre on the way out */
-const MACRO_ZOOM=10, MACRO_HOLD=0.82;
+/* v45: the liver can be magnified further before the lobule fades in. The fade starts at z = MACRO_HOLD, i.e. at
+   MACRO_ZOOM^MACRO_HOLD × the home framing: v44 10^0.82 = 6.6×; v45 75.4^0.82 = 34.6× from the new home, which is 2.04×
+   further out (Task 1), so 17.0× = 6.6^1.5 in v44 terms: the log-zoom travelled before the switch is 1.5× v44's.
+   MACRO_STEP keeps each wheel notch / pinch the same magnification as v44 (0.6 at MACRO_ZOOM 10). */
+const MACRO_ZOOM=75.4, MACRO_HOLD=0.82, MACRO_STEP=0.6*Math.log(10)/Math.log(MACRO_ZOOM);
 const mz={s:1,pos:new THREE.Vector3(),Q:null};
 /* v44: the rotation lives on the macroscopic scene root (tier 0 group), never on the camera or on meshes. AXIS_UP is the
    least-squares centreline through the T1–L5 vertebral body centroids (pipeline/spine44.py), so the spine is vertical in
