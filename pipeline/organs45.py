@@ -4,7 +4,7 @@ duodenum, spleen, pancreas, kidneys and oesophagus.
 
     python3 pipeline/organs45.py stomach      # report the arcades / vessel network (lengths, counts) without baking
 
-Surface vessels (stomach, duodenum, oesophagus; faint capsular vessels on the kidneys) are grown on each organ's own mesh:
+Surface vessels (stomach, duodenum, oesophagus; v46: none on the kidneys) are grown on each organ's own mesh:
   arcades   stomach: the gastroepiploic arcade along the greater curvature and the left/right gastric arcade along the
             lesser curvature, painted on the gastric surface (the omentum is not rendered). duodenum: the pancreatico-
             duodenal arcade along the medial (concave) border. oesophagus: a few longitudinal trunks.
@@ -158,13 +158,7 @@ def vessels_for(organ, V, F, seed=45):
             aa = a + wig
             line = cen + (u * np.cos(aa)[:, None] + w * np.sin(aa)[:, None]) * 0.3; line, _ = surf.project(line); arc.append((line[1:-1], 0.42))
         return grow(surf, arc, rng, spacing=16.0, length=(6, 12), r0=0.28, avoid=2.2, split=9.0, angle=45)   # v46: sparser, shorter (were 9 mm / 8–18 mm / 0.32)
-    if organ in ('kidney_left', 'kidney_right'):   # faint capsular vessels from the hilum
-        c = V.mean(0); h = LAND['head'] if organ == 'kidney_right' else np.array([0.5, -0.7, -0.3])
-        hil = V[np.argmin(np.linalg.norm(V - (c + 0.6 * (h - c) / np.linalg.norm(h - c)), axis=1))]
-        lines = []
-        for k in range(7):
-            q = V[rng.integers(len(V))]; pts = np.linspace(hil, q, 12); pts, _ = surf.project(pts); lines.append((pts, 0.30))
-        return grow(surf, lines, rng, spacing=14.0, length=(8, 16), r0=0.20, avoid=2.0, split=6.0, angle=40)
+    # v46: the kidneys carry no surface vessels (v45 grew faint capsular vessels from the hilum)
     return []
 
 
