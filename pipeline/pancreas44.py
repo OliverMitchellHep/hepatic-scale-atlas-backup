@@ -24,6 +24,11 @@ kidney are subtracted too. The distal CBD and the terminal main duct are wrapped
 where they enter the head down to the ampulla: both stay inside the gland until they reach the duodenal wall (v44: the CBD
 left the gland ~12 mm above the ampulla and ran up to 8 mm outside it).
 
+v46 (rounder head): the head is one near-spherical ellipsoid in the C-loop (the second lobe towards D2 and the uncinate
+tube are gone, and the neck tapers into the head instead of ending in a thick lobe), so nothing sticks out of it. The CBD now
+enters the head from above: the duct sheath is kept only for the last few millimetres at the ampulla (y < SHEATH_Y), where
+the head meets D2, instead of wrapping the CBD from y = -0.62 down (which raised a tower of gland around the duct).
+
 Output mesh: marching cubes (0.011 units ≈ 0.8 mm), Taubin smoothing, quantised like the other viscera (Int16 × ct.qs,
 Uint16 index, base64). Needs numpy, scipy, scikit-image, fast-simplification, trimesh (+ rtree).
 """
@@ -64,21 +69,20 @@ CL = np.array([
     [0.050, -0.740, 0.550],    # head
 ])
 # half-thickness (antero-posterior, a) and half-height (cranio-caudal, b) along the centreline, tail → head (param s∈[0,1])
-A_PROF = [(0.00, 0.050), (0.12, 0.070), (0.40, 0.085), (0.62, 0.080), (0.75, 0.072), (1.00, 0.110)]
-B_PROF = [(0.00, 0.075), (0.12, 0.115), (0.40, 0.135), (0.62, 0.130), (0.75, 0.120), (1.00, 0.170)]
-HEAD = dict(c=[-0.015, -0.960, 0.430], r=[0.195, 0.270, 0.155])            # ellipsoid in the C-loop
-HEAD2 = dict(c=[-0.165, -0.950, 0.185], r=[0.125, 0.300, 0.150])           # v45: fills the C-loop to D2's medial wall
+A_PROF = [(0.00, 0.050), (0.12, 0.070), (0.40, 0.085), (0.62, 0.080), (0.75, 0.072), (1.00, 0.085)]   # v46: end 0.110 → 0.085
+B_PROF = [(0.00, 0.075), (0.12, 0.115), (0.40, 0.135), (0.62, 0.130), (0.75, 0.120), (1.00, 0.120)]   # v46: end 0.170 → 0.120
+HEAD = dict(c=[-0.060, -0.960, 0.370], r=[0.235, 0.250, 0.215])            # v46: one near-spherical head in the C-loop
 # v45: CBD (cystic junction -> ampulla) and the terminal main duct, from src/atlas.js (cysJ, BD_CBD, amp0; PANC_MPD tail)
 CBD = np.array([[-0.27, -0.37, 0.37], [-0.13, -0.49, 0.38], [-0.08, -0.66, 0.40], [-0.11, -0.82, 0.44], [-0.17, -0.93, 0.40],
                 [-0.23, -1.00, 0.33], [-0.273, -1.049, 0.259]]); CBD_R = 0.044
 MPD_HEAD = np.array([[0.137, -0.641, 0.603], [0.05, -0.74, 0.55], [-0.05, -0.92, 0.45], [-0.15, -1.04, 0.35], [-0.273, -1.049, 0.259]])
 SHEATH = 0.030                                   # parenchyma around each duct (radius beyond the duct wall)
+SHEATH_Y = -1.00                                 # v46: sheath only below this (the ducts' last few mm to the ampulla)
 # v45: vessels behind the enlarged head (centrelines from src/atlas.js, CT frame)
 IVC = np.array([[0.0, -0.4, 0.03], [-0.04, -0.6, 0.07], [-0.02, -0.75, 0.10], [0.06, -1.25, 0.13]]); IVC_R = 0.090
 AORTA = np.array([[0.66, 0.1, -0.2], [0.57, -0.4, -0.05], [0.4, -1.4, 0.21]]); AORTA_R = (0.105, 0.100)
 SMA = np.array([[0.55, -0.5, 0.06], [0.55, -0.62, 0.28], [0.5, -0.95, 0.48], [0.47, -1.3, 0.52]]); SMA_R = (0.044, 0.040)
 LRV = np.array([[1.07, -0.67, -0.62], [0.86, -0.7, -0.24], [0.69, -0.715, 0.1], [0.52, -0.72, 0.213], [0.26, -0.72, 0.18], [0.04, -0.72, 0.12]]); LRV_R = (0.034, 0.042)
-UNC = np.array([[-0.020, -1.060, 0.370], [0.180, -1.080, 0.370], [0.330, -1.020, 0.395]]); UNC_R = [0.105, 0.080, 0.050]
 K_BLEND = 0.07
 CLEAR = {'stomach': 0.028, 'duodenum': 0.012, 'spleen': 0.030, 'kidney_left': 0.020, 'smv': 0.010, 'pv': 0.012, 'sv': 0.003, 'spa': 0.003, 'gda': 0.003,
          'kidney_right': 0.020, 'ivc': 0.012, 'aorta': 0.012, 'sma': 0.010, 'lrv': 0.010}
@@ -176,9 +180,7 @@ def gland_sdf(X, cl):
     # round both ends: beyond the first / last centreline sample, grow with the along-axis offset
     end = ((i == 0) & (w < 0)) | ((i == len(s) - 1) & (w > 0)); body = np.where(end, np.sqrt(np.maximum(body, 0) ** 2 + w ** 2) + np.minimum(body, 0), body)
     c, r = np.array(HEAD['c']), np.array(HEAD['r']); e = np.linalg.norm((X - c) / r, axis=1); head = (e - 1) * r.min()
-    unc = seg_dist(X, UNC, UNC_R)
-    c2, r2 = np.array(HEAD2['c']), np.array(HEAD2['r']); head2 = (np.linalg.norm((X - c2) / r2, axis=1) - 1) * r2.min()
-    f = smin(smin(smin(body, head, K_BLEND), head2, K_BLEND * 1.2), unc, K_BLEND * 0.8)
+    f = smin(body, head, K_BLEND * 2.0)            # v46: no second lobe (HEAD2) or uncinate tube (UNC); wider neck blend
     return smin(f, ducts_sdf(X), 0.03)
 
 
@@ -190,8 +192,8 @@ def dense(pts, n=160):
 
 def ducts_sdf(X):
     """parenchymal sheath around the intrapancreatic CBD (from where it meets the head) and the terminal main duct"""
-    cbd = dense(CBD); cbd = cbd[cbd[:, 1] < -0.62]
-    return np.minimum(seg_dist(X, cbd, CBD_R + SHEATH), seg_dist(X, dense(MPD_HEAD), 0.021 + SHEATH))
+    cbd = dense(CBD); cbd = cbd[cbd[:, 1] < SHEATH_Y]; mpd = dense(MPD_HEAD); mpd = mpd[mpd[:, 1] < SHEATH_Y]
+    return np.minimum(seg_dist(X, cbd, CBD_R + SHEATH), seg_dist(X, mpd, 0.021 + SHEATH))
 
 
 def taubin(P, F, it=12, lam=0.5, mu=-0.53):
@@ -293,6 +295,10 @@ if __name__ == '__main__':
     ext = verts.max(0) - verts.min(0)
     print(f'pancreas: {len(verts)} vertices, {len(faces)} faces, {ncomp} components before cleanup; extent {np.round(ext*MM)} mm')
     print('clearance to neighbours (mm, >0 = no intersection):', {k: round(v * MM, 1) for k, v in clr.items()})
+    G = MeshSDF(verts, faces); cb = dense(CBD, 400); ins = G(cb) < -CBD_R * 0.5
+    ent = cb[np.argmax(ins)] if ins.any() else None
+    print('CBD: enters the gland at', None if ent is None else np.round(ent, 3), f'; inside from there to the ampulla: {ins[np.argmax(ins):].mean()*100:.0f} %',
+          f'; head extent (x<0.2) {np.round((verts[verts[:,0]<0.2].max(0)-verts[verts[:,0]<0.2].min(0))*MM)} mm')
     SV, MPD = veins(cl)
     sv_r = np.linspace(SV_R0, SV_R1, len(SV)); sv_pts = np.vstack([np.linspace(SV[i], SV[i + 1], 12) for i in range(len(SV) - 1)])
     sv_rr = np.repeat([(sv_r[i] + sv_r[i + 1]) / 2 for i in range(len(SV) - 1)], 12)

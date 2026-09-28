@@ -1464,7 +1464,8 @@ function surfaceVessels(){
    right of the SMV, uncinate behind it, neck in front of the confluence, body across the aorta at L1–L2 behind the stomach,
    tail rising to the splenic hilum); it replaces the thinned CT pancreas, whose body turned ~90° straight back. The splenic
    vein follows the posterior (tail: posterosuperior) surface of the new body and tail from the hilum to the confluence, and the
-   main pancreatic duct runs on the gland's axis, then through the head to the ampulla. CT-frame points. */
+   main pancreatic duct runs on the gland's axis, then through the head to the ampulla. CT-frame points.
+   v46: the head is one rounded mass in the C-loop (no separate uncinate or D2 lobe); the CBD enters it from above. */
 const SPLV_PTS=(hilum,conf)=>[hilum,V3(1.423,-0.043,-0.454),V3(1.323,-0.097,-0.405),V3(1.223,-0.152,-0.366),V3(1.128,-0.206,-0.315),V3(1.029,-0.251,-0.247),V3(0.934,-0.290,-0.159),V3(0.853,-0.325,-0.064),V3(0.777,-0.370,0.035),V3(0.713,-0.411,0.135),V3(0.651,-0.447,0.228),V3(0.585,-0.481,0.318),V3(0.514,-0.488,0.407),conf];
 const PANC_MPD=[V3(1.500,-0.135,-0.430),V3(1.401,-0.199,-0.361),V3(1.294,-0.265,-0.296),V3(1.188,-0.321,-0.230),V3(1.087,-0.365,-0.148),V3(0.999,-0.401,-0.049),V3(0.921,-0.430,0.066),V3(0.852,-0.451,0.182),V3(0.781,-0.467,0.298),V3(0.702,-0.481,0.408),V3(0.610,-0.489,0.518),V3(0.503,-0.497,0.604),V3(0.372,-0.514,0.645),V3(0.243,-0.558,0.641),V3(0.137,-0.641,0.603),V3(0.050,-0.740,0.550)];
 /* v44: baked organ maps (pipeline/bake44.py): albedo, tangent-space normal and ORM (R occlusion, G roughness, B clearcoat /
