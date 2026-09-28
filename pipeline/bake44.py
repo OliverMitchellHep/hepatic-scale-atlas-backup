@@ -36,7 +36,14 @@ MM = 69.9757
 
 ORGANS = {
     # res: output sizes (desktop, mobile); lores: bake size of the AO / cavity / curvature / thickness maps (upsampled in compose)
-    'pancreas': dict(res=(2048, 1024), lores=2048, subdiv=2, ao_dist=0.12, cav_dist=0.02, thick_dist=0.20, cage=0.02, ray=0.05),
+    'pancreas': dict(res=(4096, 2048), lores=2048, subdiv=2, ao_dist=0.12, cav_dist=0.02, thick_dist=0.20, cage=0.02, ray=0.05),
+    # v45 (Task 11): the other organs, same pipeline; relief, colour and surface vessels from pipeline/organs45.py
+    'stomach':      dict(res=(4096, 2048), lores=2048, subdiv=2, ao_dist=0.12, cav_dist=0.02, thick_dist=0.20, cage=0.02, ray=0.05),
+    'duodenum':     dict(res=(4096, 2048), lores=2048, subdiv=2, ao_dist=0.10, cav_dist=0.02, thick_dist=0.15, cage=0.02, ray=0.05),
+    'spleen':       dict(res=(4096, 2048), lores=2048, subdiv=2, ao_dist=0.12, cav_dist=0.02, thick_dist=0.20, cage=0.02, ray=0.05),
+    'kidney_left':  dict(res=(4096, 2048), lores=2048, subdiv=2, ao_dist=0.12, cav_dist=0.02, thick_dist=0.20, cage=0.02, ray=0.05),
+    'kidney_right': dict(res=(4096, 2048), lores=2048, subdiv=2, ao_dist=0.12, cav_dist=0.02, thick_dist=0.20, cage=0.02, ray=0.05),
+    'esophagus':    dict(res=(4096, 2048), lores=2048, subdiv=2, ao_dist=0.08, cav_dist=0.015, thick_dist=0.10, cage=0.02, ray=0.05),
     'liver':    dict(res=(4096, 2048), lores=2048, subdiv=2, ao_dist=0.25, cav_dist=0.035, thick_dist=0.45, cage=0.10, ray=0.22, keep_uv=True),
 }
 
@@ -80,7 +87,7 @@ def stage_uv(organ, res):
     J, P, F = load_low(organ)
     at = xatlas.Atlas(); at.add_mesh(P.astype(np.float32), F.astype(np.uint32))
     co = xatlas.ChartOptions(); co.max_iterations = 4; co.normal_deviation_weight = 2.0
-    po = xatlas.PackOptions(); po.resolution = res; po.padding = 8; po.bilinear = True; po.blockAlign = True
+    po = xatlas.PackOptions(); po.resolution = res; po.padding = 32 if organ in ORG45 + ('pancreas',) else 8; po.bilinear = True; po.blockAlign = True   # v45: mip-safe gutters (8 px bled between charts from mip 3)
     at.generate(co, po)
     vmap, ind, uv = at[0]; n = len(P); m = len(vmap)
     newidx = np.full(m, -1, np.int64); prim = np.full(n, -1, np.int64); dup = []
@@ -182,7 +189,14 @@ def stage_high(organ, cfg):
     Vh = taubin(P0, F0, 12 if organ == 'liver' else 4); Fh = F0
     for _ in range(cfg['subdiv']): Vh, Fh = subdiv(Vh, Fh)
     Vh = taubin(Vh, Fh, 20 if organ == 'liver' else 10); N = vnormals(Vh, Fh)
-    h = chunked({'pancreas': panc_height, 'liver': liver_height}[organ], Vh)
+    if organ in ORG45:
+        import organs45 as O45
+        ves = O45.vessels_for(organ, P0, F0); np.save(w / 'vessels.npy', np.array([np.c_[p, r] for p, r in ves], dtype=object), allow_pickle=True)
+        vf = O45.VesselField(ves) if ves else None
+        h = chunked(lambda X: O45.height(organ, X, vf), Vh)
+        if organ == 'spleen': h = h - 0.0035 * O45.spleen_notches(Vh, N)          # notches on the superior border
+    else:
+        h = chunked({'pancreas': panc_height, 'liver': liver_height}[organ], Vh)
     if organ == 'liver':
         h = h + falciform().fields(Vh, N)[3]          # v45: the falciform / coronary relief (falc45.py)
         h = h + fossa_fields(Vh, N)[1]                # v45: the gallbladder bed's fibrous relief (fossa45.py)
@@ -281,6 +295,7 @@ def liver_veins(x):
     return np.maximum(np.clip((r - 0.80) / 0.2, 0, 1) ** 2, 0.5 * np.clip((r2 - 0.82) / 0.18, 0, 1) ** 2)
 
 
+ORG45 = ('stomach', 'duodenum', 'spleen', 'kidney_left', 'kidney_right', 'esophagus')
 _FALC = None
 
 
@@ -383,7 +398,15 @@ def stage_compose(organ, cfg):
     X = pos[cov].astype(np.float64)
     th = g['thick'][cov]; th = (th - np.percentile(th, 2)) / (np.percentile(th, 98) - np.percentile(th, 2) + 1e-6)
     args = (X, g['ao'][cov], g['cav'][cov], g['curv'][cov], np.clip(th, 0, 1))
-    col, rough, wet = compose_pancreas(*args) if organ == 'pancreas' else compose_liver(*args, onrm=on[cov] if on is not None else None)
+    if organ in ORG45:
+        import organs45 as O45
+        ves = [(v[:, :3], v[:, 3]) for v in np.load(w / 'vessels.npy', allow_pickle=True)]
+        vf = O45.VesselField(ves) if ves else None
+        col, rough, wet = O45.compose(organ, *args, onrm=on[cov] if on is not None else None, vf=vf)
+        if organ == 'spleen':
+            nt = O45.spleen_notches(X, on[cov]); col = col * (1 - 0.25 * nt)[:, None]
+    else:
+        col, rough, wet = compose_pancreas(*args) if organ == 'pancreas' else compose_liver(*args, onrm=on[cov] if on is not None else None)
     mean = col.mean(0); print('compose: mean albedo (linear)', mean.round(4), 'sRGB #%02X%02X%02X' % tuple((mean ** (1 / 2.2) * 255 + 0.5).astype(int)), flush=True)
     if organ == 'liver':   # v45: the page's reference (uLvMean) is the tissue mean, without the falciform and the gallbladder bed
         sub = slice(None, None, 20); Xs = X[sub]; Ns = on[cov][sub] if on is not None else None   # subsample (memory)
@@ -399,10 +422,16 @@ def stage_compose(organ, cfg):
         ds = (lambda a: a.reshape(r, f, r, f, a.shape[-1]).mean((1, 3))) if f > 1 else (lambda a: a)
         nn = ds(n); nn /= np.linalg.norm(nn, axis=-1, keepdims=True)
         tag = f'{r // 1024}k'
-        files = {f'{organ}44_albedo_{tag}.webp': (np.clip(ds(A), 0, 1) ** (1 / 2.2), 90),
-                 f'{organ}44_normal_{tag}.webp': (nn * 0.5 + 0.5, 88), f'{organ}44_orm_{tag}.webp': (ds(ORM), 86)}
+        hq = organ in ORG45    # v45: smooth glossy capsules showed WebP blocks in their reflections: higher quality + dither
+        files = {f'{organ}44_albedo_{tag}.webp': (np.clip(ds(A), 0, 1) ** (1 / 2.2), 92 if hq else 90),
+                 f'{organ}44_normal_{tag}.webp': (nn * 0.5 + 0.5, 94 if hq else 88), f'{organ}44_orm_{tag}.webp': (ds(ORM), 95 if hq else 86)}
+        dz = np.random.default_rng(7)
         for name, (a, q) in files.items():
-            Image.fromarray((np.clip(a, 0, 1) * 255 + 0.5).astype(np.uint8)[::-1]).save(ROOT / 'assets' / name, quality=q, method=6)
+            # smooth capsules (spleen, kidneys): lossy WebP's 4:2:0 chroma made colour blocks in their lit areas → lossless albedo
+            ll = organ in ('spleen', 'kidney_left', 'kidney_right') and '_albedo_' in name
+            d = (dz.random(a.shape) - 0.5) if hq and not ll else 0.0         # ±0.5 LSB dither before lossy quantisation
+            Image.fromarray(np.clip(np.clip(a, 0, 1) * 255 + 0.5 + d, 0, 255).astype(np.uint8)[::-1]).save(
+                ROOT / 'assets' / name, **({'lossless': True, 'quality': 100, 'method': 6} if ll else {'quality': q, 'method': 6}))
             out[name] = (ROOT / 'assets' / name).stat().st_size // 1024
     print('compose:', ', '.join(f'{k} {v} KB' for k, v in out.items()), flush=True)
 

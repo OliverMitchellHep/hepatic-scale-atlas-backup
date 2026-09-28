@@ -29,7 +29,9 @@ ROOT = Path(__file__).resolve().parent
 OUT = ROOT / 'tests/out'
 BASE = ROOT / 'tests/baseline'
 # v44: dist 9 → 10 MB for the per-device liver and pancreas map sets (4K + 2K liver, 2K + 1K pancreas); the host allows 64 MB
-BUDGET = {'dist_mb': 10.0, 'index_mb': 4.0, 'calls': 420, 'triangles_k': 2600, 'idle_draws_per_10_frames': 1}
+# v45: dist 10 → 26 MB for the organ map sets (stomach, duodenum, oesophagus, spleen, pancreas and both kidneys at 4K desktop
+# + 2K phone, WebP; KTX2 is refused by the host); each file stays far below the host's 16 MB per-file limit
+BUDGET = {'dist_mb': 26.0, 'index_mb': 4.0, 'calls': 420, 'triangles_k': 2600, 'idle_draws_per_10_frames': 1}
 # screenshot tolerance, calibrated on two v42 runs of the same build (SwiftShader, same machine)
 TOL = {'mean': 0.6, 'frac_over_24': 0.003}
 # guideline versions that the project spec marks as superseded (Sept 2026). Update when the spec changes.

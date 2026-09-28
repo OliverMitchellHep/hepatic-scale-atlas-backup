@@ -1407,7 +1407,7 @@ const PANC_MPD=[V3(1.500,-0.135,-0.430),V3(1.401,-0.199,-0.361),V3(1.294,-0.265,
    the hue; pathology tints (pancreatitis) still multiply it. Until the maps arrive the procedural skin stays. */
 const ORG_TEX={};
 function organTex44(m,organ,o){
-  const phone=innerWidth<=860||(innerHeight<=520&&matchMedia('(pointer:coarse)').matches), tag=phone?'1k':'2k';
+  const phone=innerWidth<=860||(innerHeight<=520&&matchMedia('(pointer:coarse)').matches), tag=phone?'2k':'4k';   // v45: 4K desktop / 2K phone
   const ld=new THREE.TextureLoader(), an=renderer.capabilities.getMaxAnisotropy();
   const L=(f,cs)=>new Promise((ok,no)=>ld.load(`${organ}44_${f}_${tag}.webp`,t=>{ t.colorSpace=cs; t.anisotropy=an; ok(t); },undefined,()=>no(new Error(f))));
   Promise.all([L('albedo',THREE.SRGBColorSpace),L('normal',THREE.NoColorSpace),L('orm',THREE.NoColorSpace)]).then(([A,N,O])=>{
@@ -1432,15 +1432,26 @@ function ctViscera(L,gutMat){
         for(let k=0;k<dup.length;k++){ const a=dup[k]*3, e=(n0+k)*3; N[a]+=N[e]; N[a+1]+=N[e+1]; N[a+2]+=N[e+2]; }
         for(let k=0;k<dup.length;k++){ const a=dup[k]*3, l=Math.hypot(N[a],N[a+1],N[a+2])||1; N[a]/=l; N[a+1]/=l; N[a+2]/=l; }
         for(let k=0;k<dup.length;k++){ const a=dup[k]*3, e=(n0+k)*3; N[e]=N[a]; N[e+1]=N[a+1]; N[e+2]=N[a+2]; } g.attributes.normal.needsUpdate=true; }; }
-    g.computeVertexNormals(); g.computeBoundingSphere(); return g; };
+    g.computeVertexNormals(); g.computeBoundingSphere();
+    // v45: per-vertex tangents for the baked normal maps. Without them the tangent frame comes from screen derivatives, which
+    // are constant per triangle, so the 8-bit map's tiny residual tilt showed the facets as blocks in smooth capsules' highlights
+    if(d.uv) g.computeTangents();
+    return g; };
   const glossy=(c,o={})=>mat(c,Object.assign({roughness:0.34,clearcoat:0.6,clearcoatRoughness:0.35,emissive:new THREE.Color(c).multiplyScalar(0.18)},o));
   const STY={
-    stomach:()=>skin(mat(0xD98A7A,{roughness:0.46,clearcoat:0.85,clearcoatRoughness:0.18,sheen:0.35,sheenColor:new THREE.Color(0xF2B8A8),sheenRoughness:0.6,side:THREE.DoubleSide}),'stomach'),
-    duodenum:()=>skin(mat(0xD08A76,{roughness:0.46,clearcoat:0.80,clearcoatRoughness:0.2,sheen:0.30,sheenColor:new THREE.Color(0xEDB49A),sheenRoughness:0.6,side:THREE.DoubleSide}),'duodenum'),
-    esophagus:()=>skin(mat(0xC6857A,{roughness:0.50,clearcoat:0.70,clearcoatRoughness:0.24,sheen:0.30,sheenColor:new THREE.Color(0xEDB0A0),sheenRoughness:0.6,side:THREE.DoubleSide}),'oes'),
-    spleen:()=>skin(mat(0x57202F,{roughness:0.48,clearcoat:0.6,clearcoatRoughness:0.28,sheen:0.25,sheenColor:new THREE.Color(0xA0506A),sheenRoughness:0.6,emissive:new THREE.Color(0x57202F).multiplyScalar(0.10)}),'spleen'),
-    kidney_left:()=>skin(mat(0x8A3E32,{roughness:0.56,clearcoat:0.35,clearcoatRoughness:0.38}),'kidney'),
-    kidney_right:()=>skin(mat(0x8A3E32,{roughness:0.56,clearcoat:0.35,clearcoatRoughness:0.38}),'kidney'),
+    /* v45 (Task 11): every organ takes baked maps (pipeline/bake44.py + organs45.py: serosal relief and surface vessels on the
+       stomach, duodenum and oesophagus, smooth notched splenic capsule, renal capsule with a hint of perinephric fat); the
+       procedural skin stays until they arrive */
+    stomach:()=>organTex44(skin(mat(0xD98A7A,{roughness:0.46,clearcoat:0.85,clearcoatRoughness:0.18,sheen:0.35,sheenColor:new THREE.Color(0xF2B8A8),sheenRoughness:0.6,side:THREE.DoubleSide}),'stomach'),'stomach',
+      {clearcoat:0.75,clearcoatRoughness:0.20,emissive:0.02}),
+    duodenum:()=>organTex44(skin(mat(0xD08A76,{roughness:0.46,clearcoat:0.80,clearcoatRoughness:0.2,sheen:0.30,sheenColor:new THREE.Color(0xEDB49A),sheenRoughness:0.6,side:THREE.DoubleSide}),'duodenum'),'duodenum',
+      {clearcoat:0.72,clearcoatRoughness:0.22,emissive:0.02}),
+    esophagus:()=>organTex44(skin(mat(0xC6857A,{roughness:0.50,clearcoat:0.70,clearcoatRoughness:0.24,sheen:0.30,sheenColor:new THREE.Color(0xEDB0A0),sheenRoughness:0.6,side:THREE.DoubleSide}),'oes'),'esophagus',
+      {clearcoat:0.60,clearcoatRoughness:0.26,emissive:0.02}),
+    spleen:()=>organTex44(skin(mat(0x57202F,{roughness:0.48,clearcoat:0.6,clearcoatRoughness:0.28,sheen:0.25,sheenColor:new THREE.Color(0xA0506A),sheenRoughness:0.6,emissive:new THREE.Color(0x57202F).multiplyScalar(0.10)}),'spleen'),'spleen',
+      {clearcoat:0.70,clearcoatRoughness:0.30,emissive:0.015}),
+    kidney_left:()=>organTex44(skin(mat(0x8A3E32,{roughness:0.56,clearcoat:0.35,clearcoatRoughness:0.38}),'kidney'),'kidney_left',{clearcoat:0.55,clearcoatRoughness:0.24,emissive:0.015}),
+    kidney_right:()=>organTex44(skin(mat(0x8A3E32,{roughness:0.56,clearcoat:0.35,clearcoatRoughness:0.38}),'kidney'),'kidney_right',{clearcoat:0.55,clearcoatRoughness:0.24,emissive:0.015}),
     pancreas:()=>organTex44(skin(mat(0xD4A872,{roughness:0.70,clearcoat:0.15,clearcoatRoughness:0.5,emissive:new THREE.Color(0xD4A872).multiplyScalar(0.07)}),'pancreas'),'pancreas',
       {clearcoat:0.55,clearcoatRoughness:0.30,emissive:0.03})};
   const mesh={};

@@ -31,6 +31,21 @@ load with `KTX2Loader`.
 Needs numpy, scipy, pillow, xatlas, bpy (5.0). `pancreas44.py` (the pancreas remodel) additionally needs scikit-image,
 fast-simplification and trimesh; `spine44.py` needs numpy only.
 
+## v45 additions
+    python3 pipeline/pancreas44.py          # pancreas (v45: head in the C-loop, CBD/MPD sheath, GDA + branches grooved)
+    python3 pipeline/fossa45.py             # gallbladder fossa re-mesh on the liver (then re-bake the liver)
+    python3 pipeline/spleen45.py            # spleen placement (least move for a 1.1 mm stomach gap)
+    python3 pipeline/falc45.py              # prints the falciform centreline literal (FALC45) for src/atlas.js
+    python3 pipeline/bake44.py <organ>      # liver, pancreas, stomach, duodenum, esophagus, spleen, kidney_left, kidney_right
+
+- `falc45.py`: the falciform band, fan and coronary ligament as surface fields; `bake44.py liver` adds their relief and colour.
+- `fossa45.py`: rebuilds the gallbladder surface exactly as the page does, re-meshes the bed, re-unwraps the liver and updates the SDF.
+- `organs45.py`: relief, colour and grown surface vessels (arcades + branching serosal vessels) for the other organs.
+  Tangent-space normal maps like the liver's (object-space maps were tried: 8-bit object normals stair-step in the
+  highlights of smooth glossy capsules such as the spleen's). UV charts get 32 px gutters at 4K so mip levels do not bleed
+  between charts.
+- Every organ set is 4K desktop / 2K phone WebP (`<organ>44_{albedo,normal,orm}_{4k,2k}.webp`), chosen at load.
+
 ## Geometry (CT → meshes)
 The organ, context and diaphragm meshes come from the s1267 CT case (TotalSegmentator masks), through the scripts recorded in the project docs `hepatic-scale-atlas-v39/v40-pipeline-scripts.md`. The CT source data are held privately in the "Atlas Source s1267" artifact and are deliberately **not** in this repository until the dataset licence for public redistribution is confirmed.
 
