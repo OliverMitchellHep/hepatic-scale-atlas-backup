@@ -152,12 +152,12 @@ def vessels_for(organ, V, F, seed=45):
     if organ == 'esophagus':
         _, _, cen = curvature_lines(V, F, LAND['oes_top'], LAND['goj'], 40); arc = []
         T = np.gradient(cen, axis=0); T /= np.linalg.norm(T, axis=1, keepdims=True)
-        for a in np.radians([20, 110, 200, 290]):
+        for a in np.radians([20, 200]):                                          # v46: two trunks (were four)
             u = np.cross(T, [1.0, 0, 0]); u /= np.linalg.norm(u, axis=1, keepdims=True); w = np.cross(T, u)
             wig = 0.9 * fbm(np.c_[np.arange(len(cen)) * 0.35, np.full(len(cen), a), np.zeros(len(cen))], 2, seed=51)   # wandering, not straight
             aa = a + wig
             line = cen + (u * np.cos(aa)[:, None] + w * np.sin(aa)[:, None]) * 0.3; line, _ = surf.project(line); arc.append((line[1:-1], 0.42))
-        return grow(surf, arc, rng, spacing=9.0, length=(8, 18), r0=0.32, avoid=1.6, split=7.0, angle=45)
+        return grow(surf, arc, rng, spacing=16.0, length=(6, 12), r0=0.28, avoid=2.2, split=9.0, angle=45)   # v46: sparser, shorter (were 9 mm / 8–18 mm / 0.32)
     if organ in ('kidney_left', 'kidney_right'):   # faint capsular vessels from the hilum
         c = V.mean(0); h = LAND['head'] if organ == 'kidney_right' else np.array([0.5, -0.7, -0.3])
         hil = V[np.argmin(np.linalg.norm(V - (c + 0.6 * (h - c) / np.linalg.norm(h - c)), axis=1))]
@@ -179,7 +179,7 @@ def height(organ, X, vf=None):
         h = 0.0006 * fbm(X * 6.0, 2, seed=15) + 0.00025 * fbm(X * 45.0, 2, seed=16)       # smooth capsule
     if organ in ('kidney_left', 'kidney_right'):
         h = 0.0007 * fbm(X * 9.0, 3, seed=17) + 0.0003 * fbm(X * 60.0, 2, seed=18)
-    if vf is not None: h = h + vf(X)[2]
+    if vf is not None: h = h + vf(X)[2] * (0.4 if organ == 'esophagus' else 1.0)   # v46: oesophageal vessels barely raised
     return h
 
 
@@ -210,7 +210,8 @@ def compose(organ, X, ao, cav, curv, thick, onrm, vf=None):
     if vf is not None:
         core, edge, _ = vf(X)
         pale, dark = lin('#C86E68'), lin('#5A1216')
-        e = edge * (0.55 if organ.startswith('kidney') else 0.85); c = core * (0.45 if organ.startswith('kidney') else 0.80)
+        e = edge * (0.55 if organ.startswith('kidney') else 0.45 if organ == 'esophagus' else 0.85)   # v46: oesophagus fainter (was 0.85 / 0.80)
+        c = core * (0.45 if organ.startswith('kidney') else 0.45 if organ == 'esophagus' else 0.80)
         col = col * (1 - e)[:, None] + pale[None] * e[:, None]; col = col * (1 - c)[:, None] + dark[None] * c[:, None]
         rough = np.clip(rough + 0.10 * edge, 0, 1); wet = wet * (1 - 0.35 * edge)   # vessels a little less glossy than the serosa
     col = col * (0.70 + 0.30 * ao ** 0.8)[:, None] * (0.88 + 0.12 * cav)[:, None]
