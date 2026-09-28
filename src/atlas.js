@@ -202,8 +202,12 @@ function info(l){
 /* v36 render settings in one place (tone mapper, exposure, light rig, environment strength) */
 /* ACESFilmic kept: against AgX at matched brightness it holds the teaching colour code apart (CIEDE2000, home view:
    artery–portal 33.5 vs 27.3, bile–artery 43.8 vs 31.3, fat–nutmeg 15.3 vs 10.1, portal–hepatic vein 19.6 vs 15.7). */
-const R36={tm:THREE.ACESFilmicToneMapping, exp:1.15, env:1.5,
-  key:[0xFFF1E4,1.50,-4,5,6], fill:[0x9DB6DA,0.54,6,0.5,3], rim:[0xE8B070,0.84,-3,3,-6], amb:[0x1C2734,0.54], cam:0.66};
+/* v44 (Task 9): environment map + key light. The coloured fill (blue) and rim (amber) lights are gone: on the wet liver
+   the amber rim left gold streaks on the visceral surface. The key is the world key plus the viewer-mounted headlight
+   (so the side turned to the viewer stays lit), the flat ambient is lower (it flattened surfaces towards clay), and the
+   studio environment carries a little more of the fill and the wet reflections. No shadow maps (Task 1). */
+const R36={tm:THREE.ACESFilmicToneMapping, exp:1.15, env:1.75,
+  key:[0xFFF1E4,1.50,-4,5,6], amb:[0x1C2734,0.34], cam:0.80};
 const stageEl = document.getElementById('stage');
 const renderer = new THREE.WebGLRenderer({antialias:true, powerPreference:'high-performance'});
 renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
@@ -242,9 +246,7 @@ function addLight(col, inten, x,y,z){
   const l = new THREE.DirectionalLight(col, inten);
   l.position.set(x,y,z); scene.add(l); return l;   // position is read-only: always .set()
 }
-const LIGHTS={key:addLight(R36.key[0],R36.key[1],R36.key[2],R36.key[3],R36.key[4]),
-  fill:addLight(R36.fill[0],R36.fill[1],R36.fill[2],R36.fill[3],R36.fill[4]),
-  rim:addLight(R36.rim[0],R36.rim[1],R36.rim[2],R36.rim[3],R36.rim[4]), amb:new THREE.AmbientLight(R36.amb[0],R36.amb[1])};
+const LIGHTS={key:addLight(R36.key[0],R36.key[1],R36.key[2],R36.key[3],R36.key[4]), amb:new THREE.AmbientLight(R36.amb[0],R36.amb[1])};
 scene.add(LIGHTS.amb);
 
 const controls = new OrbitControls(camera, renderer.domElement);
@@ -1582,18 +1584,21 @@ function falciformBuild(body){
    v44: the maps come from pipeline/bake44.py (one scripted headless run: tangent normal, self-AO, cavity, curvature,
    thickness and position bakes → albedo, normal and ORM = R occlusion, G roughness, B clearcoat / wetness), 4K on desktop
    and 2K on phones, chosen at load (phones had no liver maps before). The tiling detail map replaces the generic skin atlas
-   on the liver at close range (desktop), with the macro maps carrying colour, capsular veins, creases, wetness and AO. */
+   on the liver at close range (desktop), with the macro maps carrying colour, capsular veins, creases, wetness and AO.
+   v44 (Task 9): the detail map is liver44_micro.webp, a fine capsular grain with sparse soft pits and no lobular cells (the
+   v42 Worley lobules read as a blurred pattern at mid distance); the skin shader fades it out by screen footprint, so it
+   only appears at close range. */
 /* v44: uLvMean (skin uniforms) is the mean of the composed liver albedo (bake44.py prints it), so pathology colours keep
    their luminance when they take only the map's light/dark pattern */
 const LIVER_PHONE=innerWidth<=860||(innerHeight<=520&&matchMedia('(pointer:coarse)').matches);
 const LIVER_DETAIL_TEX=(()=>{ if(LIVER_PHONE) return null;
-  const t=new THREE.TextureLoader().load('liver42_detail.png'); t.wrapS=t.wrapT=THREE.RepeatWrapping; t.anisotropy=renderer.capabilities.getMaxAnisotropy(); t.colorSpace=THREE.NoColorSpace; return t; })();
+  const t=new THREE.TextureLoader().load('liver44_micro.webp'); t.wrapS=t.wrapT=THREE.RepeatWrapping; t.anisotropy=renderer.capabilities.getMaxAnisotropy(); t.colorSpace=THREE.NoColorSpace; return t; })();
 function liverTex42(...mats){
   const ld=new THREE.TextureLoader(), an=renderer.capabilities.getMaxAnisotropy(), tag=LIVER_PHONE?'2k':'4k';
   const L=(f,cs)=>new Promise((ok,no)=>ld.load(f,t=>{ t.colorSpace=cs; t.anisotropy=an; ok(t); },undefined,()=>no(new Error(f))));
   Promise.all([L(`liver44_albedo_${tag}.webp`,THREE.SRGBColorSpace),L(`liver44_normal_${tag}.webp`,THREE.NoColorSpace),L(`liver44_orm_${tag}.webp`,THREE.NoColorSpace)])
     .then(([A,Nm,O])=>{ for(const m of mats){ const U=m.userData.skin; if(!U) continue;
-        U.tLvA.value=A; U.tLvO.value=O; if(LIVER_DETAIL_TEX) U.tSkin.value=LIVER_DETAIL_TEX; U.uSkS.value.set(3.9,9,1); U.uSkK.value.set(0.00006,0.00012,0.04,0);
+        U.tLvA.value=A; U.tLvO.value=O; if(LIVER_DETAIL_TEX) U.tSkin.value=LIVER_DETAIL_TEX; U.uSkS.value.set(3.9,9,1); U.uSkK.value.set(0.00009,0.00010,0.03,0);
         U.uSkK2.value.set(0,0.10,0.35); U.uLvNod.value=1; if(m.clearcoat>0.5){ m.userData.cc42=true; }
         m.normalMap=Nm; m.normalScale=new THREE.Vector2(1,1); m.userData.nScale=1; m.defines=Object.assign(m.defines||{},{SKIN_TEX42:''}); m.needsUpdate=true; }
       LIVER_TEX.ready=true; const u=tiers[0].inner&&tiers[0].inner.userData; if(u&&u.plainMat){ u.forceCirr=true; applyCirrhosis(u,state.fibrosis); } })

@@ -150,11 +150,18 @@ def panc_height(X):
     return -p['lob_d'] * sep + p['dome'] * np.clip(L, 0, 0.6) / 0.6 - p['fine_d'] * fsep + p['und_d'] * und
 
 
-# liver relief: the v42 capsule (hi42.py): broad undulation, very soft creases, fine grain
+# liver relief (v44, Task 9): contouring after tissue-liver-5 (broad undulation plus soft shallow creases), subcapsular
+# veins very slightly raised along the same network the albedo darkens, and a slightly coarse capsular grain (~1.3 mm)
+# after maleinternalorans3dsmodel25. No lobular cells (the v42 lobule speckle and detail cells read as blur at mid distance).
 def liver_height(X):
-    h = 0.0070 * fbm(X * 3.2, 4, seed=3)
-    cr = worley_f2f1(X * 6.0, seed=7); h += -0.0009 * np.exp(-(cr / 0.10) ** 2)
-    return h + 0.0012 * fbm(X * 28.0, 3, seed=11)
+    h = 0.0070 * fbm(X * 3.2, 4, seed=3) + 0.0050 * fbm(X * 1.4, 2, seed=4)            # contour: broad undulation
+    # soft shallow creases: a few long, gently curving grooves (zero set of a warped low-frequency field), only where a
+    # second field allows them, so they read as contour folds, not as a cellular network (v42's Worley creases did)
+    wx = X + 0.12 * np.stack([fbm(X * 1.8, 2, seed=101), fbm(X * 1.8 + 5.3, 2, seed=102), fbm(X * 1.8 + 9.1, 2, seed=103)], -1)
+    g = fbm(wx * 2.6, 3, seed=7); allow = np.clip((fbm(X * 1.1, 2, seed=8) + 0.05) / 0.35, 0, 1)
+    h += -0.0022 * np.exp(-(g / 0.045) ** 2) * allow
+    h += 0.0009 * liver_veins(X)                                                         # veins, faintly raised
+    return h + 0.0017 * fbm(X * 52.0, 3, seed=11)                                        # coarse capsular grain
 
 
 def stage_high(organ, cfg):
@@ -265,7 +272,8 @@ def compose_liver(X, ao, cav, curv, thick, onrm=None):
     """liver colour (v44): heterogeneous red-brown. The base colour blends from the superior / diaphragmatic surface
     (LIVER_SUP) to the inferior / visceral surface (LIVER_INF) by surface orientation (the texel's object-space normal,
     +y superior) plus low-frequency 3D noise, through a wide smoothstep, so there is no boundary. On top: patchy mottling,
-    fine mottle, lobular speckle, capsular veins, cavity and a light AO term (the page also occludes indirect light).
+    fine mottle, capsular veins, cavity and a light AO term (the page also occludes indirect light). v44 Task 9: no
+    lobular speckle (the Worley 'lob' cells read as a blurred pattern at mid distance).
     Wetness also follows the baked curvature (drier on convex ridges and the thin inferior border)."""
     ev = lambda fn: chunked(fn, X, 1_000_000)
     sup, inf, dark = lin(LIVER_SUP), lin(LIVER_INF), lin('#2E1018')
@@ -274,10 +282,9 @@ def compose_liver(X, ao, cav, curv, thick, onrm=None):
     t = np.clip((ny + 0.50 * lf + 0.15 - (-0.55)) / (0.60 - (-0.55)), 0, 1); wgt = t * t * (3 - 2 * t)
     col = inf[None] * (1 - wgt)[:, None] + sup[None] * wgt[:, None]
     m2 = ev(lambda x: fbm(x * 6.0, 4, seed=33)); m3 = ev(lambda x: fbm(x * 30.0, 2, seed=45))
-    lob = ev(lambda x: worley_f2f1(x * 42.0, seed=57)); vn = ev(liver_veins); wet = ev(lambda x: fbm(x * 2.2, 3, seed=81))
+    vn = ev(liver_veins); wet = ev(lambda x: fbm(x * 2.2, 3, seed=81))
     col *= (1 + 0.09 * m2)[:, None]; col *= (1 + 0.05 * m3)[:, None]
-    col *= (1 - 0.035 * np.exp(-(lob / 0.08) ** 2))[:, None]
-    col = col * (1 - 0.20 * vn[:, None]) + dark * 0.20 * vn[:, None]
+    col = col * (1 - 0.24 * vn[:, None]) + dark * 0.24 * vn[:, None]                    # subcapsular veins (tissue-liver-5)
     col *= (0.72 + 0.28 * ao ** 0.8)[:, None]; col *= (0.85 + 0.15 * cav)[:, None]
     rough = np.clip(0.40 - 0.126 * np.clip(wet * 1.8 + 0.1, -1, 1) - 0.10 * (1 - cav) + 0.05 * m3, 0.16, 0.62)
     wetn = np.clip(0.55 + 0.9 * wet + 0.4 * (1 - ao) - 0.25 * np.clip(curv - 0.6, 0, 1) - 0.15 * (1 - thick), 0, 1)
@@ -323,6 +330,32 @@ def stage_compose(organ, cfg):
     print('compose:', ', '.join(f'{k} {v} KB' for k, v in out.items()), flush=True)
 
 
+def stage_detail(organ, cfg):
+    """liver close-range micro-texture (v44, replaces liver42_detail.png's lobular Worley cells): 1024² tileable, sampled
+    triplanar by the page's skin shader at 3.9 / 9 repeats per unit and faded out by screen footprint, so it only shows up
+    close. R: fine capsular grain (isotropic 1/f noise with sparse soft pits, ~0.2–0.6 mm), G: mid grain for the bump,
+    B: micro mottle. No cells, no ridges — nothing that reads as a pattern at mid distance."""
+    from PIL import Image
+    D = 1024; rng = np.random.default_rng(44)
+    f = np.fft.fftfreq(D); k = np.hypot(*np.meshgrid(f, f)); k[0, 0] = 1
+
+    def per(beta, lo=0.0, hi=1.0, seed=0):
+        w = np.random.default_rng(seed).standard_normal((D, D)); band = (k >= lo * 0.5) & (k <= hi * 0.5)
+        s = np.real(np.fft.ifft2(np.fft.fft2(w) / k ** beta * band)); return (s - s.mean()) / s.std()
+    grain = per(0.9, 0.02, 1.0, 1)
+    pits = np.zeros((D, D)); yy, xx = np.mgrid[0:D, 0:D]
+    for _ in range(900):                                   # sparse soft pits (capsular micro-dimpling), periodic
+        cx, cy, r = rng.random() * D, rng.random() * D, 2 + rng.random() * 4
+        dx = (xx - cx + D / 2) % D - D / 2; dy = (yy - cy + D / 2) % D - D / 2
+        m = (np.abs(dx) < 4 * r) & (np.abs(dy) < 4 * r); pits[m] -= np.exp(-(dx[m] ** 2 + dy[m] ** 2) / (r * r))
+    R = np.clip(0.55 + 0.16 * grain + 0.22 * pits, 0, 1)
+    G = np.clip(0.5 + 0.20 * per(1.1, 0.0, 0.25, 2), 0, 1)
+    B = np.clip(0.5 + 0.14 * per(0.8, 0.0, 0.6, 3), 0, 1)
+    img = np.stack([R, G, B], -1)                                   # lossy WebP: the grain is noise (a PNG was 2.7 MB)
+    Image.fromarray((img * 255 + 0.5).astype(np.uint8), 'RGB').save(ROOT / 'assets' / f'{organ}44_micro.webp', quality=90, method=6)
+    print('detail:', f'{organ}44_micro.webp', (ROOT / 'assets' / f'{organ}44_micro.webp').stat().st_size // 1024, 'KB', flush=True)
+
+
 if __name__ == '__main__':
     organ = sys.argv[1]; cfg = ORGANS[organ]
     stages = ['uv', 'high', 'bake', 'compose']
@@ -330,5 +363,5 @@ if __name__ == '__main__':
     for s in stages:
         t = time.time()
         {'uv': lambda: stage_uv(organ, cfg['res'][0]), 'high': lambda: stage_high(organ, cfg), 'bake': lambda: stage_bake(organ, cfg),
-         'compose': lambda: stage_compose(organ, cfg)}[s]()
+         'compose': lambda: stage_compose(organ, cfg), 'detail': lambda: stage_detail(organ, cfg)}[s]()
         print(f'[{s}] {time.time()-t:.0f} s', flush=True)
