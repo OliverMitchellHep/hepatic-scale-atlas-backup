@@ -17,6 +17,13 @@ cannot intersect them. The splenic vein is then laid along the posterior surface
 offset backwards by the half-thickness plus the vein radius), and the main pancreatic duct along the centreline; both are
 printed as CT-frame V3() literals for src/atlas.js.
 
+v45 (head in the C-loop): the head is enlarged towards the duodenum by a second ellipsoid on the medial wall of D2 and is
+then carved by the duodenum at a 0.8 mm clearance, so it abuts D2's medial wall along the C-loop instead of sitting in front
+of it (v44 gap 6-25 mm). The larger head could reach the vessels behind it, so the IVC, aorta, SMA, left renal vein and right
+kidney are subtracted too. The distal CBD and the terminal main duct are wrapped in a parenchymal sheath (tube union) from
+where they enter the head down to the ampulla: both stay inside the gland until they reach the duodenal wall (v44: the CBD
+left the gland ~12 mm above the ampulla and ran up to 8 mm outside it).
+
 Output mesh: marching cubes (0.011 units ≈ 0.8 mm), Taubin smoothing, quantised like the other viscera (Int16 × ct.qs,
 Uint16 index, base64). Needs numpy, scipy, scikit-image, fast-simplification, trimesh (+ rtree).
 """
@@ -58,9 +65,21 @@ CL = np.array([
 A_PROF = [(0.00, 0.050), (0.12, 0.070), (0.40, 0.085), (0.62, 0.080), (0.75, 0.072), (1.00, 0.110)]
 B_PROF = [(0.00, 0.075), (0.12, 0.115), (0.40, 0.135), (0.62, 0.130), (0.75, 0.120), (1.00, 0.170)]
 HEAD = dict(c=[-0.015, -0.960, 0.430], r=[0.195, 0.270, 0.155])            # ellipsoid in the C-loop
+HEAD2 = dict(c=[-0.165, -0.950, 0.185], r=[0.125, 0.300, 0.150])           # v45: fills the C-loop to D2's medial wall
+# v45: CBD (cystic junction -> ampulla) and the terminal main duct, from src/atlas.js (cysJ, BD_CBD, amp0; PANC_MPD tail)
+CBD = np.array([[-0.27, -0.37, 0.37], [-0.13, -0.49, 0.38], [-0.08, -0.66, 0.40], [-0.11, -0.82, 0.44], [-0.17, -0.93, 0.40],
+                [-0.23, -1.00, 0.33], [-0.273, -1.049, 0.259]]); CBD_R = 0.044
+MPD_HEAD = np.array([[0.137, -0.641, 0.603], [0.05, -0.74, 0.55], [-0.05, -0.92, 0.45], [-0.15, -1.04, 0.35], [-0.273, -1.049, 0.259]])
+SHEATH = 0.030                                   # parenchyma around each duct (radius beyond the duct wall)
+# v45: vessels behind the enlarged head (centrelines from src/atlas.js, CT frame)
+IVC = np.array([[0.0, -0.4, 0.03], [-0.04, -0.6, 0.07], [-0.02, -0.75, 0.10], [0.06, -1.25, 0.13]]); IVC_R = 0.090
+AORTA = np.array([[0.66, 0.1, -0.2], [0.57, -0.4, -0.05], [0.4, -1.4, 0.21]]); AORTA_R = (0.105, 0.100)
+SMA = np.array([[0.55, -0.5, 0.06], [0.55, -0.62, 0.28], [0.5, -0.95, 0.48], [0.47, -1.3, 0.52]]); SMA_R = (0.044, 0.040)
+LRV = np.array([[1.07, -0.67, -0.62], [0.86, -0.7, -0.24], [0.69, -0.715, 0.1], [0.52, -0.72, 0.213], [0.26, -0.72, 0.18], [0.04, -0.72, 0.12]]); LRV_R = (0.034, 0.042)
 UNC = np.array([[-0.020, -1.060, 0.370], [0.180, -1.080, 0.370], [0.330, -1.020, 0.395]]); UNC_R = [0.105, 0.080, 0.050]
 K_BLEND = 0.07
-CLEAR = {'stomach': 0.028, 'duodenum': 0.012, 'spleen': 0.030, 'kidney_left': 0.020, 'smv': 0.010, 'pv': 0.012, 'sv': 0.003, 'spa': 0.003, 'gda': 0.003}
+CLEAR = {'stomach': 0.028, 'duodenum': 0.012, 'spleen': 0.030, 'kidney_left': 0.020, 'smv': 0.010, 'pv': 0.012, 'sv': 0.003, 'spa': 0.003, 'gda': 0.003,
+         'kidney_right': 0.020, 'ivc': 0.012, 'aorta': 0.012, 'sma': 0.010, 'lrv': 0.010}
 H = 0.011
 TARGET_V = 11000
 
@@ -156,7 +175,21 @@ def gland_sdf(X, cl):
     end = ((i == 0) & (w < 0)) | ((i == len(s) - 1) & (w > 0)); body = np.where(end, np.sqrt(np.maximum(body, 0) ** 2 + w ** 2) + np.minimum(body, 0), body)
     c, r = np.array(HEAD['c']), np.array(HEAD['r']); e = np.linalg.norm((X - c) / r, axis=1); head = (e - 1) * r.min()
     unc = seg_dist(X, UNC, UNC_R)
-    return smin(smin(body, head, K_BLEND), unc, K_BLEND * 0.8)
+    c2, r2 = np.array(HEAD2['c']), np.array(HEAD2['r']); head2 = (np.linalg.norm((X - c2) / r2, axis=1) - 1) * r2.min()
+    f = smin(smin(smin(body, head, K_BLEND), head2, K_BLEND * 1.2), unc, K_BLEND * 0.8)
+    return smin(f, ducts_sdf(X), 0.03)
+
+
+def dense(pts, n=160):
+    """polyline through pts resampled by arc length (the page's Catmull-Rom curves stay within ~1 mm of it)"""
+    from scipy.interpolate import CubicSpline
+    d = np.r_[0, np.cumsum(np.linalg.norm(np.diff(pts, axis=0), axis=1))]; return CubicSpline(d, pts, bc_type='natural')(np.linspace(0, d[-1], n))
+
+
+def ducts_sdf(X):
+    """parenchymal sheath around the intrapancreatic CBD (from where it meets the head) and the terminal main duct"""
+    cbd = dense(CBD); cbd = cbd[cbd[:, 1] < -0.62]
+    return np.minimum(seg_dist(X, cbd, CBD_R + SHEATH), seg_dist(X, dense(MPD_HEAD), 0.021 + SHEATH))
 
 
 def taubin(P, F, it=12, lam=0.5, mu=-0.53):
@@ -172,7 +205,7 @@ def taubin(P, F, it=12, lam=0.5, mu=-0.53):
 def build():
     J = json.loads(DATA.read_text()); ct = J['ct']; qs = ct['qs']; V = ct['viscera']
     obst = {}
-    for k in ('stomach', 'duodenum', 'spleen', 'kidney_left'):
+    for k in ('stomach', 'duodenum', 'spleen', 'kidney_left', 'kidney_right'):
         P, F = decode(V[k], qs); obst[k] = MeshSDF(P, F)
     cl = centreline()
     lo = np.array([-0.50, -1.55, -0.65]); hi = np.array([1.70, 0.05, 0.95])
@@ -185,6 +218,7 @@ def build():
     dist['smv'] = seg_dist(X, SMV, SMV_R); dist['pv'] = seg_dist(X, PVT, PVT_R)
     SV, _ = veins(cl); dist['sv'] = seg_dist(X, SV, np.linspace(SV_R0, SV_R1, len(SV)))
     dist['spa'] = seg_dist(X, SPA, np.linspace(*SPA_R, len(SPA))); dist['gda'] = seg_dist(X, GDA, np.linspace(*GDA_R, len(GDA)))
+    dist.update(vessel_dists(X))
     for k, d in dist.items(): fb = smax(fb, -(d - CLEAR[k]), 0.02)
     f[band] = fb; f[~band] = np.maximum(f[~band], 0.06)
     vol = f.reshape(n)
@@ -213,8 +247,13 @@ def build():
     return J, v2, f2, cl, obst, ncomp
 
 
+def vessel_dists(X):
+    return {'ivc': seg_dist(X, IVC, IVC_R), 'aorta': seg_dist(X, AORTA, np.linspace(*AORTA_R, len(AORTA))),
+            'sma': seg_dist(X, SMA, np.linspace(*SMA_R, len(SMA))), 'lrv': seg_dist(X, LRV, np.linspace(*LRV_R, len(LRV)))}
+
+
 def report(verts, faces, obst):
-    out = {}
+    out = {k: v.min() for k, v in vessel_dists(verts).items()}
     for k, o in obst.items(): d = o(verts); out[k] = d.min()
     out['smv'] = seg_dist(verts, SMV, SMV_R).min(); out['pv'] = seg_dist(verts, PVT, PVT_R).min()
     out['splenic a.'] = seg_dist(verts, SPA, np.linspace(*SPA_R, len(SPA))).min(); out['GDA'] = seg_dist(verts, GDA, np.linspace(*GDA_R, len(GDA))).min()
