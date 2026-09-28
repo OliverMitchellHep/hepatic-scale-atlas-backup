@@ -1,5 +1,14 @@
 # Changelog
 
+## v46 — vessel courses, pancreatic head, spleen fit, falciform, organ surfaces (28 Sept 2026)
+- Common hepatic artery: runs along the upper border of the pancreas and passes above and in front of the portal trunk (2.2 mm); v45's ran through the trunk and grazed the splenic vein. The GDA and proper hepatic artery now leave it in front of the portal vein; the hepatic artery divides below the portal bifurcation. Intrahepatic companion arteries are offset perpendicular to each portal branch with a relaxation pass: 0 artery–portal contacts in the hepatic tree (was ~70). Remaining: the splenic artery still touches the splenic vein at the splenic hilum (pre-existing; needs both re-laid through the pancreas pipeline).
+- Pancreatic head: one near-spherical mass (≈33 × 35 × 30 mm) in the C-loop; the second lobe, the uncinate tube and the sheath that rose round the CBD are gone. The CBD enters the head from above (y −0.74) and stays inside to the ampulla. Pancreas maps re-baked.
+- Spleen: rotated 7.4° (+4 mm) so its concave gastric surface follows the fundus; gastric surface > 12 mm off the fundus 31 % → 5 %, closest 1.0 mm (`pipeline/spleen46.py`).
+- Falciform ligament: 4 mm band (was 10), a little more raised, down to the inferior border of the anterior surface; superior triangle 32 mm across (was 76) with a mostly see-through membrane; coronary continuation narrower and shorter. Liver maps re-baked.
+- Kidneys: darker purple-brown (#5E2E36; was #8C4032), perinephric fat removed, no surface vessels, warm emissive and rim glow removed.
+- Oesophagus: two longitudinal trunks instead of four, sparser, shorter, fainter surface vessels.
+- Surface vessels (`pipeline/vessels46.py` → `assets/vessels46.webp`, the gastric vessel style as a seamless tile, applied in object space by `vesSkin()`): stomach-sized vessels on the gallbladder's inferior surface; fine, faint vasa vasorum on the arteries; small surface vessels, soft irregular relief and mottling on the portal, hepatic venous and biliary walls. Rest-position mapping; detail below ~1/16 px fades out (no shimmer).
+
 ## v45 — viewer, hepatobiliary geometry, organ materials (28 Sept 2026)
 Review screenshots per task in `review/v45/<task>/` (anterior, right lateral, inferior, percutaneous biopsy).
 - Default camera: pulled back ×2.04 along the same direction (distance 7.14 → 14.57 units) so the whole ribcage (ribs 1–12, costal cartilages, sternum, T1–T12) fits a 16:9 desktop frame with the side panel open; the orbit target is unchanged.

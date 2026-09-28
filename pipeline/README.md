@@ -51,3 +51,12 @@ The organ, context and diaphragm meshes come from the s1267 CT case (TotalSegmen
 
 ## Fidelity rule for new meshes
 Every new or re-exported mesh states its simplification error limit (default 0.1 % of its bounding-box diagonal for desktop) and gets a side-by-side screenshot, original vs simplified, before it replaces the old one.
+
+## v46 additions
+    python3 pipeline/spleen46.py --dry                       # search a rotation fitting the spleen to the fundus
+    python3 pipeline/spleen46.py --x 1.01 -6.28 3.69 -2.65 -0.21 3.33   # apply it (degrees, mm)
+    python3 pipeline/vessels46.py                            # assets/vessels46.webp: seamless surface-vessel tile
+
+- `pancreas44.py`: v46 head (one ellipsoid; no HEAD2 / uncinate; duct sheath only below SHEATH_Y), then `bake44.py pancreas`.
+- `falc45.py`: v46 band / fan / coronary sizes and the run down to the inferior border, then `bake44.py liver`.
+- `organs45.py`: v46 kidney colour (no fat, no vessels), sparser oesophageal vessels; re-bake those organs.
