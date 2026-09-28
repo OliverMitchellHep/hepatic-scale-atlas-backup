@@ -404,7 +404,8 @@ diffuseColor.rgb=mix(diffuseColor.rgb,vec3(1.0,0.1,0.1),uSkDbg*skMat);
    VES: S tile repeats per model unit (1 unit ≈ 70 mm; tile vessels are 0.9–4.9 texels in radius), core / edge colours,
    K = core, edge, relief (units), albedo irregularity; B irregular relief (units); mask: 1 = inferior surface only. */
 const VES={
-  gb:{S:0.42, core:0x5A1216, edge:0xC86E68, K:[1.00,0.60,0.0030,0.04], B:0.0005, mask:1}   // the stomach's vessels (Task 6)
+  gb:{S:0.42, core:0x5A1216, edge:0xC86E68, K:[1.00,0.60,0.0030,0.04], B:0.0005, mask:1},  // the stomach's vessels (Task 6)
+  artery:{S:1.5, core:0x5C0E14, edge:0xD8756A, K:[0.42,0.24,0.0007,0.04], B:0.0003}        // vasa vasorum: fine and faint (Task 9)
 };
 const VES_MATS=new Set();
 const VES_TEX=(()=>{ const t=new THREE.TextureLoader().load('vessels46.webp',()=>{ ORG_TEX.vessels46=true; VES_MATS.forEach(m=>m.needsUpdate=true); },
@@ -1581,8 +1582,8 @@ function ctViscera(L,gutMat){
     mesh[k]=m; }
   // kidneys: both kidneys plus short renal artery (posterior) and renal vein (anterior) segments at each hilum
   const kid=new THREE.Group(); kid.add(mesh.kidney_left, mesh.kidney_right);
-  const stub=(pts,r0,r1,col,name)=>kid.add(tag(new THREE.Mesh(
-    varTube(pts.map(p=>new THREE.Vector3(...p)),t=>THREE.MathUtils.lerp(r0,r1,t),28,14),glossy(col)),name));
+  const stub=(pts,r0,r1,col,name)=>{ const m=tag(new THREE.Mesh(
+    varTube(pts.map(p=>new THREE.Vector3(...p)),t=>THREE.MathUtils.lerp(r0,r1,t),28,14),glossy(col)),name); if(col===C.artery) vesSkin(m,'artery'); kid.add(m); };
   stub([[1.13,-0.63,-0.67],[1.01,-0.64,-0.54],[0.87,-0.65,-0.38]],0.040,0.036,C.artery,'Renal artery');
   stub([[1.12,-0.70,-0.58],[0.97,-0.71,-0.47],[0.83,-0.71,-0.36]],0.058,0.054,C.vein,'Renal vein');
   stub([[-0.21,-0.61,-0.64],[-0.02,-0.60,-0.42],[0.20,-0.60,-0.22]],0.038,0.034,C.artery,'Renal artery');
@@ -2012,6 +2013,7 @@ function buildMacro(){
            [PT(-0.48,0.06,-0.04),RPV_D,RP,segTarget(6)],[PT(-0.48,0.06,-0.04),RPV_D,RP,segTarget(7)],
            [PT(-0.06,0.09,-0.10),LT,segTarget(1)],[PT(-0.06,0.09,-0.10),LT,UMB_MID,UMB,segTarget(2)],
            [PT(-0.06,0.09,-0.10),LT,UMB_MID,segTarget(3)],[PT(-0.06,0.09,-0.10),LT,UMB_MID,segTarget(4)]]};
+  L.artery.traverse(o=>{ if(o.isMesh) vesSkin(o,'artery'); });   // v46: vasa vasorum (before the pathology meshes are added)
   const P=buildPatho(g,L,K);
 
   /* segment markers, shown with the Segments layer */
