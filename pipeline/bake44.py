@@ -373,7 +373,7 @@ def compose_liver(X, ao, cav, curv, thick, onrm=None):
     if k.any():
         lc = lin(FALC_COL)[None] * (1 + 0.11 * fb[k] + 0.05 * m2[k])[:, None] * (0.78 + 0.22 * ao[k] ** 0.8)[:, None]
         lc = lc * (1 - 0.08 * (1 - fm[k]))[:, None] + lin('#C89A86')[None] * (0.08 * (1 - fm[k]))[:, None]   # translucent edges
-        a = fm[k] * np.where(fk[k] == 1, 0.78, 0.92)
+        a = fm[k] * np.select([fk[k] == 0, fk[k] == 1, fk[k] == 2], [0.92, 0.55, 0.22], 0.40)   # v46: fan membrane (kind 2 = inside the layers) and coronary faint; were 0.92 / 0.78 / 0.92
         col[k] = col[k] * (1 - a)[:, None] + lc * a[:, None]
         rough[k] = rough[k] * (1 - fm[k]) + (0.46 + 0.05 * fb[k]) * fm[k]; wetn[k] = wetn[k] * (1 - 0.45 * fm[k])
     return np.clip(col, 0, 1), rough, wetn

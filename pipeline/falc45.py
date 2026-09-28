@@ -15,6 +15,11 @@ d = signed distance across the band, patient-left positive):
   coronary  at the base, the layers turn and run left and right across the superior surface as the coronary ligament
             (a narrow transverse band, tapering out before the lateral margins: the triangular ligaments are not modelled).
 The ligamentum teres stays hidden (page). All lengths in model units (1 unit = 69.9757 mm).
+
+v46: thinner and subtler. The band is 4 mm wide (was 10) and a little more raised (0.75 mm crest), and it now runs down
+the whole anterior surface to its inferior border (the ray run accepted only surface facing no more than 17° downwards, so it
+stopped ~18 mm above the margin). The superior triangle is smaller (32 mm across its base, was 76; 26 mm long, was 52) and
+fainter, with a narrower, shorter coronary continuation; bake44.py paints the fan at lower opacity.
 """
 import json, sys
 from pathlib import Path
@@ -26,12 +31,12 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from noise3 import fbm
 
 MM = 69.9757
-W0 = 5.0 / MM            # band half-width (10 mm band)
-W_B = 38.0 / MM          # fan half-width at its base
-LAYER = 3.5 / MM         # width of each diverging layer
-FAN_LEN = 52.0 / MM      # apex → base along the centreline (clipped to the run's end)
-COR_W = 3.2 / MM         # coronary band half-width
-COR_L = 48.0 / MM        # coronary: how far each band runs beyond the fan's base corners
+W0 = 2.0 / MM            # band half-width (v46: 4 mm band; v45 10 mm)
+W_B = 16.0 / MM          # fan half-width at its base (v46; v45 38)
+LAYER = 2.0 / MM         # width of each diverging layer (v46; v45 3.5)
+FAN_LEN = 26.0 / MM      # apex → base along the centreline (clipped to the run's end; v46; v45 52)
+COR_W = 2.0 / MM         # coronary band half-width (v46; v45 3.2)
+COR_L = 28.0 / MM        # coronary: how far each band runs beyond the fan's base corners (v46; v45 48)
 APEX_NY = 0.58           # the fan starts where the surface normal turns superior (n.y ≥ this)
 
 
@@ -60,8 +65,9 @@ def _hits(V, F, a, b):
 def centreline(n_out=None):
     ct, V, F = _liver(); a, b = ct['falc']['a'], ct['falc']['b']
     hs = _hits(V, F, a, b)
-    zone = lambda p: p[1] > -0.75 and (p[2] > 0.30 or (p[1] > 0.45 and p[2] > -0.35))
-    ok = lambda p, n: zone(p) and n[1] > -0.30 and (n[2] > 0.22 or n[1] > 0.55) and abs(n[0]) < 0.75
+    zone = lambda p: p[1] > -0.90 and (p[2] > 0.30 or (p[1] > 0.45 and p[2] > -0.35))
+    # v46: down to the inferior border (the lowest anterior surface faces up to ~40° downwards; the inferior surface beyond)
+    ok = lambda p, n: zone(p) and n[1] > -0.66 and (n[2] > 0.22 or n[1] > 0.55) and abs(n[0]) < 0.75
     run, best = [], []
     for i, p, n in hs:
         if not ok(p, n): continue
@@ -122,7 +128,7 @@ class Falciform:
         k = np.where(cor > np.maximum(band, fan), 3, np.where(band >= fan, 0, np.where(lay > 0.5 * ef, 2, 1)))
         # relief: soft dome across the band; layers and coronary a little raised, fan membrane lower
         prof = np.where(k == 0, 1 - np.clip(u, 0, 1) ** 2, np.where(k == 3, 1 - np.clip(np.abs(t + 0.5 * COR_W) / cw, 0, 1) ** 2, 1.0))
-        hgt = np.select([k == 0, k == 1, k == 2, k == 3], [0.60, 0.25, 0.45, 0.40]) / MM
+        hgt = np.select([k == 0, k == 1, k == 2, k == 3], [0.75, 0.15, 0.30, 0.28]) / MM   # v46: band 0.60 → 0.75, the rest lower
         # fibres: along the band and the coronary, radiating from the apex across the fan
         ang = np.arctan2(d, np.maximum(s - self.sA, 1e-3) + 4 / MM)
         fu = np.select([k == 0, k == 3], [d * 420, t * 420], ang * 55)
