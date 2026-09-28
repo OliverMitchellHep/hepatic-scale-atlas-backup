@@ -1724,7 +1724,31 @@
   {
    "id": "gastroduodenal-artery",
    "name": "Gastroduodenal artery",
-   "info": "Descends behind the first part of the duodenum — the vessel eroded by a posterior duodenal ulcer.",
+   "info": "Descends behind the first part of the duodenum, in front of the pancreatic neck and head — the vessel eroded by a posterior duodenal ulcer — and divides into the superior pancreaticoduodenal and right gastroepiploic arteries.",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "artery"
+   ]
+  },
+  {
+   "id": "superior-pancreaticoduodenal-artery",
+   "name": "Superior pancreaticoduodenal artery",
+   "info": "Terminal branch of the gastroduodenal artery, running down the front of the pancreatic head in the groove beside the duodenum; it anastomoses with the inferior pancreaticoduodenal artery from the SMA, a coeliac–SMA collateral pathway (relevant in median arcuate ligament compression and pancreaticoduodenectomy).",
+   "cites": [],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "artery"
+   ]
+  },
+  {
+   "id": "right-gastroepiploic-artery",
+   "name": "Right gastroepiploic artery",
+   "info": "Terminal branch of the gastroduodenal artery, passing under the pylorus to run along the greater curvature, where it joins the left gastroepiploic artery from the splenic artery.",
    "cites": [],
    "tier": [
     0

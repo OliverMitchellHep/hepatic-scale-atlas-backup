@@ -46,7 +46,9 @@ SPL0 = np.array([1.641, 0.014, -0.585])          # splenic vein at the hilum
 SV_R0, SV_R1 = 0.054, 0.064                       # splenic vein radius, hilum → confluence
 # arteries that run in grooves on the gland (splenic along the superior border, GDA on the anterior head): subtracted too
 SPA = np.array([[0.58, -0.38, 0.22], [0.72, -0.3, 0.33], [0.957, -0.252, -0.075], [0.988, -0.287, -0.151], [1.039, -0.293, -0.195], [1.082, -0.291, -0.213], [1.127, -0.284, -0.251], [1.207, -0.239, -0.294], [1.279, -0.176, -0.351], [1.373, -0.127, -0.451], [1.509, -0.008, -0.456], [1.644, 0.081, -0.46]]); SPA_R = (0.034, 0.029)
-GDA = np.array([[0.15, -0.42, 0.4], [0.1, -0.62, 0.56], [0.06, -0.92, 0.62]]); GDA_R = (0.022, 0.017)
+# v45 (Task 6): GDA behind D1 and on the anterior head, with its two branches (src/atlas.js)
+GDA = np.array([[0.15, -0.42, 0.4], [0.1, -0.51, 0.49], [-0.02, -0.57, 0.48], [-0.12, -0.62, 0.462], [-0.15, -0.68, 0.462], [-0.135, -0.77, 0.497], [-0.08, -0.84, 0.572]]); GDA_R = (0.022, 0.018)
+GDA_BR = [(np.array([[-0.08, -0.84, 0.572], [-0.14, -0.92, 0.582], [-0.19, -1.02, 0.578], [-0.21, -1.14, 0.535]]), (0.013, 0.010)), (np.array([[-0.08, -0.84, 0.572], [-0.055, -0.98, 0.612], [-0.04, -1.11, 0.745], [0.03, -1.18, 0.895], [0.2, -1.245, 0.955], [0.4, -1.31, 0.995]]), (0.016, 0.012))]
 
 # ── gland centreline: tail tip → neck → head (control points; spline through them) ──
 CL = np.array([
@@ -217,7 +219,7 @@ def build():
     dist = {k: o(X) for k, o in obst.items()}
     dist['smv'] = seg_dist(X, SMV, SMV_R); dist['pv'] = seg_dist(X, PVT, PVT_R)
     SV, _ = veins(cl); dist['sv'] = seg_dist(X, SV, np.linspace(SV_R0, SV_R1, len(SV)))
-    dist['spa'] = seg_dist(X, SPA, np.linspace(*SPA_R, len(SPA))); dist['gda'] = seg_dist(X, GDA, np.linspace(*GDA_R, len(GDA)))
+    dist['spa'] = seg_dist(X, SPA, np.linspace(*SPA_R, len(SPA))); dist['gda'] = gda_dist(X)
     dist.update(vessel_dists(X))
     for k, d in dist.items(): fb = smax(fb, -(d - CLEAR[k]), 0.02)
     f[band] = fb; f[~band] = np.maximum(f[~band], 0.06)
@@ -247,6 +249,14 @@ def build():
     return J, v2, f2, cl, obst, ncomp
 
 
+def gda_dist(X):
+    """GDA and its branches, on the page's curves (spline through the control points)"""
+    d = np.full(len(X), 9.0)
+    for pts, (r0, r1) in [(GDA, GDA_R)] + GDA_BR:
+        c = dense(pts, 80); d = np.minimum(d, seg_dist(X, c, np.linspace(r0, r1, len(c))))
+    return d
+
+
 def vessel_dists(X):
     return {'ivc': seg_dist(X, IVC, IVC_R), 'aorta': seg_dist(X, AORTA, np.linspace(*AORTA_R, len(AORTA))),
             'sma': seg_dist(X, SMA, np.linspace(*SMA_R, len(SMA))), 'lrv': seg_dist(X, LRV, np.linspace(*LRV_R, len(LRV)))}
@@ -256,7 +266,7 @@ def report(verts, faces, obst):
     out = {k: v.min() for k, v in vessel_dists(verts).items()}
     for k, o in obst.items(): d = o(verts); out[k] = d.min()
     out['smv'] = seg_dist(verts, SMV, SMV_R).min(); out['pv'] = seg_dist(verts, PVT, PVT_R).min()
-    out['splenic a.'] = seg_dist(verts, SPA, np.linspace(*SPA_R, len(SPA))).min(); out['GDA'] = seg_dist(verts, GDA, np.linspace(*GDA_R, len(GDA))).min()
+    out['splenic a.'] = seg_dist(verts, SPA, np.linspace(*SPA_R, len(SPA))).min(); out['GDA'] = gda_dist(verts).min()
     return out
 
 
