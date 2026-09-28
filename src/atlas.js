@@ -316,7 +316,7 @@ const SKIN={
   oes:     {S:[5.0,2.0,2.0], K:[0.0010,0.0050,0.06,0.0016], K2:[0.24,0.25,0.55], vein:0x9A4A62, rim:0xE0A088},
   spleen:  {S:[6.0,1.4,1.4], K:[0.0016,0.0055,0.12,0.0012], K2:[0.18,0.30,0.55], vein:0x3A1830, rim:0x8A3048},
   pancreas:{S:[2.6,2.0,1.6], K:[0.0110,0.0040,0.10,0.0000], K2:[0.10,0.50,0.70], vein:0xA0604A, rim:0xE8C08A},
-  kidney:  {S:[5.0,1.8,1.8], K:[0.0010,0.0045,0.10,0.0012], K2:[0.20,0.25,0.50], vein:0x4A1E28, rim:0x9A4A38},
+  kidney:  {S:[5.0,1.8,1.8], K:[0.0010,0.0045,0.10,0.0012], K2:[0.20,0.25,0.50], vein:0x4A1E28, rim:0x6A3440},   // v46 rim: purple-brown (was warm 0x9A4A38)
   gb:      {S:[6.0,2.2,2.2], K:[0.0006,0.0030,0.06,0.0012], K2:[0.25,0.20,0.40], vein:0x2E4A20, rim:0x9ABF6A},
   serosa:  {S:[6.0,3.0,3.0], K:[0.0006,0.0020,0.10,0.0008], K2:[0.25,0.25,0.40], vein:0xB06A6A, rim:0xF0D8C0},
   bone:    {S:[9.0,2.6,2.0], K:[0.0016,0.0026,0.10,0.0000], K2:[0.00,0.40,0.60], vein:0xB8A888, rim:0xE8DCC4},
@@ -1508,7 +1508,7 @@ function ctViscera(L,gutMat){
   const glossy=(c,o={})=>mat(c,Object.assign({roughness:0.34,clearcoat:0.6,clearcoatRoughness:0.35,emissive:new THREE.Color(c).multiplyScalar(0.18)},o));
   const STY={
     /* v45 (Task 11): every organ takes baked maps (pipeline/bake44.py + organs45.py: serosal relief and surface vessels on the
-       stomach, duodenum and oesophagus, smooth notched splenic capsule, renal capsule with a hint of perinephric fat); the
+       stomach, duodenum and oesophagus, smooth notched splenic capsule, renal capsule; v46: no perinephric fat); the
        procedural skin stays until they arrive */
     stomach:()=>organTex44(skin(mat(0xD98A7A,{roughness:0.46,clearcoat:0.85,clearcoatRoughness:0.18,sheen:0.35,sheenColor:new THREE.Color(0xF2B8A8),sheenRoughness:0.6,side:THREE.DoubleSide}),'stomach'),'stomach',
       {clearcoat:0.75,clearcoatRoughness:0.20,emissive:0.02}),
@@ -1518,8 +1518,9 @@ function ctViscera(L,gutMat){
       {clearcoat:0.60,clearcoatRoughness:0.26,emissive:0.02}),
     spleen:()=>organTex44(skin(mat(0x57202F,{roughness:0.48,clearcoat:0.6,clearcoatRoughness:0.28,sheen:0.25,sheenColor:new THREE.Color(0xA0506A),sheenRoughness:0.6,emissive:new THREE.Color(0x57202F).multiplyScalar(0.10)}),'spleen'),'spleen',
       {clearcoat:0.70,clearcoatRoughness:0.30,emissive:0.015}),
-    kidney_left:()=>organTex44(skin(mat(0x8A3E32,{roughness:0.56,clearcoat:0.35,clearcoatRoughness:0.38}),'kidney'),'kidney_left',{clearcoat:0.55,clearcoatRoughness:0.24,emissive:0.015}),
-    kidney_right:()=>organTex44(skin(mat(0x8A3E32,{roughness:0.56,clearcoat:0.35,clearcoatRoughness:0.38}),'kidney'),'kidney_right',{clearcoat:0.55,clearcoatRoughness:0.24,emissive:0.015}),
+    // v46: darker purple-brown kidneys (maps #5E2E36; the warm emissive that lightened them is nearly off)
+    kidney_left:()=>organTex44(skin(mat(0x5E2E36,{roughness:0.56,clearcoat:0.35,clearcoatRoughness:0.38}),'kidney'),'kidney_left',{clearcoat:0.55,clearcoatRoughness:0.24,emissive:0.004}),
+    kidney_right:()=>organTex44(skin(mat(0x5E2E36,{roughness:0.56,clearcoat:0.35,clearcoatRoughness:0.38}),'kidney'),'kidney_right',{clearcoat:0.55,clearcoatRoughness:0.24,emissive:0.004}),
     pancreas:()=>organTex44(skin(mat(0xD4A872,{roughness:0.70,clearcoat:0.15,clearcoatRoughness:0.5,emissive:new THREE.Color(0xD4A872).multiplyScalar(0.07)}),'pancreas'),'pancreas',
       {clearcoat:0.55,clearcoatRoughness:0.30,emissive:0.03})};
   const mesh={};
@@ -2648,7 +2649,7 @@ const LAYERS=[
   {k:'duodenum',    label:'Duodenum', swatch:0xA87E62, cycle:['on','ghost','off']},
   {k:'pancreas',    label:'Pancreas', swatch:0xC9A16B, cycle:['on','ghost','off']},
   {k:'spleen',      label:'Spleen', swatch:0x6A2A3C, cycle:['on','ghost','off']},
-  {k:'kidneys',     label:'Kidneys', swatch:0x7C3E33, cycle:['on','ghost','off']},
+  {k:'kidneys',     label:'Kidneys', swatch:0x5E2E36, cycle:['on','ghost','off']},
   {k:'ribcage',     label:'Ribcage & spine', swatch:0xE6DAC0, cycle:['on','ghost','off'], ctx:1},
   {k:'diaphragm',   label:'Diaphragm', swatch:0xA84A40, cycle:['on','ghost','off'], ctx:1}
 ];

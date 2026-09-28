@@ -204,11 +204,9 @@ def compose(organ, X, ao, cav, curv, thick, onrm, vf=None):
     elif organ == 'spleen':
         col = lin('#5C2434')[None] * (1 + 0.06 * m1 + 0.03 * m2)[:, None]
         rough = np.clip(0.28 + 0.04 * m2, 0.2, 0.5); wet = np.clip(0.9 + 0.1 * m1, 0, 1)
-    else:   # kidneys: red-brown capsule, a hint of perinephric fat (yellowish areolar patches), mostly near the hilum / poles
-        col = lin('#8C4032')[None] * (1 + 0.07 * m1 + 0.04 * m2)[:, None]
-        fat = np.clip((fbm(X * 3.5, 3, seed=31) + 0.02) / 0.40, 0, 1) ** 1.5 * np.clip((fbm(X * 14.0, 2, seed=32) + 0.45), 0, 1) * 0.28   # a hint
-        col = col * (1 - fat)[:, None] + lin('#D9B274')[None] * (fat * (1 + 0.1 * m3))[:, None]
-        rough = np.clip(0.36 + 0.10 * fat + 0.05 * m2, 0.2, 0.7); wet = np.clip(0.75 - 0.5 * fat, 0, 1)
+    else:   # kidneys (v46): darker purple-brown capsule (v45 light red-brown #8C4032); the perinephric fat patches are removed
+        col = lin('#5E2E36')[None] * (1 + 0.07 * m1 + 0.04 * m2)[:, None]
+        rough = np.clip(0.36 + 0.05 * m2, 0.2, 0.7); wet = np.clip(0.75 + 0.1 * m1, 0, 1)
     if vf is not None:
         core, edge, _ = vf(X)
         pale, dark = lin('#C86E68'), lin('#5A1216')
