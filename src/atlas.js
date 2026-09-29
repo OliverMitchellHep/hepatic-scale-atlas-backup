@@ -43,6 +43,7 @@ const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const C = {
   tissue:0x57291F, tissueMid:0x4A241C, tissueDeep:0x371A14, capsule:0x7A4638,
   portal:0x7A5CB4, artery:0xB83A30, bile:0xB9BC5E, gb:0xC6CB80, vein:0x2F5A9E,
+  gbWall:0x7C9048,   // v48: the gallbladder's wall colour, shared by the extrahepatic and intrahepatic bile ducts
   amber:0xE0A33E, kupffer:0x7C5F9C, stellate:0xB79F68, collagen:0xC9C2B0,
   nucleus:0x50719A, mito:0xBE7A32, er:0x6F988F, lipid:0xDCC98C, glyc:0x8A98A8,
   duo:0xA87E62
@@ -410,7 +411,7 @@ const VES={
   // surface vessels and irregular relief / mottling so the tubes do not read as clay (Task 10)
   portal:{S:1.0, core:0x4A1838, edge:0x9C82CC, K:[0.55,0.30,0.0012,0.10], B:0.0012, D:0.82, H:0.30},
   vein:  {S:1.0, core:0x3A1636, edge:0x6A8ACC, K:[0.55,0.30,0.0012,0.10], B:0.0012, D:0.82, H:0.30},
-  bile:  {S:1.1, core:0x8A2E22, edge:0xDCCF8E, K:[0.50,0.30,0.0010,0.08], B:0.0010, D:0.84, H:0.26}   // v46b: darker, patchy
+  bile:  {S:1.1, core:0x8A2E22, edge:0xDCCF8E, K:[0.50,0.30,0.0010,0.08], B:0.0010, D:0.92, H:0.26}   // v48: as the gallbladder (D 0.92, H 0.26)
 };
 const VES_MATS=new Set();
 const VES_TEX=(()=>{ const t=new THREE.TextureLoader().load('vessels46.webp',()=>{ ORG_TEX.vessels46=true; VES_MATS.forEach(m=>m.needsUpdate=true); },
@@ -1847,8 +1848,8 @@ function buildMacro(){
       const k=1+0.010*n*w/r; P[v*3]=Cc[v*3]+dx*k; P[v*3+1]=Cc[v*3+1]+dy*k; P[v*3+2]=Cc[v*3+2]+dz*k; }
     gbGeo.computeVertexNormals(); weldRing(gbGeo,84,28); }
   const gbMesh=metaMesh(gbGeo,
-    skin(mat(0x7C9048,{roughness:0.30,clearcoat:0.9,clearcoatRoughness:0.18,   // v46b: a little darker (was 0x8FA457)
-      emissive:new THREE.Color(0x7C9048).multiplyScalar(0.07)}),'gb'),'Gallbladder');
+    skin(mat(C.gbWall,{roughness:0.30,clearcoat:0.9,clearcoatRoughness:0.18,   // v46b: a little darker (was 0x8FA457)
+      emissive:new THREE.Color(C.gbWall).multiplyScalar(0.07)}),'gb'),'Gallbladder');
   gbMesh.userData.ring=[84,28];
   flipWinding(gbMesh.geometry); vesSkin(gbMesh,'gb'); L.biliary.add(gbMesh);   // v46: the stomach's serosal vessels on its inferior surface
   const bilMeshes=[{m:gbMesh,kind:'gb'}];
@@ -1870,8 +1871,8 @@ function buildMacro(){
   const MPD=[...PANC_MPD,V3(-0.050,-0.920,0.450),V3(-0.150,-1.040,0.350),amp0];
   duct(MPD,0.010,0.021,'Pancreatic duct',140,'pd');
   const amp=tag(new THREE.Mesh(new THREE.TorusGeometry(0.055,0.022,10,20),
-    mat(0xD8C05C,{roughness:0.4,clearcoat:0.6,
-      emissive:new THREE.Color(0xD8C05C).multiplyScalar(0.22)})),'Ampulla of Vater');
+    mat(C.gbWall,{roughness:0.30,clearcoat:0.9,clearcoatRoughness:0.18,   // v48: biliary colour scheme (was yellow 0xD8C05C)
+      emissive:new THREE.Color(C.gbWall).multiplyScalar(0.07)})),'Ampulla of Vater');
   amp.position.copy(amp0); amp.rotation.y=0.5; L.biliary.add(amp);
   if(!CT_MODE) L.biliary.add(tag(new THREE.Mesh(varTube([
       new THREE.Vector3(-0.10,-1.22,0.14),new THREE.Vector3(-0.20,-1.50,0.04),
@@ -2055,7 +2056,10 @@ function buildMacro(){
   L.artery.traverse(o=>{ if(o.isMesh) vesSkin(o,'artery'); });   // v46: vasa vasorum (before the pathology meshes are added)
   // v46: surface vessels on the portal, hepatic venous and biliary walls (not the flow dots, stents or ampulla)
   for(const [grp,kind,col] of [[L.portal,'portal',C.portal],[L.hepaticVein,'vein',C.vein],[L.biliary,'bile',C.bile]])
-    grp.traverse(o=>{ if(o.isMesh&&!o.isInstancedMesh&&o.material.color&&o.material.color.getHex()===new THREE.Color(col).getHex()) vesSkin(o,kind); });
+    grp.traverse(o=>{ if(o.isMesh&&!o.isInstancedMesh&&o.material.color&&o.material.color.getHex()===new THREE.Color(col).getHex()){
+      if(kind==='bile'){ const m=o.material;   // v48: the bile ducts take the gallbladder's colour scheme (wall colour, gloss, patchiness)
+        m.color.setHex(C.gbWall); m.emissive.setHex(C.gbWall).multiplyScalar(0.07); m.roughness=0.30; m.clearcoat=0.9; m.clearcoatRoughness=0.18; }
+      vesSkin(o,kind); } });
   const P=buildPatho(g,L,K);
 
   /* segment markers, shown with the Segments layer */
@@ -2738,7 +2742,7 @@ const LAYERS=[
   {k:'portal',      label:'Portal venous', swatch:0x7A5CB4, cycle:['on','ghost','off']},
   {k:'artery',      label:'Hepatic arterial', swatch:0xB83A30, cycle:['on','ghost','off']},
   {k:'hepaticVein', label:'Hepatic veins / IVC', swatch:0x2F5A9E, cycle:['on','ghost','off']},
-  {k:'biliary',     label:'Biliary', swatch:0xB9BC5E, cycle:['on','ghost','off']},
+  {k:'biliary',     label:'Biliary', swatch:0x7C9048, cycle:['on','ghost','off']},
   {k:'stomach',     label:'Stomach', swatch:0xC98E7E, cycle:['on','ghost','off']},
   {k:'esophagus',   label:'Oesophagus', swatch:0xB5806F, cycle:['on','ghost','off']},
   {k:'duodenum',    label:'Duodenum', swatch:0xA87E62, cycle:['on','ghost','off']},
@@ -3769,7 +3773,7 @@ function bilExtras(P){
     mat(0xE6E0D2,{roughness:0.7,clearcoat:0.2})),'Benign CBD stricture');
   strict.geometry.computeVertexNormals();
   const p2=c.getPointAt(0.30), t2=c.getTangentAt(0.30), side=new THREE.Vector3(-1,0,0.3).addScaledVector(t2,-new THREE.Vector3(-1,0,0.3).dot(t2)).normalize();
-  const cc2=tag(new THREE.Mesh(new THREE.SphereGeometry(0.095,28,20),mat(C.bile,{roughness:0.32,clearcoat:0.7,emissive:new THREE.Color(C.bile).multiplyScalar(0.16)})),'Choledochal cyst');
+  const cc2=tag(new THREE.Mesh(new THREE.SphereGeometry(0.095,28,20),mat(C.gbWall,{roughness:0.30,clearcoat:0.9,clearcoatRoughness:0.18,emissive:new THREE.Color(C.gbWall).multiplyScalar(0.07)})),'Choledochal cyst');   // v48: biliary colour scheme
   cc2.position.copy(p2).addScaledVector(side,0.105);
   const neck=tag(new THREE.Mesh(new THREE.CylinderGeometry(0.030,0.030,0.10,14),cc2.material),'Choledochal cyst');
   neck.position.copy(p2).addScaledVector(side,0.05); neck.quaternion.setFromUnitVectors(V3(0,1,0),side); const g2=new THREE.Group(); g2.add(cc2,neck);
