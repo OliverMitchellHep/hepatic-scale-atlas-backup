@@ -1327,6 +1327,20 @@
    ]
   },
   {
+   "id": "gastric-varices-gov1",
+   "name": "Gastric varices (GOV1)",
+   "info": "Gastro-oesophageal varices type 1 (Sarin): the oesophageal varices continue 2–5 cm below the cardia along the lesser curvature, in the gastric submucosa, fed by the left gastric vein. Managed like oesophageal varices: band ligation for bleeding and for secondary prophylaxis, with a non-selective beta-blocker; pre-emptive or rescue TIPSS as for oesophageal bleeding (Baveno VII, 2022).",
+   "cites": [
+    "Baveno VII"
+   ],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "portal"
+   ]
+  },
+  {
    "id": "gastric-fundal-varices",
    "name": "Gastric fundal varices",
    "info": "Fed by the short gastric (and posterior gastric) veins from the splenic hilum; commonly drain through a gastrorenal shunt. Treat bleeding with cyanoacrylate injection or TIPSS; BRTO where a gastrorenal shunt exists. Also the classic sign of splenic vein thrombosis (sinistral portal hypertension).",

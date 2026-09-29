@@ -1318,9 +1318,23 @@ function buildPatho(g,L,K){
   const LGV=[K.LGV0.clone(),PT(0.40,-0.98,-0.42),PT(0.56,-0.62,-0.42),K.GOJ.clone()];
   const lgvT=tortuous(LGV,0.018,5,11,60);
   esoList.push({pts:lgvT,r:0.034});
-  const gov=[tortuous([K.GOJ.clone(),PT(0.70,-0.66,-0.46),PT(0.84,-0.82,-0.34),PT(0.90,-0.98,-0.20)],0.016,5,21,50),
-             tortuous([K.GOJ.clone(),PT(0.74,-0.62,-0.52),PT(0.92,-0.78,-0.44),PT(1.02,-0.94,-0.30)],0.016,6,22,50)];
-  gov.forEach(pts=>esoList.push({pts,r:0.022}));
+  /* v49: GOV1 gastric varices run from the cardia down the lesser curvature inside the stomach wall (the v43 pair ran
+     through the gastric lumen and were labelled oesophageal). The lesser curve is found from the stomach's lumen
+     centreline (GOJ → antrum): at each point the wall is hit by a ray towards the chord from the cardia to the pylorus
+     (the concave side of the J); the two strands lie either side of that line, just under the wall. */
+  const gov=[];
+  { const st=CT_ORGANS&&CT_ORGANS.stomach, SP=[[1.1,0.25,0.05],[1.34,0.05,0.22],[1.26,-0.28,0.52],[1.06,-0.58,0.76],[0.8,-0.84,0.92],[0.46,-0.92,0.95],[0.1,-0.85,0.87],[-0.14,-0.72,0.72],[-0.26,-0.6,0.6]].map(a=>V3(...a));
+    if(st){ st.updateWorldMatrix(true,false); const inv=st.matrixWorld.clone().invert(), sw=new THREE.Vector3().setFromMatrixScale(st.matrixWorld).x;
+      const cl=new THREE.CatmullRomCurve3(SP), A=SP[0], B=SP[SP.length-1], AB=B.clone().sub(A), rc=new THREE.Raycaster(), q=new THREE.Vector3();
+      [-0.32,0.32].forEach((rot,j)=>{ const pts=[];
+        for(let i=0;i<=16;i++){ const u=0.03+0.42*i/16, c=cl.getPointAt(u), tg=cl.getTangentAt(u);
+          const t=THREE.MathUtils.clamp(c.clone().sub(A).dot(AB)/AB.lengthSq(),0,1), dir=A.clone().addScaledVector(AB,t).sub(c);
+          dir.addScaledVector(tg,-dir.dot(tg)).normalize().applyAxisAngle(tg,rot);
+          rc.set(c.clone().applyMatrix4(st.matrixWorld),dir.clone().transformDirection(st.matrixWorld)); rc.far=1.5*sw;
+          const hit=rc.intersectObject(st,false)[0]; if(!hit) continue;
+          pts.push(hit.point.clone().applyMatrix4(inv).addScaledVector(dir,-0.05)); }
+        if(pts.length>4) gov.push(tortuous(pts,0.012,7,21+j,60)); }); } }
+  const gastricList=gov.map(pts=>({pts,r:0.022}));
   const AZY=[PT(-0.12,-1.25,-1.16),PT(-0.15,-0.40,-1.26),PT(-0.17,0.40,-1.28),PT(-0.18,1.05,-1.22),PT(-0.14,1.42,-0.95)];
   const perf=[0.62,0.78].map((u,i)=>{ const p=oes.getPointAt(u); const az=new THREE.CatmullRomCurve3(AZY);
     let best=0,bd=9,q=new THREE.Vector3(); for(let k=0;k<=60;k++){ az.getPointAt(k/60,q); const d=Math.abs(q.y-p.y); if(d<bd){bd=d; best=k/60;} }
@@ -1328,6 +1342,7 @@ function buildPatho(g,L,K){
   perf.forEach(pts=>esoList.push({pts,r:0.017}));
   P.lgvT=lgvT; P.perf=perf; P.AZY=AZY; P.gov=gov;
   strands(eso,esoList,vmat(COLL),'Oesophageal varices');
+  if(gastricList.length) strands(eso,gastricList,vmat(COLL),'Gastric varices (GOV1)');
   const azy=col('azy',L.hepaticVein,'Azygos vein');
   strands(azy,[{pts:AZY,r:0.034}],vmat(C.vein),'Azygos vein');
 
