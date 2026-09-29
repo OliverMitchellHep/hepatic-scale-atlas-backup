@@ -49,7 +49,7 @@ Evidence tags: **[V]** checked against a source found by web search; **[T]** sta
 
 ## 6 · Choledochal cysts
 
-- **Todani (1977)** classification: five types based on location and extent of biliary dilatation; the registry holds `todani-i` to `-v` and IVa/IVb. [V: Todani 1977, existence and purpose]
+- **Todani (1977)** classification: five types based on location and extent of biliary dilatation; the registry holds `choledochal-cyst-todani-i` to `-v` (including IVa and IVb). [V: Todani 1977, existence and purpose]
 - Cancer arising in the cyst is part of the paper's title, so malignancy risk is the reason for resection. [V: title only]
 
 ## 7 · Hepatic venous
@@ -95,7 +95,7 @@ A. To time the operation  B. To decide how many duct anastomoses the graft will 
 1. Michels NA. Am J Surg 1966;112:337–347. *Dissection series, n=200.* (Full citation in A03.)
 2. Hiatt JR, Gabbay J, Busuttil RW. Ann Surg 1994;220:50–52. *Donor series, n=1,000.* (A02.)
 3. Covey AM, et al. AJR 2004;183:1055–1064. *Imaging series, n=200.* (A02.)
-4. Huang TL, Cheng YF, Chen CL, Chen TY, Lee TY. Variants of the bile ducts: clinical application in the potential donor of living-related hepatic transplantation. *Transplant Proc* 1996;28:1669–1670. *Classification report.* Volume/pages verified by search; author list from memory, **check**.
+4. Huang TL, et al. Variants of the bile ducts: clinical application in the potential donor of living-related hepatic transplantation. *Transplant Proc* 1996;28:1669–1670. *Classification report.* Volume/pages verified by search.
 5. Choi JW, et al. Korean J Radiol 2003;4:85–90. *Donor series, n=300.* (A04.)
 6. Mortelé KJ, Ros PR. AJR 2001;177:389–394. *Pictorial essay.* (A04.)
 7. Todani T, Watanabe Y, Narusue M, Tabuchi K, Okajima K. Congenital bile duct cysts: classification, operative procedures, and review of thirty-seven cases including cancer arising from choledochal cyst. *Am J Surg* 1977;134:263–269. *Classification and case series.* Verified.

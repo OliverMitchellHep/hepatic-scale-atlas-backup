@@ -94,7 +94,7 @@ A. Bilirubin normal, INR normal  B. Raised INR and hyperbilirubinaemia  C. Raise
 1. Strasberg SM. The Brisbane 2000 terminology of liver anatomy and resections. *HPB* 2000;2:333–339. *Consensus terminology.* Verified (see A02 note on authorship).
 2. Wakabayashi G, et al. The Tokyo 2020 terminology of liver anatomy and resections. *J Hepatobiliary Pancreat Sci* 2022;29:6–15. *Consensus update.* Verified; content not read.
 3. Pringle JH. Notes on the arrest of hepatic hemorrhage due to trauma. *Ann Surg* 1908;48:541–549. *Historical case series.* Verified.
-4. Belghiti J, Guevara OA, Noun R, Saldinger PF, Kianmanesh R. Liver hanging maneuver: a safe approach to right hepatectomy without liver mobilization. *J Am Coll Surg* 2001;193:109–111. *Technique report.* Verified; co-author list from memory.
+4. Belghiti J, et al. Liver hanging maneuver: a safe approach to right hepatectomy without liver mobilization. *J Am Coll Surg* 2001;193:109–111. *Technique report.* Verified.
 5. Rahbari NN, Garden OJ, Padbury R, et al. Posthepatectomy liver failure: a definition and grading by the International Study Group of Liver Surgery (ISGLS). *Surgery* 2011;149:713–724. *Consensus definition.* Verified.
 6. Vauthey JN, et al. Standardized measurement of the future liver remnant prior to extended liver resection. 2000. *Journal not verified.* Cited by title from a search summary.
 7. Kishi Y, Abdalla EK, Chun YS, et al. Three hundred and one consecutive extended right hepatectomies: evaluation of outcome based on systematic liver volumetry. *Ann Surg* 2009;250:540–548. *Cohort study.* Verified by title in search results.

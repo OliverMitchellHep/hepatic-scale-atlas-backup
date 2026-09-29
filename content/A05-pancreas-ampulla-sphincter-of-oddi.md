@@ -99,6 +99,6 @@ A. Prophylactic antibiotics  B. Rectal NSAID (diclofenac or indomethacin 100 mg)
 ## 6 · References (with evidence type)
 
 1. Cotton PB, Elta GH, Carter CR, Pasricha PJ, Corazziari ES. Rome IV. Gallbladder and sphincter of Oddi disorders. *Gastroenterology* 2016;150:1420–1429. *Consensus, over 5 years old.* Verified.
-2. Dumonceau JM, Kapral C, Aabakken L, et al. ERCP-related adverse events: European Society of Gastrointestinal Endoscopy (ESGE) guideline. *Endoscopy* 2020;52:127–149. *Guideline 2020, over 5 years old.* Verified; authorship beyond first author from memory.
+2. Dumonceau JM, et al. ERCP-related adverse events: European Society of Gastrointestinal Endoscopy (ESGE) guideline. *Endoscopy* 2020;52:127–149. *Guideline 2020, over 5 years old.* Verified.
 3. Pancreas divisum prevalence meta-analysis. *Medicina* 2026;62(5):953. doi:10.3390/medicina62050953. Found by search; **authors and design to be added.**
 4. Textbook sources tagged [T]: Gray's Anatomy; Netter; Blumgart's *Surgery of the Liver, Biliary Tract and Pancreas*.

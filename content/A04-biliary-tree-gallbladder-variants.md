@@ -104,10 +104,10 @@ A. Short, inflamed cystic duct with an unrecognised right posterior duct joining
 
 ## 6 · References (with evidence type)
 
-1. Choi JW, Kim TK, Kim KW, et al. Anatomic variation in intrahepatic bile ducts: an analysis of intraoperative cholangiograms in 300 consecutive donors for living donor liver transplantation. *Korean J Radiol* 2003;4:85–90. *Donor series, n=300.* Percentages from search summary; author list from memory, **check**.
+1. Choi JW, et al. Anatomic variation in intrahepatic bile ducts: an analysis of intraoperative cholangiograms in 300 consecutive donors for living donor liver transplantation. *Korean J Radiol* 2003;4:85–90. *Donor series, n=300.* Percentages from search summary.
 2. Mortelé KJ, Ros PR. Anatomic variants of the biliary tree: MR cholangiographic findings and clinical applications. *AJR* 2001;177:389–394. *Pictorial essay.* Verified.
 3. Strasberg SM, Hertl M, Soper NJ. An analysis of the problem of biliary injury during laparoscopic cholecystectomy. *J Am Coll Surg* 1995;180:101–125. *Analytical review.* Verified.
-4. Brunt LM, Deziel DJ, Telem DA, et al. Safe cholecystectomy multi-society practice guideline and state-of-the-art consensus conference on prevention of bile duct injury during cholecystectomy. *Surg Endosc* 2020;34:2827–2855. *Guideline 2020, over 5 years old.* Title and content verified by search; volume and pages **not verified**.
+4. Brunt LM, et al. Safe cholecystectomy multi-society practice guideline and state-of-the-art consensus conference on prevention of bile duct injury during cholecystectomy. *Surg Endosc* 2020 (also *Ann Surg* 2020). *Guideline 2020, over 5 years old.* Title and content verified by search; volume and pages to add.
 5. Bismuth H, Corlette MB. Intrahepatic cholangioenteric anastomosis in carcinoma of the hilus of the liver. *Surg Gynecol Obstet* 1975;140:170–178. *Historical case series.* Verified.
 6. European Association for the Study of the Liver. EASL Clinical Practice Guidelines on sclerosing cholangitis. *J Hepatol* 2022;77:761–806. *Guideline 2022.* Verified.
 7. Textbook sources tagged [T]: Gray's Anatomy; Blumgart's *Surgery of the Liver, Biliary Tract and Pancreas*; Sherlock's *Diseases of the Liver and Biliary System*.

@@ -22,7 +22,7 @@ Buttons: **"Portal tract lymphatics"** [NEEDS ASSET] · **"Sublobular vessels al
 - The liver produces a large volume of lymph, estimated at 25–50% of the flow in the thoracic duct. [V: Ohtani & Ohtani 2008]
 
 ### 1.2 Origin of lymph
-- Lymph forms from fluid that leaves the sinusoids into the space of Disse and passes into the space of Mall (around portal tracts) and the sublobular spaces. [T; Mall's space V: Lautt 1985 in P01 for context]
+- Lymph forms from fluid that leaves the sinusoids into the space of Disse and passes into the space of Mall (around portal tracts) and the sublobular spaces. [T]
 - Sinusoids are highly permeable (fenestrated endothelium with no basement membrane; A11), so hepatic lymph has a protein content close to plasma. [T; permeability V: Poisson 2017 in A11]
 
 ---

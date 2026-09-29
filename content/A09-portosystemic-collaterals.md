@@ -92,7 +92,7 @@ A. Ignore the shunt  B. Consider embolisation of the large shunt and transplant 
 
 ## 6 · References (with evidence type)
 
-1. Sarin SK, Lahoti D, Saxena SP, Murthy NS, Makwana UK. Prevalence, classification and natural history of gastric varices: a long-term follow-up study in 568 portal hypertension patients. *Hepatology* 1992;16:1343–1349. *Cohort, n=568.* Existence and classification verified; title and author list from memory, **check**.
+1. Sarin SK, et al. Classification of gastric varices. *Hepatology* 1992;16:1343–1349. *Cohort.* Existence and classification verified by search; full title and author list to add.
 2. Baveno VIII Consensus. *J Hepatol* 2026 (online 19 Aug 2026). *Consensus, current.* Not read.
 3. de Franchis R, et al. Baveno VII: renewing consensus in portal hypertension. *J Hepatol* 2022;76:959–974. *Consensus; superseded by Baveno VIII.* Verified.
 4. Ectopic varices reviews found by search (Lancet Gastroenterol Hepatol 2023 and others): authors and details **to be added.**
