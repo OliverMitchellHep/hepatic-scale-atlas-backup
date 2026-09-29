@@ -2445,15 +2445,18 @@ function buildAcinus(){
   const bileState=[]; for(let i=0;i<bileN;i++) bileState.push({t:rng(),row:i%rowsP});
 
   // bridging fibrosis hook: septa linking the portal tract to the central vein
+  /* v49: straight, translucent bands of collagen from the portal venule to the central venule, one just below the bottom
+     plate and one just above the top plate (the v43 tubes ran through the middle of the plates and were hidden by them) */
   const septa=new THREE.Group();
-  [-0.75,0.0,0.75].forEach(y0=>{
-    const m=new THREE.Mesh(varTube([
-      new THREE.Vector3(PX+0.26,y0,0), new THREE.Vector3(-0.5,y0+0.18,0.1),
-      new THREE.Vector3(0.6,y0-0.16,-0.1), new THREE.Vector3(CX-0.28,y0,0)
-    ], t=>0.085*(0.7+0.6*Math.sin(Math.PI*t)), 40, 10),
-      mat(C.collagen,{roughness:0.95,clearcoat:0.05}));
-    m.material.opacity=0; m.material.userData.baseOpacity=0;
-    m.userData.pick='Fibrous septum'; septa.add(m);
+  [-1,1].forEach(sg=>{
+    const T=0.11, y0=sg*(HALF+HH/2+0.018+T/2), len=CX-PX, dep=HDP*1.25;
+    const geo=new RoundedBoxGeometry(len,T,dep,3,0.035);
+    { const A=geo.attributes.position; for(let i=0;i<A.count;i++){ const x=A.getX(i);   // barely wavy, thicker mid-way
+        A.setY(i,A.getY(i)*(1+0.18*Math.cos(Math.PI*x/len))+0.006*Math.sin(x*4.3+sg)); } A.needsUpdate=true; geo.computeVertexNormals(); }
+    const m=new THREE.Mesh(geo,mat(C.collagen,{roughness:0.9,clearcoat:0.05,opacity:0,depthWrite:false,
+      emissive:new THREE.Color(C.collagen).multiplyScalar(0.18)}));
+    m.position.set((PX+CX)/2,y0,0); m.renderOrder=3;
+    m.material.userData.baseOpacity=0; m.userData.pick='Fibrous septum'; septa.add(m);
   });
   g.add(septa);
 
@@ -3633,7 +3636,7 @@ function applySim(){
   if(tiers[2] && tiers[2].built){
     tiers[2].inner.userData.setFib(f);
     tiers[2].inner.userData.septa.children.forEach((c,k)=>{
-      c.material.userData.baseOpacity=THREE.MathUtils.clamp((f-0.34-k*0.10)*2.0,0,0.92);
+      c.material.userData.baseOpacity=THREE.MathUtils.clamp((f-0.34-k*0.06)*2.0,0,0.55);
     });
   }
   if(tiers[1] && tiers[1].built){
