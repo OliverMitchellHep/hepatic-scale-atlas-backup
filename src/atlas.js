@@ -3212,7 +3212,7 @@ function removeLesion(L){
   lesGroup.remove(L.mesh); L.mesh.geometry.dispose(); L.mesh.material.dispose();
   L.pin.el.remove(); pins[0].splice(pins[0].indexOf(L.pin),1); lesions.splice(i,1);
   if(selection&&selection.label===L.label) clearSelection();
-  renderLesions();
+  renderLesions(); if(typeof drawerPrune==='function') drawerPrune();
   if(L.bil){ if(state.path.bil.stent!=='none') bilStentBuild(tiers[0].inner.userData.P); pathChanged(); }
 }
 function renderLesions(){
@@ -3351,14 +3351,14 @@ function clinRefresh(){ const S=state.path, A=clinActive(), run=clinRunning();
   const lesN=k=>lesions.filter(L=>(k==='bll'?['abs','cyst','bfl']:[k]).includes(L.kind)).length;
   const cnt={hcc:lesN('hcc'),cca:lesN('cca'),bll:lesN('bll'),pc:lesN('pc'),bils:S.bil.stent!=='none'?1:0,pds:S.pds!=='none'?1:0,tips:S.tips?1:0};
   for(const k in A) cnt[k]=A[k].filter(x=>x.rm).length;
-  let pathTot=0, runTot=0; const chips=[];
+  let pathTot=0, runTot=0, devTot=0; const chips=[];
   document.querySelectorAll('#path-block .citem').forEach(d=>{ const k=d.dataset.item, n=cnt[k]||0, r=!!run[k], c=d.querySelector('.ccnt');
     c.hidden=!(n||r); c.textContent=r?'running':String(n); c.classList.toggle('run',r); d.classList.toggle('active',!!(n||r));
-    if(d.classList.contains('proc')){ if(r){ runTot++; chips.push({k,run:1}); } else if(n) chips.push({k,dev:1}); }
+    if(d.classList.contains('proc')){ if(r){ runTot++; chips.push({k,run:1}); } else if(n){ devTot++; chips.push({k,dev:1}); } }
     else if(n){ pathTot+=n; chips.push({k,n}); } });
   document.querySelectorAll('#path-block .cgrp').forEach(g=>{ let n=0, r=0; g.querySelectorAll('.citem').forEach(d=>{ const k=d.dataset.item; n+=(cnt[k]||0); r+=run[k]?1:0; });
     const b=g.querySelector('.gact'); b.hidden=!(n||r); b.textContent=r?(n?`${n} active · running`:'running'):`${n} active`; b.classList.toggle('run',!!r); });
-  const tb=$('#clin-count'); tb.hidden=!(pathTot+runTot); tb.textContent=String(pathTot+runTot); tb.title=`${pathTot} active pathology · ${runTot} running procedure${runTot===1?'':'s'}`;
+  const tb=$('#clin-count'), tot=pathTot+runTot+devTot; tb.hidden=!tot; tb.textContent=String(tot); tb.title=`${pathTot} active pathology · ${runTot} running procedure${runTot===1?'':'s'}${devTot?` · ${devTot} device${devTot===1?'':'s'} in place`:''}`;
   // active instance rows for the state-driven items
   document.querySelectorAll('#path-block .hcclist.act').forEach(ul=>{ const k=ul.dataset.act; ul.innerHTML='';
     for(const x of (A[k]||[])){ const li=document.createElement('li'); li.className='st';
@@ -3415,6 +3415,10 @@ function drawerRender(){ const E=DRAWER.cur, body=$('#dr-body'); if(!E) return;
 function drawerOpen(E){ if(DRAWER.cur&&DRAWER.cur.key===E.key){ DRAWER.cur=E; drawerRender(); drawerShow(true); return; }
   if(DRAWER.cur) DRAWER.stack.push(DRAWER.cur);
   DRAWER.stack=DRAWER.stack.filter(x=>x.key!==E.key); DRAWER.cur=E; drawerRender(); drawerShow(true); }
+/* a lesion's card leaves the drawer and its history when the lesion is removed */
+function drawerPrune(){ const ok=e=>!e.les||lesions.some(x=>x.label===e.les);
+  DRAWER.stack=DRAWER.stack.filter(ok); if(!DRAWER.cur||ok(DRAWER.cur)){ if(DRAWER.cur) drawerRender(); return; }
+  const E=DRAWER.stack.pop(); if(E){ DRAWER.cur=E; drawerRender(); } else drawerClose(true); }
 function drawerBack(){ const E=DRAWER.stack.pop(); if(!E) return; DRAWER.cur=E; drawerRender(); }
 function drawerClose(fromProc){ const cur=DRAWER.cur, stack=DRAWER.stack; DRAWER.cur=null; DRAWER.stack=[];
   const park=$('#dr-park'); for(const c of [...$('#dr-body').children]) if(c.dataset.parked==='1'){ c.dataset.parked=''; park.appendChild(c); }
@@ -3511,7 +3515,7 @@ function learnOpen(a){
   const acts=[{label:'Show on model',fn:()=>{ const v=L?L.pin.a._v:here; if(v){ setSelection(tier,v,label); frameStructure(tier,v); } }}];
   if(lesItem==='hcc') acts.push(jumpAct('TACE ›','tace'),jumpAct('Resection ›','resect'));
   if(!path&&k) acts.push({label:'Isolate',fn:()=>{ if(here&&!selection) setSelection(tier,here,label); $('#sb-iso').click(); }});
-  drawerOpen({type:path?'pathology':'structure',key:'s:'+label,title:L?L.short:label,tag:path?'Pathology':'Anatomy',
+  drawerOpen({type:path?'pathology':'structure',key:'s:'+label,les:L?label:null,title:L?L.short:label,tag:path?'Pathology':'Anatomy',
     render:teachCard({cat:path?'Pathology':selPath(tier,k),swc:Ld&&Ld.swatch!=null?'#'+Ld.swatch.toString(16).padStart(6,'0'):null,sw:L?(({hcc:'hcc',cca:'cca',pc:'pc'})[L.kind]||'bll'):null,
       title:L?L.short:label,sub:L?L.sub:(path?'':TIER_NAMES[tier]),texts:[txt],names:[label],crit:lesItem==='hcc'?'#hcc-crit':null,critH:'These lesions against criteria',actions:acts})}); }
 document.body.classList.add('teach');   // the Learn › links are live

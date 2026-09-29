@@ -1,5 +1,16 @@
 # Changelog
 
+## v50 — interface restructure (the "v48 interface" brief, built on v49) (29 Sept 2026)
+- Black & Navy theme: navy header and dock on a near-black stage; blue accent only for selected/current, violet for procedures, amber only on "check" guidance badges. Anatomical and pathology colours unchanged.
+- Frame: 60 px header (Labels · Segments · Reset view · Quality · Guide · Panel); right dock with Explore | Layers | Clinical | Learn under a shared scale header; the fibrosis bar becomes the Patient state strip with running-pathology chips; the camera view offset centres the model in whatever stage is left.
+- Layers: Views presets (All, Portal system, Arterial supply, Venous outflow, Biliary tree; Blood/Bile path at the micro scales); layer tree with On | Ghost | Off, mixed group state and per-layer structure lists; Segments in the header with its legend under Views; Flow row with Blood and Bile flow (Bile disabled where there are no bile particles). The toast is gone: pathology and procedures ghost what they need through the layer map.
+- Clinical: Pathology (Focal lesions, Biliary & pancreatic, Vascular, Parenchymal) and Procedures (Diagnostic, Therapeutic) as one item template with counts, active instances, readouts and Manage; one biliary and one pancreatic duct drainage control; target gating for TACE, Resection and TIPSS; tier gating; running badges on the tab, group, Manage and strip.
+- Explore: Find a structure, Key concepts with Show me, Selected card (Isolate, Ghost others, Teaching card).
+- Pop-ups: compact identify box; left teaching drawer (history, Back, ×) for structure and pathology cards, procedure steppers and modules; guidance badges with "check" for superseded guidance. Only the drawer plus the identify box show at once.
+- Pinning: pin a tab to keep it open as a 360 px column (44 px rails when collapsed, oldest collapses first, minimum 640 px stage, saved in hsa-dock); phones have no pins.
+- Learn: Portal hypertension module (6 steps, thresholds from the model's own haemodynamics, two checks, HVPG try-it); four modules marked Coming soon. Share this view puts the state in the URL hash.
+- Onboarding re-pointed to the header, dock, strip and drawer; "Start exploring" closes the card and every pointer (key hsa-intro-seen-v50). Phone: the drawer fills the sheet, sticky step footers, compact landscape sheet.
+
 ## v49 — flow rules, TIPSS in the vein, micro views, varices, variceal bleed (29 Sept 2026)
 - Blood flow: switching the animation off removes the particles (macroscopic and the lobule/acinus/sinusoid flow markers). A closed route (TIPSS removed, collateral closed) takes no new particles and the ones on it fade out within ~0.3 s and re-enter on open routes (before, blood kept running down the old TIPSS path).
 - TIPSS: the right hepatic vein is widened about its own centreline to enclose the stent (~0.8 mm clear), tapering where the stent leaves the vein; the HVPG occlusion balloon sits on the vein centreline and inflates to 85% of the vein calibre (it pushed 0.2 mm through the wall).
