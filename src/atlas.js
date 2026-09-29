@@ -3275,12 +3275,15 @@ function refreshPathUI(){
   $('#zon-note').textContent=ZON_NOTE[S.zonal]||ZON_NOTE.none;
   const P=tiers[0].built?tiers[0].inner.userData.P:null, O=HEMO.open;
   const svtOn=!!(S.panc&&S.panc.svt&&S.panc.type!=='none');
-  const openList=[['eso','oesophageal/GOV1'],['fun','fundal'],['pu','paraumbilical'],['sr','splenorenal'],['cav','cavernoma']].filter(([k])=>(O[k]||0)>0.3||(k==='fun'&&svtOn)).map(q=>q[1]==='fundal'&&svtOn&&(O.fun||0)<=0.3?'isolated gastric (sinistral)':q[1]);
+  const openList=[['eso','oesophageal/GOV1'],['fun','fundal'],['pu','paraumbilical'],['sr','splenorenal'],['cav','cavernoma']].filter(([k])=>(O[k]||0)>0.3||(k==='eso'&&(O.eso||0)>0.03)||(k==='fun'&&svtOn))
+    .map(q=>q[0]==='eso'&&O.eso<=0.3?'small oesophageal (forming)':q[1]==='fundal'&&svtOn&&(O.fun||0)<=0.3?'isolated gastric (sinistral)':q[1]);
   $('#ph-read').innerHTML=`<span>Gradient</span><b data-s="${HEMO.ppg>=12?'crit':HEMO.ppg>=10?'warn':''}">${Math.round(HEMO.ppg)} mmHg${S.tips?` <em>(was ${Math.round(HEMO.ppgNat)})</em>`:''}</b>`+
     `<span>HVPG</span><b>${HEMO.hvpgOK?Math.round(HEMO.hvpg)+' mmHg':'not measurable'}</b>`+
     `<span>Collaterals</span><b>${openList.length?openList.join(', '):'none'}</b>`+
     `<span>Spleen</span><b>${HEMO.ppg>=14||svtOn?'enlarged':HEMO.ppg>=10?'mildly enlarged':'normal'}</b>`+
-    (S.bleed?`<span>Bleeding</span><b data-s="crit">oesophageal varix · blood in stomach and duodenum</b>`:'');
+    `<span>Left gastric vein</span><b data-s="${HEMO.lgv==='hepatofugal'?'warn':''}">${HEMO.lgv==='hepatofugal'?'reversed (hepatofugal), feeding the varices':'hepatopetal (normal)'}</b>`+
+    (S.bleed?`<span>Bleeding</span><b data-s="crit">oesophageal varix · blood in stomach and duodenum</b>`:'')+
+    (S.bleedStopped&&S.tips?`<span>Bleeding</span><b>stopped: TIPSS gradient ${Math.round(HEMO.ppg)} mmHg, varices decompressed</b>`:'');
   if(BIL.ready&&BIL.O){ const O2=BIL.O, dil=O2.dilR&&O2.dilL?(O2.mainBlocked?'intra- and extrahepatic':'both lobes, intrahepatic'):O2.dilR?'right intrahepatic':O2.dilL?'left intrahepatic':O2.psc?'beaded (strictures and saccules)':'none';
     const bilH=`<span>Level</span><b>${O2.label}</b><span>Dilatation</span><b data-s="${dil==='none'||dil.startsWith('beaded')?'':'warn'}">${dil}</b>`+
       `<span>Gallbladder</span><b>${O2.gbDist?'distended (Courvoisier)':O2.gbStones?'stones, not distended':'normal'}</b>`+
@@ -3385,6 +3388,8 @@ function clinRefresh(){ const S=state.path, A=clinActive(), run=clinRunning();
   // procedures that need a target
   const nH=cnt.hcc; $('#tace-why').hidden=$('#resect-why').hidden=!!nH;
   const phOK=HEMO.ppg>=10||S.tips||S.bleed; $('#tips-btn').disabled=!phOK; $('#tips-why').hidden=phOK;
+  { const b=$('#bleed-btn'), ok=S.bleed||(HEMO.ppg>=12&&HEMO.open.eso>0.2); b.disabled=!ok;
+    b.title=ok?'':S.tips?'The TIPSS keeps the gradient below 12 mmHg: the varices are decompressed':'Varices bleed at a gradient of 12 mmHg or more: raise the fibrosis slider'; }
   $('#tips-why').textContent='Needs clinically significant portal hypertension: raise the fibrosis slider (gradient ≥10 mmHg).';
   // patient state strip: what is active
   const sc=$('#strip-chips'); if(sc){ sc.innerHTML=''; for(const c of chips){ const b=document.createElement('button'); b.className='schip'+(c.run?' run':c.dev?' dev':'');
@@ -3591,26 +3596,27 @@ addEventListener('resize',()=>{ if(!document.body.classList.contains('mob')&&PIN
 { const st=pinLoad(); PIN.pins=st.pins; PIN.collapsed=st.collapsed; if(!document.body.classList.contains('mob')&&PIN.pins.length){ pinFit(); pinLayout(); } }
 /* ── v50 Learn: guided modules. A module is data; each step runs in the teaching drawer with Back/Next and a progress
    bar, applies its "show" state (the Key concept spec plus fibrosis and pathology) and lists what the model is now
-   showing. Numbers follow computeHemo: gradient = 3 + 16·F^1.35 mmHg (no thrombosis or outflow block); oesophageal
-   varices open from 10 mmHg, fundal and paraumbilical from 12, splenorenal and caput medusae from 14 (each fully
-   open ~7 mmHg higher); a TIPSS brings the gradient to min(native, 6 + 0.12 × native). ── */
+   showing. Numbers follow computeHemo: gradient from FIB_TABLE (v51: 3–5.5 mmHg through F0–F3, 7 at F4, 10 at slider
+   0.90, 17 at 1; no thrombosis or outflow block); the left gastric vein reverses at 10 mmHg and the oesophageal varices
+   fill from 10 to 16, fundal and paraumbilical open from 12, splenorenal and caput medusae from 14 (each fully open
+   ~6 mmHg higher); a TIPSS brings the gradient to min(native, 6 + 0.12 × native). ── */
 const MODULES=[
   {id:'ph',title:'Portal hypertension',scope:'From a normal portal circulation to CSPH, collaterals, HVPG and TIPSS.',refs:[{src:'Baveno VII',year:'2022',status:'check'}],
    steps:[
     {title:'The normal portal circulation',show:{fib:0,path:{tips:false,bleed:false,pvt:'none',bcs:'none'},preset:'portal',cam:{t:[0.3,-0.35,0.1],dir:[0,0.1,1],d:5.0}},
      body:'The portal vein, formed behind the neck of the pancreas from the splenic and superior mesenteric veins, brings about three-quarters of the liver’s blood inflow; the hepatic artery brings the rest. Blood crosses the sinusoids to the hepatic veins at low pressure: the portal pressure gradient (portal minus hepatic venous pressure) is normally 1–5 mmHg. Here, at F0, it is 3 mmHg.'},
-    {title:'Fibrosis raises sinusoidal resistance',show:{fib:0.45,path:{tips:false,bleed:false,pvt:'none',bcs:'none'},preset:'portal'},
-     body:'As fibrosis advances, activated stellate cells lay collagen in the space of Disse, the sinusoids capillarise and narrow, and regenerative nodules distort the vessels. Intrahepatic resistance rises and the gradient climbs: at this stage of the slider it is about 8 mmHg, in the subclinical range (6–9 mmHg). Drag the fibrosis slider yourself to watch the gradient and platelets change.'},
-    {title:'HVPG and clinically significant portal hypertension',show:{fib:0.56,path:{tips:false,bleed:false,pvt:'none',bcs:'none'},preset:'portal'},
-     body:'An HVPG of 10 mmHg or more is clinically significant portal hypertension (CSPH): the threshold for varices, decompensation and, after hepatectomy, liver failure. At 12 mmHg or more varices can bleed. Non-invasively, liver stiffness of 25 kPa or more rules CSPH in (Baveno VII). Here the gradient has just reached about 10 mmHg and the first collateral, the left gastric vein, begins to open.',
+    {title:'Fibrosis raises sinusoidal resistance',show:{fib:0.86,path:{tips:false,bleed:false,pvt:'none',bcs:'none'},preset:'portal'},
+     body:'As fibrosis advances, activated stellate cells lay collagen in the space of Disse, the sinusoids capillarise and narrow, and regenerative nodules distort the vessels. Intrahepatic resistance rises, but the gradient stays within normal (≤5 mmHg) through F1–F3 and only climbs once septa bridge into cirrhosis. Here, in early cirrhosis (Laennec F4A), it is about 8 mmHg, in the subclinical range (6–9 mmHg), with liver stiffness about 15 kPa. Drag the fibrosis slider yourself to watch the gradient, stiffness and platelets change together.'},
+    {title:'HVPG and clinically significant portal hypertension',show:{fib:0.9,path:{tips:false,bleed:false,pvt:'none',bcs:'none'},preset:'portal'},
+     body:'An HVPG of 10 mmHg or more is clinically significant portal hypertension (CSPH): the threshold for varices, decompensation and, after hepatectomy, liver failure. At 12 mmHg or more varices can bleed. Non-invasively, liver stiffness of 25 kPa or more rules CSPH in (Baveno VII). Here the gradient has just reached about 10 mmHg (stiffness about 18 kPa): flow in the left gastric vein reverses, away from the liver towards the cardia, the first sign of collateral flow, and the oesophageal varices it feeds begin to form.',
      check:{q:'Which HVPG defines clinically significant portal hypertension?',options:['≥6 mmHg','≥10 mmHg','≥12 mmHg','≥20 mmHg'],answer:1,explain:'CSPH is an HVPG of 10 mmHg or more. 6–9 mmHg is subclinical portal hypertension; 12 mmHg is the threshold for variceal bleeding.'}},
     {title:'Portosystemic collaterals open',show:{fib:1,path:{tips:false,bleed:false,pvt:'none',bcs:'none'},preset:'portal',cam:{t:[0.55,-0.2,0.0],dir:[0.1,0.25,1],d:5.2}},
-     body:'Portal blood finds its way back to the systemic veins through collaterals. From 10 mmHg the left gastric (coronary) vein feeds oesophageal and GOV1 gastric varices that drain to the azygos; in the model fundal varices and the recanalised paraumbilical vein open from 12 mmHg, and the splenorenal shunt and caput medusae from 14 mmHg. At F4 the gradient is 19 mmHg. Check the Clinical tab: Portal hypertension lists what is open.'},
+     body:'Portal blood finds its way back to the systemic veins through collaterals. From 10 mmHg the reversed left gastric (coronary) vein feeds oesophageal and GOV1 gastric varices that drain to the azygos; from 12 mmHg they are large enough to bleed; in the model fundal varices and the recanalised paraumbilical vein open from 12 mmHg, and the splenorenal shunt and caput medusae from 14 mmHg. At the end of the slider (Laennec F4C) the gradient is 17 mmHg. Check the Clinical tab: Portal hypertension lists what is open.'},
     {title:'Measuring it: HVPG',show:{fib:1,path:{tips:false,bleed:false,pvt:'none',bcs:'none'}},tryIt:{label:'Start the HVPG measurement',fn:()=>{ if(!HVPG.on) hvpgStart(); }},
      body:'The gradient is measured through the jugular vein: a balloon catheter in a hepatic vein gives the free pressure (FHVP), then, with the balloon inflated, the wedged pressure (WHVP), which reflects sinusoidal and so portal pressure. HVPG = WHVP − FHVP. Start the measurement: it opens here in the drawer, and Back returns you to this module.'},
     {title:'Decompressing it: TIPSS',show:{fib:1,path:{tips:true,bleed:false,pvt:'none',bcs:'none'},preset:'portal'},
-     body:'A transjugular intrahepatic portosystemic shunt joins the right hepatic vein to the right portal vein through the liver with a covered stent, so portal blood bypasses the sinusoids. In the model the gradient falls from 19 to about 8 mmHg and the collaterals collapse. Pre-emptive TIPSS within 72 h is recommended after variceal bleeding in Child–Pugh C 10–13, or B >7 with active bleeding; hepatic encephalopathy is the main risk (Baveno VII).',
-     check:{q:'With a TIPSS in place at F4, what does the model’s gradient fall to?',options:['About 3 mmHg','About 8 mmHg','About 12 mmHg','About 17 mmHg'],answer:1,explain:'19 mmHg falls to min(19, 6 + 0.12 × 19) ≈ 8 mmHg: below the 12 mmHg bleeding threshold.'}}]},
+     body:'A transjugular intrahepatic portosystemic shunt joins the right hepatic vein to the right portal vein through the liver with a covered stent, so portal blood bypasses the sinusoids. In the model the gradient falls from 17 to about 8 mmHg, the left gastric flow returns towards the liver and the varices collapse; an active variceal bleed stops. Pre-emptive TIPSS within 72 h is recommended after variceal bleeding in Child–Pugh C 10–13, or B >7 with active bleeding; hepatic encephalopathy is the main risk (Baveno VII).',
+     check:{q:'With a TIPSS in place at F4, what does the model’s gradient fall to?',options:['About 3 mmHg','About 8 mmHg','About 12 mmHg','About 17 mmHg'],answer:1,explain:'17 mmHg falls to min(17, 6 + 0.12 × 17) ≈ 8 mmHg: below the 12 mmHg bleeding threshold.'}}]},
   {id:'couinaud',title:'The functional liver (Couinaud)',soon:true},
   {id:'jaundice',title:'Obstructive jaundice',soon:true},
   {id:'acinus',title:'The acinus and zonal injury',soon:true},
@@ -3720,7 +3726,10 @@ $('#bleed-btn').addEventListener('click',()=>{ const S=state.path; S.bleed=!S.bl
   // the blood is inside the gut: ghost the oesophagus, stomach and duodenum so the stream can be followed
   if(S.bleed){ ghostIfSolid(['esophagus','stomach','duodenum']); if(state.layers.portal==='off') applyLayerMap({portal:'on'},{tier:0}); }
   pathChanged(); });
-$('#tips-btn').addEventListener('click',()=>{ state.path.tips=!state.path.tips; pathChanged({inside:state.path.tips?'TIPSS: from the right internal jugular vein the sheath enters the right hepatic vein, a needle crosses the parenchyma into the right portal vein, and the stent is released over the wire.':null}); });
+$('#tips-btn').addEventListener('click',()=>{ const S=state.path; S.tips=!S.tips;
+  // v51: the shunt decompresses the portal system: the gradient falls below 12 mmHg, the bleeding stops and the varices collapse
+  if(S.tips&&S.bleed){ S.bleed=false; S.bleedStopped=true; } else if(!S.tips) S.bleedStopped=false;
+  pathChanged({inside:S.tips?'TIPSS: from the right internal jugular vein the sheath enters the right hepatic vein, a needle crosses the parenchyma into the right portal vein, and the stent is released over the wire.':null}); });
 
 /* labels for pathology features: shown only while the feature is present */
 function featurePins(){
@@ -4184,8 +4193,7 @@ renderer.domElement.addEventListener('pointerleave',()=>{hoverEl.style.display='
 /* simulation couplings */
 function applySim(){
   const f=state.fibrosis;
-  $('#v-fib').textContent = f<0.12?'F0 · normal' : f<0.34?'F1 · portal fibrosis' :
-    f<0.58?'F2 · septa forming' : f<0.82?'F3 · bridging fibrosis' : 'F4 · cirrhosis';
+  $('#v-fib').textContent = fibStage(f).label;
 
   if(tiers[3] && tiers[3].built){
     const u=tiers[3].inner.userData;
@@ -4251,19 +4259,35 @@ function updateOcclusion(){
 }
 
 /* ════════════ pathology engine: haemodynamics, targets and per-frame animation ════════════ */
-const HEMO={sin:3,ppg:3,ppgNat:3,hvpgOK:true,inflow:1,flow:'hepatopetal',open:{},varices:'none'};
+/* v51: one table couples the slider to histology, the sinusoidal gradient (HVPG) and liver stiffness (VCTE), so the three
+   readouts agree. The METAVIR bands keep the slider positions the morphology was built for; F4 is split by Laennec.
+   HVPG: normal 1–5 mmHg and still within it through F1–F3 (HVPG review, Clin Mol Hepatol 2014), ≥6 at F3–F4;
+   Laennec 4A/4B/4C mean 8.1 / 12.4 / 16.3 mmHg (Kim et al., J Hepatol 2011). LSM: stage cut-offs 7.1 (F≥2), 9.5 (F≥3),
+   12.5 kPa (F4) (Castéra et al., Gastroenterology 2005); HVPG 10 ↔ ~14–21 kPa (Vizzutti 2007: 13.6; Bureau 2008: 21.1),
+   here ~18 kPa; ≥25 kPa rules CSPH in (Baveno VII). Rows: [slider, HVPG mmHg, LSM kPa]. */
+const FIB_TABLE=[[0,3,4.5],[0.12,3.5,5.5],[0.34,4.5,7.1],[0.58,5.5,9.5],[0.82,7,12.5],[0.88,9,16],[0.94,12.5,24],[1,17,40]];
+function fibStage(f){ const T=FIB_TABLE; let i=1; while(i<T.length-1&&f>T[i][0]) i++;
+  const [x0,h0,l0]=T[i-1],[x1,h1,l1]=T[i], k=THREE.MathUtils.clamp((f-x0)/(x1-x0),0,1);
+  const label = f<0.12?'F0 · normal' : f<0.34?'F1 · portal fibrosis' : f<0.58?'F2 · septa forming' : f<0.82?'F3 · bridging fibrosis'
+    : f<0.88?'F4A · early cirrhosis' : f<0.94?'F4B · cirrhosis' : 'F4C · advanced cirrhosis';
+  return {hvpg:h0+(h1-h0)*k, lsm:l0+(l1-l0)*k, label}; }
+const HEMO={sin:3,ppg:3,ppgNat:3,hvpgOK:true,inflow:1,flow:'hepatopetal',open:{},varices:'none',lgv:'hepatopetal'};
 function computeHemo(){
   const f=state.fibrosis, S=state.path, sm=THREE.MathUtils.smoothstep;
-  const sin=3+16*Math.pow(f,1.35);
+  const sin=fibStage(f).hvpg;
   const pre={none:0,partial:2,acute:7,chronic:11}[S.pvt]+(S.pvtSMV&&S.pvt!=='none'?1:0);
   const post={none:0,hv:12,ivc:10,mixed:14}[S.bcs];
   const nat=sin+pre+post, ppg=S.tips?Math.min(nat,6+0.12*nat):nat;
   HEMO.sin=sin; HEMO.hvpg=S.tips?Math.min(sin,6+0.12*sin):sin; HEMO.ppgNat=nat; HEMO.ppg=ppg; HEMO.hvpgOK=!(S.bcs==='hv'||S.bcs==='mixed');
-  const o=th=>sm(ppg,th,th+7), acute=S.pvt==='acute';
+  const o=th=>sm(ppg,th,th+6), acute=S.pvt==='acute';
   const ivcObs=S.bcs==='ivc'||S.bcs==='mixed', hvObs=S.bcs==='hv'||S.bcs==='mixed';
   // collaterals need time to form: acute occlusion raises pressure but has not yet opened them
   const tk=acute?0.25:1;
-  HEMO.open={eso:o(10)*tk, fun:o(12)*tk, sr:o(14)*tk, pu:o(12)*tk, caput:o(14)*tk,
+  // v51: order of the collaterals. At a gradient of 10 mmHg (CSPH) flow in the left gastric vein reverses first (hepatofugal,
+  // towards the cardia), then the oesophageal and GOV1 varices it feeds fill out; fundal (short gastric) and paraumbilical
+  // collaterals from 12, splenorenal shunt and caput medusae from 14.
+  HEMO.lgvRev=sm(ppg,9.6,10.6)*tk; HEMO.lgv=HEMO.lgvRev>0.5?'hepatofugal':'hepatopetal';
+  HEMO.open={eso:sm(ppg,10.2,16)*tk, fun:o(12)*tk, sr:o(14)*tk, pu:o(12)*tk, caput:o(14)*tk,
     cav:S.pvt==='chronic'?1:0, web:hvObs?1:(ivcObs?0.45:0), caud:S.bcs!=='none'?1:0};
   HEMO.open.azy=Math.max(HEMO.open.eso,ivcObs?1:0); HEMO.open.lrv=HEMO.open.sr;
   HEMO.hf=S.hepatofugal && nat>=12 && !S.tips && S.pvt!=='acute' && S.pvt!=='chronic';
@@ -4682,8 +4706,9 @@ function pathTargets(){
   R.cav.forEach(r=>{ r.w=sp==='chronic'&&!HEMO.hf?0.85/8:0; r.speed=0.7; });
   R.tips.forEach(r=>{ r.w=S.tips&&!blockHP?0.9:0; r.speed=1.4; r.block=null; });
   const dc=S.tips?0.35:1, O=HEMO.open;
-  R.col.lgv.w=(HEMO.hf?0:0.06)*(1-THREE.MathUtils.smoothstep(O.eso,0.05,0.35))*(blockHP?0.3:1);
-  R.col.eso.w=0.20*O.eso*dc; R.col.eso2.w=0.16*O.eso*dc; R.col.fun.w=0.13*O.fun*dc; R.col.sr.w=0.20*O.sr*dc; R.col.pu.w=0.13*O.pu*dc;
+  R.col.lgv.w=(HEMO.hf?0:0.06)*(1-(HEMO.lgvRev||0))*(blockHP?0.3:1);
+  const eW=Math.max(O.eso,0.25*(HEMO.lgvRev||0));   // v51: reversed left gastric flow shows before the varices have filled
+  R.col.eso.w=0.20*eW*dc; R.col.eso2.w=0.16*eW*dc; R.col.fun.w=0.13*O.fun*dc; R.col.sr.w=0.20*O.sr*dc; R.col.pu.w=0.13*O.pu*dc;
   // v49: variceal bleed: the varices are open and much of the portal inflow leaves through the ruptured column
   if(R.col.vb){ R.col.vb.w=S.bleed?0.9:0; if(S.bleed){ P.cols.eso.target=Math.max(P.cols.eso.target,0.9); R.col.eso.w=Math.max(R.col.eso.w,0.08); } }
   R.hf.forEach(r=>{ r.w=HEMO.hf?0.6:0; r.speed=0.8; });
@@ -4701,7 +4726,7 @@ function pathTargets(){
   P.m.caudT=S.bcs!=='none'?1:0;
   P.m.congT=(S.bcs!=='none'||state.path.zonal==='congestive')?1:0;
   P.m.fatT=state.path.masld/3; P.m.ironT=state.path.zonal==='iron'?1:0;
-  P.m.splT=THREE.MathUtils.smoothstep(HEMO.ppg,8,24);
+  P.m.splT=THREE.MathUtils.smoothstep(HEMO.ppg,8,20);
   // splenic vein thrombosis: left-sided (sinistral) portal hypertension — gastric fundal collaterals and splenomegaly with a normal HVPG
   if(R.col.svt) R.col.svt.w=0;
   if(S.panc&&S.panc.svt&&S.panc.type!=='none'){ P.cols.fun.target=Math.max(P.cols.fun.target,0.85); P.m.splT=Math.max(P.m.splT,0.55);
@@ -5201,12 +5226,11 @@ function clinLabs(){
   if(z==='aih'){ ast=Math.max(ast,420); alt=Math.max(alt,560); }
   if(z==='yf'){ ast=Math.max(ast,2200); alt=Math.max(alt,1400); bili=Math.max(bili,90); }
   const ppgEff=S.tips?0.95*HEMO.ppgNat:HEMO.ppgNat;                    // hypersplenism improves only a little after TIPSS
-  const plt=Math.round(250-150*sm(ppgEff,6,22));
+  const plt=Math.round(250-175*sm(ppgEff,5,17));   // v51: <150 by a gradient of ~11, so Baveno VII's stiffness + platelet rules agree with the HVPG
   const asc0=Math.max(sm(HEMO.ppgNat,11,20)*sm(f,0.75,1), bcs?0.8:0), asc=S.tips?asc0*0.35:asc0;
   const he=Math.max(sm(dec,0.6,1)*0.8, S.tips?0.5:0);
   // liver stiffness (VCTE): fibrosis stage, plus the confounders that raise it independently of fibrosis
-  const P=[[0,4.6],[0.12,5.5],[0.34,7.4],[0.58,10.2],[0.82,15.5],[0.9,21],[1,34]];
-  let lsm=P[P.length-1][1]; for(let i=1;i<P.length;i++) if(f<=P[i][0]){ const [x0,y0]=P[i-1],[x1,y1]=P[i]; lsm=y0+(y1-y0)*(f-x0)/(x1-x0); break; }
+  let lsm=fibStage(f).lsm;   // v51: the same stage table as the HVPG
   const conf=[]; if(bcs){ lsm+=14; conf.push('venous congestion'); } if(obs>0.2){ lsm+=6*obs; conf.push('cholestasis'); }
   if(alt>150){ lsm+=Math.min(12,alt/300); conf.push('hepatitic flare'); }
   const elf=7.6+4.6*Math.pow(f,1.3)+(S.mash?0.3:0);
