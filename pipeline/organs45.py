@@ -189,8 +189,8 @@ def height(organ, X, vf=None):
         h = h + 0.0007 * fbm(np.c_[X[:, 0] * 260, X[:, 1] * 9, X[:, 2] * 260], 2, seed=14)   # longitudinal adventitial fibres (streaks along y)
     if organ == 'spleen':
         h = 0.0006 * fbm(X * 6.0, 2, seed=15) + 0.00025 * fbm(X * 45.0, 2, seed=16)       # smooth capsule
-    if organ in ('kidney_left', 'kidney_right'):
-        h = 0.0007 * fbm(X * 9.0, 3, seed=17) + 0.0003 * fbm(X * 60.0, 2, seed=18)
+    if organ in ('kidney_left', 'kidney_right'):   # v46b: rougher capsule (added mid and fine grain)
+        h = 0.0007 * fbm(X * 9.0, 3, seed=17) + 0.0009 * fbm(X * 30.0, 3, seed=18) + 0.0005 * fbm(X * 90.0, 2, seed=19)
     if vf is not None:
         if organ in ('stomach', 'duodenum'):   # v46b: raised in sections (up to ×2.6), nearly flat between them
             h = h + vf(X)[2] * (0.25 + 2.35 * vessel_raise(X))
@@ -246,7 +246,10 @@ def compose(organ, X, ao, cav, curv, thick, onrm, vf=None):
         rough = np.clip(0.28 + 0.04 * m2, 0.2, 0.5); wet = np.clip(0.9 + 0.1 * m1, 0, 1)
     else:   # kidneys (v46): darker purple-brown capsule (v45 light red-brown #8C4032); the perinephric fat patches are removed
         col = lin('#5E2E36')[None] * (1 + 0.07 * m1 + 0.04 * m2)[:, None]
-        rough = np.clip(0.36 + 0.05 * m2, 0.2, 0.7); wet = np.clip(0.75 + 0.1 * m1, 0, 1)
+        # v46b: slightly paler, heterogeneous areas blending softly into the base colour
+        pl = ss(fbm(X * 3.4 + 2.2, 3, seed=111), 0.0, 0.5) * (0.55 + 0.45 * ss(fbm(X * 9.0, 2, seed=112), -0.3, 0.3))
+        col = col * (1 - 0.35 * pl)[:, None] + lin('#80505A')[None] * (0.35 * pl)[:, None]
+        rough = np.clip(0.46 + 0.08 * m2 + 0.05 * pl, 0.2, 0.8); wet = np.clip(0.55 + 0.1 * m1, 0, 1)   # v46b: rougher, less wet
     if vf is not None:
         core, edge, _ = vf(X)
         pale, dark = lin('#C86E68'), lin('#5A1216')
