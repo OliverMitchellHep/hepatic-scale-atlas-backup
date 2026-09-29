@@ -436,7 +436,7 @@ body.mob .tab-b[aria-selected="true"]{border-color:var(--acc);color:var(--ink);b
 body.mob #dock-head{padding:0;border:0}
 body.mob #dock-scale{margin-bottom:10px}
 body.mob #panel .scroll{padding:10px 14px calc(24px + env(safe-area-inset-bottom,0px));touch-action:pan-y;overscroll-behavior:contain}
-body.mob body.mob #mcard:not([hidden]){display:block;margin:0 0 12px;padding:10px 12px;background:var(--panel-solid);border:1px solid var(--line-2);border-radius:6px}
+body.mob #mcard:not([hidden]){display:block;margin:0 0 12px;padding:10px 12px;background:var(--panel-solid);border:1px solid var(--line-2);border-radius:6px}
 #mcard .mc-h{display:flex;align-items:flex-start;gap:8px}
 #mcard .mc-h b{flex:1;color:var(--acc);font-weight:500;font-size:13px}
 #mcard .mc-h button{width:30px;height:30px;flex:none;border:1px solid var(--rule);border-radius:2px;color:var(--ink);font-size:18px;line-height:26px}
@@ -670,7 +670,14 @@ table.crit em{font-style:normal;color:var(--ink-3)}
 body.mob #drawer{position:static;width:auto;border:0;box-shadow:none;background:transparent;margin:0 0 12px;border-radius:0}
 body.mob .dr-hd{padding:0 0 8px;border-bottom:1px solid var(--line)}
 body.mob .dr-body{overflow:visible;padding:10px 0 0}
-body.mob #drawer .hv-ft{bottom:0}
+body.mob #drawer .hv-ft{bottom:calc(-24px - env(safe-area-inset-bottom,0px));padding-bottom:calc(10px + env(safe-area-inset-bottom,0px))}
+/* phone: an open drawer is the sheet's content; a tab tap shows the tab and keeps the drawer's entry for later */
+body.mob #panel{flex-direction:column}
+body.mob #panel .scroll{flex:1 1 auto;min-height:0}
+body.mob.drawer:not(.drhide) #dock-scale,body.mob.drawer:not(.drhide) #dock-body>.pane{display:none}
+body.mob.drhide #drawer{display:none}
+@media (max-height:500px){ body.mob #simbar .readout{display:none} body.mob #panel .grip{height:14px} body.mob #panel .grip::after{top:5px} }
+body.mob.drawer:not(.drhide) .tab-b[aria-selected="true"]{border-color:var(--line);color:var(--ink-2);box-shadow:none}
 /* ── v50 pinned columns ── */
 .tab .pinb{width:22px;height:22px;margin-left:-4px;color:var(--ink-3);opacity:0;transition:opacity .15s;border-radius:4px}
 .tab .pinb svg{width:12px;height:12px;display:block;margin:auto}

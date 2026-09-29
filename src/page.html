@@ -393,9 +393,10 @@
   <div id="intro" hidden>
     <svg id="intro-svg" aria-hidden="true"><defs><marker id="intro-ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
       <path d="M0,0 L10,5 L0,10 z" fill="#6FA8EC"/></marker></defs><g id="intro-paths"></g></svg>
-    <div class="intro-tag" data-k="top"><b>Layers</b>Switch each structure, or a whole group, On, Ghost or Off.<button class="intro-tx" aria-label="Close this pointer">&times;</button></div>
-    <div class="intro-tag" data-k="right"><b>Panel</b>Pathology simulations, a list of structures and teaching points for the current scale.<button class="intro-tx" aria-label="Close this pointer">&times;</button></div>
-    <div class="intro-tag" data-k="bottom"><b>Fibrosis slider</b>Drag from a normal liver to cirrhosis and watch the pressures, collaterals and liver change.<button class="intro-tx" aria-label="Close this pointer">&times;</button></div>
+    <div class="intro-tag" data-k="top"><b>Header</b>Labels, Couinaud segments, Reset view, render quality and this Guide.<button class="intro-tx" aria-label="Close this pointer">&times;</button></div>
+    <div class="intro-tag" data-k="right"><b>Dock</b>Explore, Layers, Clinical and Learn. The pin on a tab keeps it open as its own column beside the others.<button class="intro-tx" aria-label="Close this pointer">&times;</button></div>
+    <div class="intro-tag" data-k="bottom"><b>Patient state</b>Drag fibrosis from a normal liver to cirrhosis; pressures and running pathology show here.<button class="intro-tx" aria-label="Close this pointer">&times;</button></div>
+    <div class="intro-tag" data-k="left"><b>Teaching drawer</b>Learn more, teaching cards, procedure steps and modules open on the left, with Back through your history.<button class="intro-tx" aria-label="Close this pointer">&times;</button></div>
     <div class="intro-card" role="dialog" aria-label="Introduction">
       <button id="intro-x" aria-label="Close introduction">&times;</button>
       <div class="eyebrow">Welcome</div>
@@ -404,9 +405,8 @@
       <ul>
         <li><b>Click</b> any structure to identify it and learn about it.</li>
         <li><b>Drag</b> to rotate. <b>Scroll</b> or pinch to zoom from the whole organ down to the lobule, sinusoid and hepatocyte.</li>
-        <li class="mob-only"><b>Bottom sheet</b>: drag it up for pathology, structures and teaching; tapped structures explain themselves there.</li>
-        <li class="mob-only"><b>Layers</b>: the second tab of the sheet switches each structure or group On, Ghost or Off.</li>
-        <li class="mob-only"><b>Fibrosis slider</b>: always in the top bar of the sheet.</li>
+        <li class="mob-only"><b>Bottom sheet</b>: drag it up for the Explore, Layers, Clinical and Learn tabs; teaching cards and procedure steps open inside it.</li>
+        <li class="mob-only"><b>Patient state</b>: the fibrosis slider is always in the top bar of the sheet.</li>
       </ul>
       <button class="gobtn" id="intro-go">Start exploring</button>
     </div>

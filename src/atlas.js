@@ -3401,7 +3401,8 @@ const DRAWER={cur:null,stack:[]};
 const SUPERSEDED_JS=[[/\bBaveno VII\b(?!I)/,'Baveno VIII (J Hepatol 2026)'],[/EASL vascular[^.]{0,20}2016/,'EASL vascular CPG 2025'],[/\bBCLC 2022\b/,'BCLC 2026 update']];
 function drawerShow(on){ const d=$('#drawer'); d.hidden=!on; document.body.classList.toggle('drawer',on);
   if(!document.body.classList.contains('mob')&&PIN.pins.length){ pinFit(); pinLayout(); } else layoutDock();
-  if(on&&document.body.classList.contains('mob')){ $('#mcard').hidden=true; mobRaise(); } }
+  document.body.classList.remove('drhide');
+  if(on&&document.body.classList.contains('mob')){ $('#mcard').hidden=true; if(MOB.state!=='full') mobSheet('full'); const sc=$('#panel .scroll'); if(sc) sc.scrollTop=0; } }
 function drawerRender(){ const E=DRAWER.cur, body=$('#dr-body'); if(!E) return;
   const park=$('#dr-park'); for(const c of [...body.children]) if(c.dataset.parked==='1'){ c.dataset.parked=''; park.appendChild(c); }
   body.innerHTML='';
@@ -3901,7 +3902,7 @@ function setTab(t){ if(!TABS.includes(t)) t='explore'; DOCK.tab=t;
   for(const k of TABS){ const pane=$('#pane-'+k), b=$('#tab-'+k); if(!pane||!b) continue;
     if(pane.parentElement===$('#dock-body')) pane.hidden=(k!==t);
     b.setAttribute('aria-selected',String(k===t)); b.tabIndex=k===t?0:-1; } }
-document.querySelectorAll('#tabs .tab-b').forEach(b=>b.addEventListener('click',()=>{ setTab(b.id.slice(4));
+document.querySelectorAll('#tabs .tab-b').forEach(b=>b.addEventListener('click',()=>{ setTab(b.id.slice(4)); document.body.classList.add('drhide');
   if(document.body.classList.contains('mob')&&MOB.state==='peek') mobSheet('half'); }));
 $('#tabs').addEventListener('keydown',e=>{ if(e.key!=='ArrowRight'&&e.key!=='ArrowLeft') return;
   const vis=TABS.filter(k=>$('#tab-'+k).offsetParent), i=vis.indexOf(DOCK.tab); if(i<0) return;
@@ -5623,7 +5624,7 @@ function mobRestore(){ const list=[...MOB.homes]; for(let i=list.length-1;i>=0;i
 function mobPeekH(){ return $('#grip').offsetHeight+$('#mhead').offsetHeight+4; }
 function mobSetH(h){ MOB.h=h; window.__mobH=h; document.body.style.setProperty('--sheetH',Math.round(h)+'px'); }
 function mobSheet(st){ if(!MOB.on) return; MOB.state=st; const H=innerHeight;
-  mobSetH(st==='peek'?mobPeekH():st==='half'?Math.round(H*0.5):Math.round(H*0.86)); resize(); if(typeof coachLayout==='function') coachLayout(); }
+  mobSetH(st==='peek'?mobPeekH():st==='half'?Math.round(H*0.5):Math.round(Math.max(H*0.86,H-$('#topbar').offsetHeight))); resize(); if(typeof coachLayout==='function') coachLayout(); }
 function mobTab(t){ setTab(t); }
 function mobRaise(){ if(!MOB.on) return; mobTab('explore'); if(MOB.state==='peek') mobSheet('half'); const sc=$('#panel .scroll'); if(sc) sc.scrollTop=0; }
 function mobCard(label,txt){ const c=$('#mcard'); if(!MOB.on||!c) return;
@@ -5655,18 +5656,17 @@ function mobApply(){ const on=MOBQ();
     d=null; };
   $('#grip').addEventListener('pointerdown',start); $('#mhead').addEventListener('pointerdown',start);
   addEventListener('pointermove',move); addEventListener('pointerup',end); addEventListener('pointercancel',end); }
-{ const mo=new MutationObserver(ms=>{ for(const m of ms){ if(MOB.on&&!m.target.hidden){ $('#mcard').hidden=true; mobRaise(); } } });
-  for(const id of ['#drawer']) mo.observe($(id),{attributes:true,attributeFilter:['hidden']}); }
 addEventListener('resize',mobApply); mobApply();
 if(MOB.on){ anno.classList.add('nolabels'); $('#btn-lab').setAttribute('aria-pressed','false'); }
-/* first-run introduction: a card in the centre, dashed arrows to the layer bar, the panel and the fibrosis slider */
+/* first-run introduction: a card in the centre of the stage, dashed arrows to the header, the dock tabs,
+   the patient state strip and the (closed) teaching drawer on the left */
 function introLayout(){
   const el=$('#intro'); if(el.hidden) return;
   const W=innerWidth, H=innerHeight, mob=MOBQ(), card=$('.intro-card');
   el.classList.toggle('mob',mob);
   if(mob){ card.style.left=''; card.style.top=''; $('#intro-paths').innerHTML=''; return; }
-  const R=s=>$(s).getBoundingClientRect(), lb=R('#topbar'), pn=R('#dockwrap'), sb=R('#simbar');
-  const sceneR=$('#dockwrap').classList.contains('closed')?W:pn.left;
+  const R=s=>$(s).getBoundingClientRect(), lb=R('#topbar'), pn=R('#panel'), tb=R('#tabs'), sb=R('#simbar');
+  const sceneR=$('#dockwrap').classList.contains('closed')?W:R('#dockwrap').left;
   const cw=card.offsetWidth, ch=card.offsetHeight;
   const cx=Math.round(sceneR/2), cy=Math.round((lb.bottom+sb.top)/2);
   card.style.left=(cx-cw/2)+'px'; card.style.top=Math.max(lb.bottom+12,cy-ch/2)+'px';
@@ -5675,24 +5675,26 @@ function introLayout(){
   const arrow=(x1,y1,qx,qy,x2,y2)=>{ const p=document.createElementNS('http://www.w3.org/2000/svg','path');
     p.setAttribute('d',`M${x1},${y1} Q${qx},${qy} ${x2},${y2}`); p.setAttribute('marker-end','url(#intro-ah)'); g.appendChild(p); };
   const place=(t,x,y)=>{ t.style.left=Math.round(Math.max(8,Math.min(W-t.offsetWidth-8,x)))+'px'; t.style.top=Math.round(Math.max(8,Math.min(H-t.offsetHeight-8,y)))+'px'; return t.getBoundingClientRect(); };
-  // left column, upper: layers
-  const colW=Math.min(230,C.left-40);
-  for(const k of ['top','bottom']) tag(k).style.maxWidth=Math.max(160,colW)+'px';
   const on=k=>!tag(k).classList.contains('off');
-  let T=place(tag('top'), C.left-tag('top').offsetWidth-24, lb.bottom+34);
-  if(on('top')){ const ex=Math.min(T.left+T.width*0.5+70,lb.right-20); arrow(T.left+T.width*0.5,T.top, ex,T.top, ex,lb.bottom+6); }
-  // left column, lower: fibrosis slider
-  T=place(tag('bottom'), C.left-tag('bottom').offsetWidth-24, sb.top-tag('bottom').offsetHeight-36);
+  // left column: header (upper), teaching drawer (middle), patient state (lower)
+  const colW=Math.max(160,Math.min(230,C.left-40));
+  for(const k of ['top','left','bottom']) tag(k).style.maxWidth=colW+'px';
+  const lx=k=>Math.max(28,C.left-tag(k).offsetWidth-24);
+  let T=place(tag('top'), lx('top'), lb.bottom+34);
+  if(on('top')){ const bl=R('#btn-lab'), bx=bl.left+bl.width*0.5; arrow(T.right,T.top+T.height*0.4, bx,T.top+T.height*0.4, bx,bl.bottom+6); }
+  T=place(tag('left'), lx('left'), C.top+C.height*0.5-tag('left').offsetHeight*0.5);
+  if(on('left')) arrow(T.left,T.top+T.height*0.5, T.left-10,T.top+T.height*0.5-24, 12,T.top+T.height*0.5);
+  T=place(tag('bottom'), lx('bottom'), sb.top-tag('bottom').offsetHeight-36);
   if(on('bottom')) arrow(T.right,T.top+T.height*0.6, sb.left+70,T.top+T.height*0.6, sb.left+70,sb.top-6);
-  // right: the panel
+  // right: the dock tabs
   tag('right').style.maxWidth=Math.max(150,Math.min(220,sceneR-C.right-44))+'px';
   T=place(tag('right'), C.right+22, C.top+24);
-  if(on('right')) arrow(T.left+T.width*0.5,T.bottom, T.left+T.width*0.5,T.bottom+40, sceneR+6,T.bottom+56);
+  if(on('right')){ const tx=tb.left+tb.width*0.3; arrow(T.left+T.width*0.7,T.top, T.left+T.width*0.7,tb.top-10, tx,tb.top-6); }
 }
 /* the centre card and each pointer close independently; the introduction is done when all are closed */
 function introShow(){ const el=$('#intro'); el.hidden=false; el.classList.remove('nocard');
   el.querySelectorAll('.intro-card,.intro-tag').forEach(n=>n.classList.remove('off')); requestAnimationFrame(introLayout); }
-function introDone(){ $('#intro').hidden=true; try{ localStorage.setItem('hsa-intro-seen','1'); }catch(e){} }
+function introDone(){ $('#intro').hidden=true; try{ localStorage.setItem('hsa-intro-seen-v50','1'); }catch(e){} }
 function introCheck(){ const el=$('#intro'), mob=el.classList.contains('mob');
   const left=[...el.querySelectorAll('.intro-tag')].filter(t=>!t.classList.contains('off'));
   if(el.querySelector('.intro-card').classList.contains('off') && (mob||!left.length)) introDone(); else introLayout(); }
@@ -5709,12 +5711,12 @@ addEventListener('resize',introLayout);
    (Guide re-opens them). They never block the scene. */
 const COACH={
   1:[{k:'slider',h:'Fibrosis slider',t:'Drag the slider to see septa form and bridge the portal tracts, and watch how blood flow through the lobule slows and is diverted.'},
-     {k:'path',h:'Pathology',t:'Open Pathology and toggle MASLD, zonal injury or Budd–Chiari to see which areas of the lobule each one affects.'},
-     {k:'acinar',h:'Acinar',t:'Toggle this on to see the functional anatomy of the acinus, between two central veins.'}],
+     {k:'path',h:'Clinical',t:'Open the Clinical tab and toggle MASLD, zonal injury or Budd–Chiari to see which areas of the lobule each one affects.'},
+     {k:'acinar',h:'Acinar',t:'In the Layers tab, switch this On to see the functional anatomy of the acinus, between two central veins.'}],
   2:[{k:'slider',h:'Fibrosis slider',t:'Drag the slider: collagen fills the space of Disse, the sinusoids narrow and septa bridge portal to central. Watch the flow slow.'}],
   3:[{k:'slider',h:'Fibrosis slider',t:'Drag the slider: the fenestrae shrink and close, collagen fills the space of Disse and the lumen narrows. This is capillarisation.'}],
-  4:[{k:'transp',h:'Transporters',t:'Toggle Transporters to see uptake on the sinusoidal face and export into the bile canaliculus. The teaching points explain cholestasis transporter by transporter.'},
-     {k:'path',h:'Pathology',t:'Open Pathology and raise the MASLD grade, or pick a zonal injury, to see what happens inside the cell.'}]};
+  4:[{k:'transp',h:'Transporters',t:'In the Layers tab, switch Transporters On to see uptake on the sinusoidal face and export into the bile canaliculus. Click a transporter for its teaching card.'},
+     {k:'path',h:'Clinical',t:'Open the Clinical tab and raise the MASLD grade, or pick a zonal injury, to see what happens inside the cell.'}]};
 const coach={tier:-1,tags:[]};
 const coachSeen=i=>{ try{ return localStorage.getItem('hsa-coach-'+i)==='1'; }catch(e){ return false; } };
 const coachMark=i=>{ try{ localStorage.setItem('hsa-coach-'+i,'1'); }catch(e){} };
@@ -5753,14 +5755,14 @@ function coachLayout(){
       const tx=mob?s.left+60:s.left-6, ty=mob?s.top-4:s.top+s.height/2;
       const T=mob? place(el, W-el.offsetWidth-12, pn.top-el.offsetHeight-60) : place(el, pn.left-el.offsetWidth-46, ty-el.offsetHeight-40);
       if(mob) arrow(T.left+T.width*0.6,T.bottom, tx,T.bottom+20, tx,ty); else arrow(T.right,T.top+T.height*0.5, tx-30,T.top+T.height*0.5, tx,ty); }
-    else if(k==='acinar'||k==='transp'){ const b=document.querySelector(`#layers .lay[data-k=${k==='acinar'?'acinar':'transporters'}]`); if(!b){ el.style.display='none'; continue; }
+    else if(k==='acinar'||k==='transp'){ const b=$('#pane-layers').hidden?$('#tab-layers'):document.querySelector(`#layers .lt-row[data-k=${k==='acinar'?'acinar':'transporters'}]`); if(!b){ el.style.display='none'; continue; }
       const r=b.getBoundingClientRect(); if(!r.width){ el.style.display='none'; continue; } const tx=r.left+r.width/2, ty=r.bottom+4;
       const T=place(el, r.left-30, r.bottom+56); const sx=Math.min(T.right-20,Math.max(T.left+20,tx));
       arrow(sx,T.top, sx,(T.top+ty)/2, tx,ty); }
   }
 }
 addEventListener('resize',coachLayout);
-{ let seen=false; try{ seen=localStorage.getItem('hsa-intro-seen')==='1'; }catch(e){} if(!seen) introShow(); }
+{ let seen=false; try{ seen=localStorage.getItem('hsa-intro-seen-v50')==='1'; }catch(e){} if(!seen) introShow(); }
 
 const tmp=new THREE.Vector3(), clock=new THREE.Clock();
 const PERF={full:Math.min(devicePixelRatio,(innerWidth<=860||innerHeight<=520)?1.5:2), move:1, lastMoveT:-1e9, moving:false,
