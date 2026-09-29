@@ -1,4 +1,4 @@
-# Hepatic Scale Atlas — working notes for Claude
+# Rex Hepatis (formerly Hepatic Scale Atlas) — working notes for Claude
 
 Interactive 3D teaching model of the liver and hepatobiliary system, organ → hepatocyte, for MRCP-to-consultant audiences (owner: Oli, gastroenterology/hepatology registrar). Illustrative, not for clinical decisions. Guideline sources: EASL, BSG, UEG, NICE, NHS/NHSBT, Baveno, ESGE.
 
@@ -26,7 +26,7 @@ validate.py        build + all checks; writes tests/out/report.md
    - An intended visual change fails `screenshots`: look at `tests/out/*.png`, then `python3 validate.py --rebaseline`.
    - New clickable structures need a registry entry or `coverage` fails. `--census` refreshes tier/layer fields.
 3. Commit with a one-line summary; bump the version in `src/page.html` `<title>` and add a line to `CHANGELOG.md` per release; tag `vNN`.
-4. Publish `dist/index.html` as a new artifact "Hepatic Scale Atlas vNN", passing every other file in `dist/` via `files` (vendor/ and assets keep their relative paths).
+4. Publish `dist/index.html` as a new artifact "Rex Hepatis vNN" (v50 and earlier: "Hepatic Scale Atlas vNN"), passing every other file in `dist/` via `files` (vendor/ and assets keep their relative paths).
 
 ## Rules
 - Registry ids are permanent (teaching pages and deep links use them). Rename the `name`, never the `id`; to retire an entry, keep the id with `"retired": true`.

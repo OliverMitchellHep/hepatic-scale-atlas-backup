@@ -1,4 +1,6 @@
-# Hepatic Scale Atlas
+# Rex Hepatis
+
+(Formerly the Hepatic Scale Atlas.)
 
 Interactive 3D teaching atlas of the liver and hepatobiliary system, from the whole organ down to the hepatocyte, with a pathology and haemodynamics engine (fibrosis, portal hypertension, PVT, Budd–Chiari, HCC, cholangiocarcinoma, pancreatic disease, biliary obstruction and procedures).
 

@@ -5763,7 +5763,7 @@ function introLayout(){
 /* the centre card and each pointer close independently; the introduction is done when all are closed */
 function introShow(){ const el=$('#intro'); el.hidden=false; el.classList.remove('nocard');
   el.querySelectorAll('.intro-card,.intro-tag').forEach(n=>n.classList.remove('off')); requestAnimationFrame(introLayout); }
-function introDone(){ $('#intro').hidden=true; try{ localStorage.setItem('hsa-intro-seen-v50','1'); }catch(e){} }
+function introDone(){ $('#intro').hidden=true; try{ localStorage.setItem('hsa-intro-seen-v51','1'); }catch(e){} }
 function introCheck(){ const el=$('#intro'), mob=el.classList.contains('mob');
   const left=[...el.querySelectorAll('.intro-tag')].filter(t=>!t.classList.contains('off'));
   if(el.querySelector('.intro-card').classList.contains('off') && (mob||!left.length)) introDone(); else introLayout(); }
@@ -5831,7 +5831,7 @@ function coachLayout(){
   }
 }
 addEventListener('resize',coachLayout);
-{ let seen=false; try{ seen=localStorage.getItem('hsa-intro-seen-v50')==='1'; }catch(e){} if(!seen) introShow(); }
+{ let seen=false; try{ seen=localStorage.getItem('hsa-intro-seen-v51')==='1'; }catch(e){} if(!seen) introShow(); }
 
 const tmp=new THREE.Vector3(), clock=new THREE.Clock();
 const PERF={full:Math.min(devicePixelRatio,(innerWidth<=860||innerHeight<=520)?1.5:2), move:1, lastMoveT:-1e9, moving:false,
