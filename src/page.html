@@ -1,7 +1,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Hepatic Scale Atlas v49</title>
-<style>#svt-view{grid-column:1/-1;justify-self:start;margin-top:6px;font:500 12px/1 "IBM Plex Sans",system-ui,sans-serif;color:var(--ink);background:transparent;border:1px solid var(--rule);border-radius:3px;padding:6px 10px;cursor:pointer}#svt-view:hover,#svt-view:focus-visible{border-color:var(--amber);outline:none}</style>
+<style>#svt-view{grid-column:1/-1;justify-self:start;margin-top:6px;font:500 12px/1 "IBM Plex Sans",system-ui,sans-serif;color:var(--ink);background:transparent;border:1px solid var(--rule);border-radius:3px;padding:6px 10px;cursor:pointer}#svt-view:hover,#svt-view:focus-visible{border-color:var(--acc);outline:none}</style>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,400&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
@@ -26,7 +26,7 @@
   <nav id="rail" aria-label="Scale"></nav>
 
   <div id="layerbar" aria-label="Layers"><span class="bar-k">Layers</span><div class="layers" id="layers"></div></div>
-  <div id="animbox" role="group" aria-label="Animation"><span class="ab-k">Animate</span><button class="toggle neutral" id="tg-flow" aria-pressed="true" title="Blood in the portal and hepatic veins (and, at the microscopic scales, blood and bile in the lobule)."><span class="led" style="background:var(--amber)"></span><span>Blood flow</span></button><button class="toggle neutral" id="tg-bile" aria-pressed="false" title="Bile from the intrahepatic ducts and gallbladder down the common bile duct, through the ampulla into the duodenum. Ghost the duodenum to see it enter."><span class="led" style="background:var(--rule)"></span><span>Bile flow</span></button></div>
+  <div id="animbox" role="group" aria-label="Animation"><span class="ab-k">Animate</span><button class="toggle neutral" id="tg-flow" aria-pressed="true" title="Blood in the portal and hepatic veins (and, at the microscopic scales, blood and bile in the lobule)."><span class="led"></span><span>Blood flow</span></button><button class="toggle neutral" id="tg-bile" aria-pressed="false" title="Bile from the intrahepatic ducts and gallbladder down the common bile duct, through the ampulla into the duodenum. Ghost the duodenum to see it enter."><span class="led"></span><span>Bile flow</span></button></div>
 
   <div id="simbar" aria-label="Cirrhosis simulation">
     <div class="sim-fib">
@@ -301,7 +301,7 @@
   </div>
   <div id="intro" hidden>
     <svg id="intro-svg" aria-hidden="true"><defs><marker id="intro-ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-      <path d="M0,0 L10,5 L0,10 z" fill="#E0A33E"/></marker></defs><g id="intro-paths"></g></svg>
+      <path d="M0,0 L10,5 L0,10 z" fill="#6FA8EC"/></marker></defs><g id="intro-paths"></g></svg>
     <div class="intro-tag" data-k="top"><b>Layers</b>Switch each structure, or a whole group, On, Ghost or Off.<button class="intro-tx" aria-label="Close this pointer">&times;</button></div>
     <div class="intro-tag" data-k="right"><b>Panel</b>Pathology simulations, a list of structures and teaching points for the current scale.<button class="intro-tx" aria-label="Close this pointer">&times;</button></div>
     <div class="intro-tag" data-k="bottom"><b>Fibrosis slider</b>Drag from a normal liver to cirrhosis and watch the pressures, collaterals and liver change.<button class="intro-tx" aria-label="Close this pointer">&times;</button></div>
@@ -321,7 +321,7 @@
     </div>
   </div>
   <div id="coach" hidden><svg id="coach-svg" aria-hidden="true"><defs><marker id="coach-ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-    <path d="M0,0 L10,5 L0,10 z" fill="#7FB8E6"/></marker></defs><g id="coach-paths"></g></svg></div>
+    <path d="M0,0 L10,5 L0,10 z" fill="#6FA8EC"/></marker></defs><g id="coach-paths"></g></svg></div>
   <div id="toast" hidden><span id="toast-t"></span><button id="toast-go">Ghost parenchyma</button><button id="toast-x" aria-label="Dismiss">×</button></div>
   <div id="boot"><span id="boot-msg">loading&hellip;</span></div>
 </div>

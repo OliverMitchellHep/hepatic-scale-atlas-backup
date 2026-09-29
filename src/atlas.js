@@ -218,8 +218,8 @@ renderer.toneMappingExposure = R36.exp;
 stageEl.appendChild(renderer.domElement);
 
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x070A0E);
-scene.fog = new THREE.FogExp2(0x070A0E, 0.020);
+scene.background = new THREE.Color(0x07090B);   // v50: Black & Navy stage
+scene.fog = new THREE.FogExp2(0x07090B, 0.020);
 
 const camera = new THREE.PerspectiveCamera(42, 1, 0.05, 500);
 /* v45: pulled back along the v38 direction (×2.04 from the orbit target) so the whole ribcage (ribs 1–12, costal cartilages,
@@ -3476,13 +3476,13 @@ function applyTierLayers(i){
 function refreshLayerChrome(){
   if(layerTier===0) for(const G of LAYER_GROUPS){ const el=layerEls[G.k]; if(!el) continue; const v=groupValue(G);
     el.dataset.on=v==='off'?'0':'1'; el.dataset.mixed=v==='mixed'?'1':'0'; el.querySelector('b').textContent=v;
-    el.querySelector('i').style.background = v==='off'?'var(--rule)':v==='ghost'?'var(--amber-dim)':'var(--amber)'; }
+    el.querySelector('i').style.background = v==='off'?'var(--line)':v==='ghost'?'var(--ink-3)':'var(--ink-2)'; }
   (LAYER_SETS[layerTier]||[]).forEach(Ld=>{
     const el=layerEls[Ld.k]; if(!el) return;
     const v=layerValue(layerTier,Ld.k), on=Ld.cycle? v!=='off' : !!v;
     el.dataset.on=on?'1':'0';
     el.querySelector('b').textContent = Ld.cycle ? v : (on?'on':'off');
-    if(!Ld.swatch) el.querySelector('i').style.background = on?'var(--amber)':'var(--rule)';
+    if(!Ld.swatch) el.querySelector('i').style.background = on?'var(--ink-2)':'var(--line)';
     else el.querySelector('i').style.opacity = on?1:0.3;
   });
 }
@@ -3577,11 +3577,11 @@ function applyModes(){
 $('#sl-fib').addEventListener('input',e=>{state.fibrosis=+e.target.value; applySim();});
 $('#tg-bile').addEventListener('click',e=>{
   state.bile=!state.bile; e.currentTarget.setAttribute('aria-pressed',String(state.bile));
-  e.currentTarget.querySelector('.led').style.background=state.bile?'var(--amber)':'var(--rule)';
+  e.currentTarget.querySelector('.led').style.background='';
   if(state.bile&&state.layers.biliary==='off'){ state.layers.biliary='on'; applyModes(); } });
 $('#tg-flow').addEventListener('click',e=>{
   state.flow=!state.flow; e.currentTarget.setAttribute('aria-pressed',String(state.flow));
-  e.currentTarget.querySelector('.led').style.background=state.flow?'var(--amber)':'var(--rule)';});
+  e.currentTarget.querySelector('.led').style.background='';});
 
 renderer.domElement.addEventListener('wheel',e=>{
   e.preventDefault();
@@ -4634,10 +4634,10 @@ function hvpgTick(dt){
 function hvpgDraw(){
   const cv=$('#hv-trace'), c=cv.getContext('2d'), W=cv.width, H=cv.height, max=32;
   c.clearRect(0,0,W,H);
-  c.strokeStyle='rgba(255,255,255,.08)'; c.lineWidth=1; c.font='9px IBM Plex Mono, monospace'; c.fillStyle='rgba(200,210,220,.45)';
+  c.strokeStyle='rgba(135,149,174,.18)'; c.lineWidth=1; c.font='9px IBM Plex Mono, monospace'; c.fillStyle='#8795AE';
   for(const v of [0,10,20,30]){ const y=H-4-(v/max)*(H-10); c.beginPath(); c.moveTo(22,y); c.lineTo(W,y); c.stroke(); c.fillText(String(v),2,y+3); }
   const tr=HVPG.trace; if(tr.length<2) return;
-  c.strokeStyle=HVPG.stage===3?'#F2D27A':'#8FD3A8'; c.lineWidth=1.6; c.beginPath();
+  c.strokeStyle=HVPG.stage===3?'#D2BDEB':'#B79BDB'; c.lineWidth=1.6; c.beginPath();
   tr.forEach((v,i)=>{ const x=22+(W-24)*i/159, y=H-4-(Math.max(0,Math.min(max,v))/max)*(H-10); i?c.lineTo(x,y):c.moveTo(x,y); });
   c.stroke();
 }
@@ -5297,7 +5297,7 @@ composer.addPass(gtao);
 composer.addPass(new OutputPass());
 /* the composer tone-maps the cleared background too (the direct path clears in output space), so feed it the linear
    colour that ACES maps back to the instrument background */
-const AO_BG=(()=>{ const tgt=new THREE.Color(0x070A0E), lin=[tgt.r,tgt.g,tgt.b], x=lin.slice(), e=R36.exp/0.6;
+const AO_BG=(()=>{ const tgt=new THREE.Color(0x07090B), lin=[tgt.r,tgt.g,tgt.b], x=lin.slice(), e=R36.exp/0.6;
   const IN=[[0.59719,0.35458,0.04823],[0.07600,0.90834,0.01566],[0.02840,0.13383,0.83777]], OUT=[[1.60475,-0.53108,-0.07367],[-0.10208,1.10813,-0.00605],[-0.00327,-0.07276,1.07602]];
   const mul=(M,v)=>M.map(r=>r[0]*v[0]+r[1]*v[1]+r[2]*v[2]), fit=v=>{ const a=v*(v+0.0245786)-0.000090537, b=v*(0.983729*v+0.4329510)+0.238081; return a/b; };
   const tm=c=>mul(OUT,mul(IN,c.map(v=>v*e)).map(fit)).map(v=>Math.min(1,Math.max(0,v)));
