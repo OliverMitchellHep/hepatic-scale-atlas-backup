@@ -1,5 +1,14 @@
 # Changelog
 
+## v49 — flow rules, TIPSS in the vein, micro views, varices, variceal bleed (29 Sept 2026)
+- Blood flow: switching the animation off removes the particles (macroscopic and the lobule/acinus/sinusoid flow markers). A closed route (TIPSS removed, collateral closed) takes no new particles and the ones on it fade out within ~0.3 s and re-enter on open routes (before, blood kept running down the old TIPSS path).
+- TIPSS: the right hepatic vein is widened about its own centreline to enclose the stent (~0.8 mm clear), tapering where the stent leaves the vein; the HVPG occlusion balloon sits on the vein centreline and inflates to 85% of the vein calibre (it pushed 0.2 mm through the wall).
+- Acinus → sinusoid: the zoom converges on one acinar sinusoid and the sinusoid scale opens centred on screen.
+- Acinar hepatocytes have the sinusoid scale's cell shape (proportions, rounding, packed edge to edge; 9 per plate instead of 14 thin slabs).
+- Acinar bridging fibrosis: straight translucent collagen bands from portal to central venule below the bottom plate and above the top plate (the tubes through the middle of the plates were hidden).
+- Varices: the second set of "oesophageal varices" that lay in the gastric lumen are rebuilt as GOV1 gastric varices down the lesser curvature (new registry entry). Oesophageal, gastric and fundal varices lie inside the viscus under the wall; only the feeding veins (left gastric, short gastric) cross the wall at their entry. Varices are dark purple (#46266C), darker than the portal tree.
+- New pathology: oesophageal variceal bleed (Portal hypertension → Complication). A lower oesophageal varix ruptures; portal blood is diverted up the left gastric vein and pours into the oesophagus, stomach (part pooling) and duodenum; the gut is ghosted automatically; readout line and Baveno VII management note; registry entry for the rupture point.
+
 ## v48 — bile duct colour, falciform, HVPG explainer, micro-tier framing, flow alignment, bile flow (29 Sept 2026)
 - Bile ducts: the gallbladder's colour scheme (wall colour, gloss, patchiness) on the whole biliary tree, choledochal cysts and ampulla.
 - Falciform ligament: moved 7.4 mm to the patient's left so its inferior end sits in the umbilical notch; the segment II/III–IV border (`ct.seg.ua`) moves with it. The superior triangle starts higher on the superior surface (apex 88 mm up the band, was 64 mm) and has concave sides and a concave base. Liver maps re-baked.
