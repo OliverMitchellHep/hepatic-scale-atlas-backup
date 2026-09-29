@@ -399,7 +399,7 @@ diffuseColor.rgb=mix(diffuseColor.rgb,vec3(1.0,0.1,0.1),uSkDbg*skMat);
   m.needsUpdate=true; return m;
 }
 /* ── surface vessels (v46) ──
-   pipeline/vessels46.py grows one seamless tile of small branching vessels the way the gastric serosal vessels are grown
+   pipeline/vessels51.py (v46's, reworked in v51 into one connected, more branched network) grows one seamless tile of small branching vessels the way the gastric serosal vessels are grown
    (organs45.py: wandering trunks dividing at ~35°; dark core, pale edge, slightly raised) and adds a smooth irregularity
    field: R core, G edge, B relief, A irregularity. vesSkin() samples it triplanar in object space, at the rest position
    (vsP), so the pattern holds still while a vessel dilates or the camera moves. Detail below ~1/16 px fades out
@@ -408,7 +408,8 @@ diffuseColor.rgb=mix(diffuseColor.rgb,vec3(1.0,0.1,0.1),uSkDbg*skMat);
    K = core, edge, relief (units), albedo irregularity; B irregular relief (units); mask: 1 = inferior surface only.
    v46b: D darkens the wall (albedo and emissive); H varies its darkness along the course (low-frequency field, ±H·~0.9). */
 const VES={
-  gb:{S:0.42, core:0x5A1216, edge:0xC86E68, K:[1.00,0.60,0.0030,0.04], B:0.0005, mask:1, D:0.92, H:0.26},   // v46b: D, H  // the stomach's vessels (Task 6)
+  gb:{S:0.75, core:0x5A1216, edge:0xC86E68, K:[1.00,0.62,0.0026,0.04],   // v51: S 0.42 → 0.75, so the organ carries a branching network, not a few strokes
+       B:0.0005, mask:1, D:0.92, H:0.26},   // v46b: D, H  // the stomach's vessels (Task 6)
   artery:{S:1.5, core:0x5C0E14, edge:0xD8756A, K:[0.42,0.24,0.0007,0.04], B:0.0003, D:0.84, H:0.28},       // vasa vasorum: fine and faint (Task 9)
   // surface vessels and irregular relief / mottling so the tubes do not read as clay (Task 10)
   portal:{S:1.0, core:0x4A1838, edge:0x9C82CC, K:[0.55,0.30,0.0012,0.10], B:0.0012, D:0.82, H:0.30},
@@ -416,8 +417,8 @@ const VES={
   bile:  {S:1.1, core:0x8A2E22, edge:0xDCCF8E, K:[0.50,0.30,0.0010,0.08], B:0.0010, D:0.92, H:0.26}   // v48: as the gallbladder (D 0.92, H 0.26)
 };
 const VES_MATS=new Set();
-const VES_TEX=(()=>{ const t=new THREE.TextureLoader().load('vessels46.webp',()=>{ ORG_TEX.vessels46=true; VES_MATS.forEach(m=>m.needsUpdate=true); },
-  undefined,()=>console.warn('vessels46.webp unavailable'));
+const VES_TEX=(()=>{ const t=new THREE.TextureLoader().load('vessels51.webp',()=>{ ORG_TEX.vessels51=true; VES_MATS.forEach(m=>m.needsUpdate=true); },
+  undefined,()=>console.warn('vessels51.webp unavailable'));
   t.wrapS=t.wrapT=THREE.RepeatWrapping; t.colorSpace=THREE.NoColorSpace; t.anisotropy=renderer.capabilities.getMaxAnisotropy(); return t; })();
 function vesSkin(mesh,kind){
   const m=mesh.material, k=VES[kind], g=mesh.geometry; if(!k||!m||m.userData.ves) return mesh;
@@ -439,7 +440,7 @@ varying vec3 vVsP; varying vec3 vVsN;
 vec3 vsPerturb(vec3 sp, vec3 sn, vec2 dH, float fd){ vec3 sx=dFdx(sp), sy=dFdy(sp); vec3 r1=cross(sy,sn), r2=cross(sn,sx);
   float det=dot(sx,r1)*fd; vec3 gr=sign(det)*(dH.x*r1+dH.y*r2); return normalize(abs(det)*sn-gr); }`)
       .replace('#include <color_fragment>',`#include <color_fragment>
-vec3 vsN=normalize(vVsN), vsW=pow(abs(vsN),vec3(4.0)); vsW/=(vsW.x+vsW.y+vsW.z);
+vec3 vsN=normalize(vVsN), vsW=pow(abs(vsN),vec3(6.0)); vsW/=(vsW.x+vsW.y+vsW.z);   // v51: 6 (was 4): narrower blends, fewer broken-looking vessels on curved surfaces
 vec3 vsQ=vVsP*uVsS;
 vec4 vsT=texture2D(tVes,vsQ.yz)*vsW.x+texture2D(tVes,vsQ.zx+vec2(0.37,0.11))*vsW.y+texture2D(tVes,vsQ.xy+vec2(0.71,0.53))*vsW.z;
 { vec3 q=vVsP*uVsS*0.35;                                     // v46b: darker wall, darkness varying along the course
@@ -448,7 +449,7 @@ vec4 vsT=texture2D(tVes,vsQ.yz)*vsW.x+texture2D(tVes,vsQ.zx+vec2(0.37,0.11))*vsW
 float vsFw=length(fwidth(vsQ))*1024.0;                       // tile texels per pixel
 float vsA=1.0-smoothstep(6.0,16.0,vsFw);
 #ifdef VES_INF
-vsA*=smoothstep(0.02,0.45,-vsN.y);                           // the inferior (free) surface only
+vsA*=smoothstep(-0.22,0.30,-vsN.y);                          // the inferior (free) surface, wrapping a little up the sides (v51)
 #endif
 diffuseColor.rgb=mix(diffuseColor.rgb,uVsEdge,clamp(vsT.g*uVsK.y*vsA,0.0,1.0));
 diffuseColor.rgb=mix(diffuseColor.rgb,uVsCore,clamp(vsT.r*uVsK.x*vsA,0.0,1.0));
@@ -1144,7 +1145,7 @@ function mergeMeta(geos){
 function flipWinding(g){ return g; }   // v19 per-mesh fix, superseded: tubes are wound outward at source (v20)
 /* normals after a centreline deformation: radial for tubes (no seam or cap artefacts), recomputed otherwise */
 function metaNormals(m,radial=m.userData.radialN){ const g=m.geometry;
-  if(!radial||!g.attributes.ctr){ g.computeVertexNormals(); if(m.userData.ring) weldRing(g,...m.userData.ring); return; }
+  if(!radial||!g.attributes.ctr){ g.computeVertexNormals(); if(m.userData.ring) weldRing(g,...m.userData.ring); if(m.userData.pole0) poleNormals(g,m.userData.pole0); return; }
   const P=g.attributes.position.array, C=g.attributes.ctr.array, N=g.attributes.normal.array, B=g.attributes.bt?g.attributes.bt.array:null;
   for(let v=0;v<P.length/3;v++){ if(B&&B[v*2]>1.00005) continue;   // v46b: flat-cap rim keeps its axial normal
     const x=P[v*3]-C[v*3], y=P[v*3+1]-C[v*3+1], z=P[v*3+2]-C[v*3+2], l=Math.hypot(x,y,z);
@@ -1152,6 +1153,10 @@ function metaNormals(m,radial=m.userData.radialN){ const g=m.geometry;
   g.attributes.normal.needsUpdate=true; }
 /* v46b: a varTube/metaTube's first and last vertex of each ring coincide; after computeVertexNormals they differ (a
    visible seam once the surface is displaced), so they are averaged */
+/* v51: a tube closed to a point at t = 0: the pole's coincident ring takes the mean normal of the next ring */
+function poleNormals(g,R){ const A=g.attributes.normal.array; let x=0,y=0,z=0;
+  for(let j=0;j<R;j++){ const b=((R+1)+j)*3; x+=A[b]; y+=A[b+1]; z+=A[b+2]; } const l=Math.hypot(x,y,z)||1;
+  for(let j=0;j<=R;j++){ A[j*3]=x/l; A[j*3+1]=y/l; A[j*3+2]=z/l; } g.attributes.normal.needsUpdate=true; }
 function weldRing(g,N,R){ const A=g.attributes.normal.array;
   for(let i=0;i<=N;i++){ const a=(i*(R+1))*3, b=(i*(R+1)+R)*3;
     for(let k=0;k<3;k++){ const m=(A[a+k]+A[b+k])*0.5; A[a+k]=m; A[b+k]=m; }
@@ -1934,18 +1939,18 @@ function buildMacro(){
     for(let it=0;it<60;it++){ const T=S.map(p=>p.clone()); for(let i=1;i<S.length-1;i++) T[i].copy(S[i-1]).add(S[i+1]).multiplyScalar(0.5).lerp(S[i],0.5); S=T; }
     const Cs=new THREE.CatmullRomCurve3(S); gbPts.length=0; for(let i=0;i<=8;i++) gbPts.push(Cs.getPointAt(i/8)); }
   const gbGeo=metaTube(gbPts,t=>{ const R=0.165, dome=0.21;
-      if(t<dome){ const u=1-t/dome; return R*Math.sqrt(Math.max(0,1-u*u))+0.003; }
+      if(t<dome){ const u=1-t/dome; return t<=0?0:R*Math.sqrt(Math.max(0,1-u*u))+0.003; }   // v51: the fundus closes to a point (the 0.003 end ring left a pinhole)
       const s=(t-dome)/(1-dome), body=R*(1-0.62*Math.pow(s,1.6))+0.012*s; return THREE.MathUtils.lerp(body,0.040,THREE.MathUtils.smoothstep(s,0.70,1)); },84,28,false,0);
   { /* v46b: slight nodularity (≈±0.7 mm, 4–8 mm lumps), strongest over the fundus, which was an almost perfect dome */
     const P=gbGeo.attributes.position.array, Cc=gbGeo.attributes.ctr.array, B=gbGeo.attributes.bt.array;
     for(let v=0;v<P.length/3;v++){ const x=P[v*3], y=P[v*3+1], z=P[v*3+2], dx=x-Cc[v*3], dy=y-Cc[v*3+1], dz=z-Cc[v*3+2], r=Math.hypot(dx,dy,dz); if(r<1e-6) continue;
       const n=0.65*vnoise3(x*13+3.1,y*13,z*13)+0.35*vnoise3(x*27,y*27+7.7,z*27), w=0.45+0.55*(1-THREE.MathUtils.smoothstep(B[v*2],0.25,0.55));
       const k=1+0.010*n*w/r; P[v*3]=Cc[v*3]+dx*k; P[v*3+1]=Cc[v*3+1]+dy*k; P[v*3+2]=Cc[v*3+2]+dz*k; }
-    gbGeo.computeVertexNormals(); weldRing(gbGeo,84,28); }
+    gbGeo.computeVertexNormals(); weldRing(gbGeo,84,28); poleNormals(gbGeo,28); }
   const gbMesh=metaMesh(gbGeo,
     skin(mat(C.gbWall,{roughness:0.30,clearcoat:0.9,clearcoatRoughness:0.18,   // v46b: a little darker (was 0x8FA457)
       emissive:new THREE.Color(C.gbWall).multiplyScalar(0.07)}),'gb'),'Gallbladder');
-  gbMesh.userData.ring=[84,28];
+  gbMesh.userData.ring=[84,28]; gbMesh.userData.pole0=28;
   flipWinding(gbMesh.geometry); vesSkin(gbMesh,'gb'); L.biliary.add(gbMesh);   // v46: the stomach's serosal vessels on its inferior surface
   const bilMeshes=[{m:gbMesh,kind:'gb'}];
   const conf=V3(-0.34,-0.22,0.33), cysJ=V3(-0.27,-0.37,0.37), BD_HI=V3(-0.335,-0.145,0.31);

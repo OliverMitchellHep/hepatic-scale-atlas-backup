@@ -55,7 +55,7 @@ Every new or re-exported mesh states its simplification error limit (default 0.1
 ## v46 additions
     python3 pipeline/spleen46.py --dry                       # search a rotation fitting the spleen to the fundus
     python3 pipeline/spleen46.py --x 1.01 -6.28 3.69 -2.65 -0.21 3.33   # apply it (degrees, mm)
-    python3 pipeline/vessels46.py                            # assets/vessels46.webp: seamless surface-vessel tile
+    python3 pipeline/vessels51.py                            # assets/vessels51.webp: seamless surface-vessel tile (one connected network)
 
 - `pancreas44.py`: v46 head (one ellipsoid; no HEAD2 / uncinate; duct sheath only below SHEATH_Y), then `bake44.py pancreas`.
 - `falc45.py`: v46 band / fan / coronary sizes and the run down to the inferior border, then `bake44.py liver`.
