@@ -1304,6 +1304,26 @@ function buildPatho(g,L,K){
     const me=metaMesh(mergeMeta(geos),m,name); me.visible=false; vesSkin(me,'portal'); G.parent.add(me); G.meshes.push(me); return me; };   // v46b: the portal surface pattern on varices and shunts
   const V=(x,y,z)=>new THREE.Vector3(x,y,z);
 
+  /* v49: varices lie inside the viscus (submucosa bulging into the lumen), not through its wall. wallFit pulls a strand's
+     points inside the oesophagus or stomach (whichever is nearer) to rr (strand radius + ~1.4 mm wall) under the surface,
+     leaving the entry end(s) on their original course so the feeding vein still crosses the wall there. Signed distance:
+     the organ's BVH (closest point) with a ray-parity inside test, in the organs' own frame (shared with this scene). */
+  const WALL=[CT_ORGANS&&CT_ORGANS.stomach,CT_ORGANS&&CT_ORGANS.esophagus].filter(Boolean).map(o=>{ const g=o.geometry;
+    if(!g.boundsTree) g.computeBoundsTree({indirect:true,maxLeafTris:8}); return g.boundsTree; });
+  const wallFit=(pts,rr,entryA,entryB,span=0.12)=>{ if(!WALL.length) return pts;
+    const ray=new THREE.Ray(), up=new THREE.Vector3(0.31,0.83,0.46).normalize(), cp={}, n=pts.length, orig=pts.map(p=>p.clone());
+    const inside=(bt,p)=>{ ray.set(p,up); return bt.raycast(ray,THREE.DoubleSide).length%2===1; };
+    const pull=p=>{ let best=null;
+      for(const bt of WALL){ const c=bt.closestPointToPoint(p,{}); if(!c) continue; const inn=inside(bt,p), sd=inn?-c.distance:c.distance;
+        if(!best||sd<best.sd) best={sd,pt:c.point.clone(),inn}; }
+      if(!best||best.sd<=-rr) return; const d=best.inn?p.clone().sub(best.pt):best.pt.clone().sub(p); if(d.lengthSq()<1e-12) return;
+      p.copy(best.pt).addScaledVector(d.normalize(),rr); };
+    for(let it=0;it<3;it++){ pts.forEach(pull);
+      if(it<2) for(let i=1;i<n-1;i++) pts[i].lerp(pts[i-1].clone().add(pts[i+1]).multiplyScalar(0.5),0.3); }
+    const sm=THREE.MathUtils.smoothstep;
+    for(let i=0;i<n;i++){ const t=i/(n-1), w=Math.max(entryA?1-sm(t,0,span):0, entryB?sm(t,1-span,1):0); if(w>0) pts[i].lerp(orig[i],w); }
+    return pts; };
+
   /* — oesophageal and GOV1 varices: left gastric (coronary) vein → submucosal columns → azygos — */
   const oes=new THREE.CatmullRomCurve3(K.OES), ofr=oes.computeFrenetFrames(80,false);
   const eso=col('eso',L.portal,'Oesophageal varices'), esoList=[];
@@ -1312,7 +1332,7 @@ function buildPatho(g,L,K){
     for(let i=0;i<=40;i++){ const u=1-0.46*i/40, p=oes.getPointAt(u), fi=Math.round(u*80);
       const ph=j/4*Math.PI*2+0.4+0.42*Math.sin(u*36+j*1.7), rr=0.072;
       pts.push(p.addScaledVector(ofr.normals[fi],Math.cos(ph)*rr).addScaledVector(ofr.binormals[fi],Math.sin(ph)*rr)); }
-    esoList.push({pts,r:0.024+0.006*(j%2)});
+    esoList.push({pts:wallFit(pts,0.024+0.006*(j%2)+0.02,false,true),r:0.024+0.006*(j%2)});   // entry: at the cardia (left gastric vein)
   }
   P.esoCols=esoList.map(q=>q.pts);
   const LGV=[K.LGV0.clone(),PT(0.40,-0.98,-0.42),PT(0.56,-0.62,-0.42),K.GOJ.clone()];
@@ -1351,13 +1371,13 @@ function buildPatho(g,L,K){
   const fun=col('fun',L.portal,'Gastric fundal varices'), funList=[];
   const sgv=[0,1,2].map(i=>{ const a=HIL.clone().add(V(-0.02,0.10*i-0.05,0.04*i)), b=FUN.clone().add(V(0.28,0.05*i-0.02,-0.10+0.03*i));
     return tortuous([a,a.clone().lerp(b,0.5).add(V(0,0.08,0.02)),b],0.035,4,41+i,50); });
-  sgv.forEach(pts=>funList.push({pts,r:0.022}));
+  sgv.forEach(pts=>funList.push({pts:wallFit(pts,0.042,true,false,0.5),r:0.022}));   // short gastric veins: outside, entering the fundus
   const rf=srng(51);
   for(let i=0;i<7;i++){ const th=0.3+rf()*1.4, ph=-0.4+rf()*1.2, pts=[];
     for(let k=0;k<=24;k++){ const t=k/24, a=th+0.9*t, b=ph+0.35*Math.sin(t*Math.PI*2+i);
       pts.push(FUN.clone().add(V(Math.cos(a)*Math.cos(b),Math.sin(b),-Math.sin(a)*Math.cos(b)).multiplyScalar(0.395+0.012*Math.sin(t*20)))); }
-    funList.push({pts,r:0.026}); }
-  P.sgv=sgv;
+    funList.push({pts:wallFit(pts,0.046,false,false),r:0.026}); }
+  P.sgv=sgv; P.funArcs=funList.slice(sgv.length).map(q=>q.pts);
   strands(fun,funList,vmat(COLL),'Gastric fundal varices');
 
   /* — spontaneous splenorenal shunt, draining to a dilated left renal vein — */
