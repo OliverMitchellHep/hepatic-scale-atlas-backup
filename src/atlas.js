@@ -405,12 +405,12 @@ diffuseColor.rgb=mix(diffuseColor.rgb,vec3(1.0,0.1,0.1),uSkDbg*skMat);
    K = core, edge, relief (units), albedo irregularity; B irregular relief (units); mask: 1 = inferior surface only.
    v46b: D darkens the wall (albedo and emissive); H varies its darkness along the course (low-frequency field, ±H·~0.9). */
 const VES={
-  gb:{S:0.42, core:0x5A1216, edge:0xC86E68, K:[1.00,0.60,0.0030,0.04], B:0.0005, mask:1},  // the stomach's vessels (Task 6)
+  gb:{S:0.42, core:0x5A1216, edge:0xC86E68, K:[1.00,0.60,0.0030,0.04], B:0.0005, mask:1, D:0.92, H:0.26},   // v46b: D, H  // the stomach's vessels (Task 6)
   artery:{S:1.5, core:0x5C0E14, edge:0xD8756A, K:[0.42,0.24,0.0007,0.04], B:0.0003, D:0.84, H:0.28},       // vasa vasorum: fine and faint (Task 9)
   // surface vessels and irregular relief / mottling so the tubes do not read as clay (Task 10)
   portal:{S:1.0, core:0x4A1838, edge:0x9C82CC, K:[0.55,0.30,0.0012,0.10], B:0.0012, D:0.82, H:0.30},
   vein:  {S:1.0, core:0x3A1636, edge:0x6A8ACC, K:[0.55,0.30,0.0012,0.10], B:0.0012, D:0.82, H:0.30},
-  bile:  {S:1.1, core:0x8A2E22, edge:0xDCCF8E, K:[0.50,0.30,0.0010,0.08], B:0.0010}
+  bile:  {S:1.1, core:0x8A2E22, edge:0xDCCF8E, K:[0.50,0.30,0.0010,0.08], B:0.0010, D:0.84, H:0.26}   // v46b: darker, patchy
 };
 const VES_MATS=new Set();
 const VES_TEX=(()=>{ const t=new THREE.TextureLoader().load('vessels46.webp',()=>{ ORG_TEX.vessels46=true; VES_MATS.forEach(m=>m.needsUpdate=true); },
@@ -1141,12 +1141,23 @@ function mergeMeta(geos){
 function flipWinding(g){ return g; }   // v19 per-mesh fix, superseded: tubes are wound outward at source (v20)
 /* normals after a centreline deformation: radial for tubes (no seam or cap artefacts), recomputed otherwise */
 function metaNormals(m,radial=m.userData.radialN){ const g=m.geometry;
-  if(!radial||!g.attributes.ctr){ g.computeVertexNormals(); return; }
+  if(!radial||!g.attributes.ctr){ g.computeVertexNormals(); if(m.userData.ring) weldRing(g,...m.userData.ring); return; }
   const P=g.attributes.position.array, C=g.attributes.ctr.array, N=g.attributes.normal.array, B=g.attributes.bt?g.attributes.bt.array:null;
   for(let v=0;v<P.length/3;v++){ if(B&&B[v*2]>1.00005) continue;   // v46b: flat-cap rim keeps its axial normal
     const x=P[v*3]-C[v*3], y=P[v*3+1]-C[v*3+1], z=P[v*3+2]-C[v*3+2], l=Math.hypot(x,y,z);
     if(l>1e-6){ N[v*3]=x/l; N[v*3+1]=y/l; N[v*3+2]=z/l; } }
   g.attributes.normal.needsUpdate=true; }
+/* v46b: a varTube/metaTube's first and last vertex of each ring coincide; after computeVertexNormals they differ (a
+   visible seam once the surface is displaced), so they are averaged */
+function weldRing(g,N,R){ const A=g.attributes.normal.array;
+  for(let i=0;i<=N;i++){ const a=(i*(R+1))*3, b=(i*(R+1)+R)*3;
+    for(let k=0;k<3;k++){ const m=(A[a+k]+A[b+k])*0.5; A[a+k]=m; A[b+k]=m; }
+    const l=Math.hypot(A[a],A[a+1],A[a+2])||1; for(let k=0;k<3;k++){ A[a+k]/=l; A[b+k]=A[a+k]; } }
+  g.attributes.normal.needsUpdate=true; }
+/* v46b: smooth 3D value noise (-1..1), for small surface irregularity */
+function vnoise3(x,y,z){ const h=(i,j,k)=>{ let n=Math.imul(i,374761393)+Math.imul(j,668265263)+Math.imul(k,1442695041); n=Math.imul(n^(n>>>13),1274126177); return ((n^(n>>>16))>>>0)/4294967295*2-1; };
+  const xi=Math.floor(x), yi=Math.floor(y), zi=Math.floor(z), f=t=>t*t*(3-2*t), u=f(x-xi), v=f(y-yi), w=f(z-zi), L=(a,b,t)=>a+(b-a)*t;
+  return L(L(L(h(xi,yi,zi),h(xi+1,yi,zi),u),L(h(xi,yi+1,zi),h(xi+1,yi+1,zi),u),v),L(L(h(xi,yi,zi+1),h(xi+1,yi,zi+1),u),L(h(xi,yi+1,zi+1),h(xi+1,yi+1,zi+1),u),v),w); }
 function metaMesh(geo,material,name){
   const m=tag(new THREE.Mesh(geo,material),name);
   const P=geo.attributes.position.array;
@@ -1826,11 +1837,19 @@ function buildMacro(){
   { let S=new THREE.CatmullRomCurve3(gbPts.slice(),false,'centripetal').getSpacedPoints(40);
     for(let it=0;it<60;it++){ const T=S.map(p=>p.clone()); for(let i=1;i<S.length-1;i++) T[i].copy(S[i-1]).add(S[i+1]).multiplyScalar(0.5).lerp(S[i],0.5); S=T; }
     const Cs=new THREE.CatmullRomCurve3(S); gbPts.length=0; for(let i=0;i<=8;i++) gbPts.push(Cs.getPointAt(i/8)); }
-  const gbMesh=metaMesh(metaTube(gbPts,t=>{ const R=0.165, dome=0.21;
+  const gbGeo=metaTube(gbPts,t=>{ const R=0.165, dome=0.21;
       if(t<dome){ const u=1-t/dome; return R*Math.sqrt(Math.max(0,1-u*u))+0.003; }
-      const s=(t-dome)/(1-dome), body=R*(1-0.62*Math.pow(s,1.6))+0.012*s; return THREE.MathUtils.lerp(body,0.040,THREE.MathUtils.smoothstep(s,0.70,1)); },84,28,false,0),
-    skin(mat(0x8FA457,{roughness:0.30,clearcoat:0.9,clearcoatRoughness:0.18,
-      emissive:new THREE.Color(0x8FA457).multiplyScalar(0.07)}),'gb'),'Gallbladder');
+      const s=(t-dome)/(1-dome), body=R*(1-0.62*Math.pow(s,1.6))+0.012*s; return THREE.MathUtils.lerp(body,0.040,THREE.MathUtils.smoothstep(s,0.70,1)); },84,28,false,0);
+  { /* v46b: slight nodularity (≈±0.7 mm, 4–8 mm lumps), strongest over the fundus, which was an almost perfect dome */
+    const P=gbGeo.attributes.position.array, Cc=gbGeo.attributes.ctr.array, B=gbGeo.attributes.bt.array;
+    for(let v=0;v<P.length/3;v++){ const x=P[v*3], y=P[v*3+1], z=P[v*3+2], dx=x-Cc[v*3], dy=y-Cc[v*3+1], dz=z-Cc[v*3+2], r=Math.hypot(dx,dy,dz); if(r<1e-6) continue;
+      const n=0.65*vnoise3(x*13+3.1,y*13,z*13)+0.35*vnoise3(x*27,y*27+7.7,z*27), w=0.45+0.55*(1-THREE.MathUtils.smoothstep(B[v*2],0.25,0.55));
+      const k=1+0.010*n*w/r; P[v*3]=Cc[v*3]+dx*k; P[v*3+1]=Cc[v*3+1]+dy*k; P[v*3+2]=Cc[v*3+2]+dz*k; }
+    gbGeo.computeVertexNormals(); weldRing(gbGeo,84,28); }
+  const gbMesh=metaMesh(gbGeo,
+    skin(mat(0x7C9048,{roughness:0.30,clearcoat:0.9,clearcoatRoughness:0.18,   // v46b: a little darker (was 0x8FA457)
+      emissive:new THREE.Color(0x7C9048).multiplyScalar(0.07)}),'gb'),'Gallbladder');
+  gbMesh.userData.ring=[84,28];
   flipWinding(gbMesh.geometry); vesSkin(gbMesh,'gb'); L.biliary.add(gbMesh);   // v46: the stomach's serosal vessels on its inferior surface
   const bilMeshes=[{m:gbMesh,kind:'gb'}];
   const conf=V3(-0.34,-0.22,0.33), cysJ=V3(-0.27,-0.37,0.37), BD_HI=V3(-0.335,-0.145,0.31);
