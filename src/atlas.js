@@ -1210,14 +1210,16 @@ class FlowNet{
   arc(R,pt){ let best=0,bd=1e9; const q=new THREE.Vector3();
     for(let i=0;i<=300;i++){ R.curve.getPointAt(i/300,q); const d=q.distanceToSquared(pt); if(d<bd){bd=d; best=i/300;} }
     return best*R.len; }
-  pick(){ let tot=0; for(const R of this.routes) tot+=R.wc; if(tot<1e-4) return -1;
-    let x=rng()*tot; for(let i=0;i<this.routes.length;i++){ x-=this.routes[i].wc; if(x<=0) return i; } return this.routes.length-1; }
+  // v49: a route whose target weight is 0 (TIPSS removed, collateral closed) takes no new particles at once
+  pick(){ let tot=0; for(const R of this.routes) if(R.w>0) tot+=R.wc; if(tot<1e-4) return -1;
+    let x=rng()*tot; for(let i=0;i<this.routes.length;i++){ const R=this.routes[i]; if(R.w<=0) continue; x-=R.wc; if(x<=0) return i; }
+    for(let i=this.routes.length-1;i>=0;i--) if(this.routes[i].w>0) return i; return -1; }
   update(dt,v){
     const a=Math.min(1,dt*1.4); let settling=false;
     for(const R of this.routes){ R.wc+=(R.w-R.wc)*a; if(Math.abs(R.w-R.wc)>1e-5) settling=true; }
     // v43: with flow off and route weights settled nothing moves, so skip the per-frame buffer rewrite (lets the
     // render-on-demand loop see a still scene); one pass still runs whenever that state is first reached
-    const key=this.scale+'|'+this.pr, still=this.init&&v===0&&!settling;
+    const key=this.scale+'|'+this.pr, still=this.init&&v===0&&!settling&&!this.p.some(p=>p.k>0);
     if(still&&this._stillKey===key) return;
     this._stillKey=still?key:null;
     if(!this.init){ this.init=true; for(const R of this.routes) R.wc=R.w;
@@ -1230,13 +1232,17 @@ class FlowNet{
       if(p.r<0){ p.r=this.pick(); p.s=0; }
       if(p.r<0){ o.scale.setScalar(0); o.updateMatrix(); M.setMatrixAt(i,o.matrix); continue; }
       let R=this.routes[p.r];
+      // v49: particles on a route that has closed fade out within ~0.3 s and re-enter on an open route
+      if(R.w<=0){ p.k=(p.k||0)+dt*3.5; if(p.k>=1){ p.k=0; p.r=this.pick(); p.s=rng()*0.02;
+          if(p.r<0){ o.scale.setScalar(0); o.updateMatrix(); M.setMatrixAt(i,o.matrix); continue; } R=this.routes[p.r]; } }
+      else p.k=0;
       p.s+=v*R.speed*dt;
       let end=R.block??R.len;
       if(p.s>=end){ p.r=this.pick(); p.s=rng()*0.02; if(p.r<0){ o.scale.setScalar(0); o.updateMatrix(); M.setMatrixAt(i,o.matrix); continue; } R=this.routes[p.r]; end=R.block??R.len; }
       const u=Math.min(1,p.s/R.len);
       R.curve.getPointAt(u,o.position);
       const fade=Math.max(0,Math.min(1,p.s/0.05,(end-p.s)/(R.block!=null?0.14:0.05)));
-      o.scale.setScalar(fade*this.scale*R.size); o.updateMatrix(); M.setMatrixAt(i,o.matrix);
+      o.scale.setScalar(fade*(1-(p.k||0))*this.scale*R.size); o.updateMatrix(); M.setMatrixAt(i,o.matrix);
       OFF[i]=(R.rt?R.rt[Math.round(u*32)]*this.rk*1.04:0)+this.pr*fade*this.scale*R.size;
       if(R.c1){ const k=THREE.MathUtils.smoothstep(u,R.split-0.02,R.split+0.02); c.copy(R.c0).lerp(R.c1,k); } else c.copy(R.c0);
       M.setColorAt(i,c);
@@ -4723,7 +4729,10 @@ function pathTick(dt){
   // flow
   const vv=state.flow?0.26*(1-0.35*state.fibrosis):0;
   if(!P.pflow.radius){ const look=vesselRadiusLookup([L.portal,L.hepaticVein]); P.pflow.radius=look; P.hflow.radius=look; }
-  P.pflow.scale=u.flowScale||1; P.pflow.update(dt,vv); P.hflow.update(dt,vv*0.9);
+  P.pflow.scale=u.flowScale||1;
+  // v49: switching the blood flow animation off removes the particles (as the bile flow does), not just freezes them
+  P.pflow.mesh.visible=P.hflow.mesh.visible=state.flow;
+  if(state.flow){ P.pflow.update(dt,vv); P.hflow.update(dt,vv*0.9); }
   bileFlowTick(P,L,dt);
 }
 /* ════════════ pathology engine: microscopic scales (zonal painting) ════════════ */
@@ -5291,6 +5300,7 @@ function frame(){
   if(tiers[2].built&&tiers[2].w>0.02){
     const u=tiers[2].inner.userData, o=new THREE.Object3D();
     const sp=state.flow?0.085*(1-0.6*state.fibrosis)*Math.max(0.2,Math.abs(HEMO.inflow)):0;
+    u.blood.visible=u.pvBlood.visible=u.cvBlood.visible=state.flow;
     for(let i=0;i<u.bloodState.length;i++){
       const s=u.bloodState[i];
       s.t=(s.t+sp*dt*3.4)%1;
@@ -5323,6 +5333,7 @@ function frame(){
     const u=tiers[1].inner.userData, o=new THREE.Object3D(), col=new THREE.Color();
     const cA=new THREE.Color(0xD1473A), cB=new THREE.Color(0x6A3C78);
     const sp=state.flow?0.16*(1-0.65*state.fibrosis)*Math.max(0.2,Math.abs(HEMO.inflow)):0;
+    u.blood.visible=state.flow;
     for(let i=0;i<u.bst.length;i++){
       const s=u.bst[i];
       s.t+=sp*s.sp*dt*3.4; if(s.t>1.35) s.t=0;
@@ -5362,6 +5373,7 @@ function frame(){
     u.bp.instanceMatrix.needsUpdate=true;
     // venules: same slowing as the sinusoid (fibrosis raises resistance through the whole unit)
     const vs=state.flow?0.06*(1-0.65*state.fibrosis)*Math.max(0.2,Math.abs(HEMO.inflow)):0;
+    u.pvPart.visible=u.cvPart.visible=state.flow;
     for(let i=0;i<u.vst.length;i++){
       const s=u.vst[i];
       s.t=(s.t+vs*dt*3.4)%1;
