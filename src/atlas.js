@@ -1296,6 +1296,8 @@ function vesselRadiusLookup(groups){ const cell=0.05, G=new Map(), ck=(x,y,z)=>(
 function buildPatho(g,L,K){
   const P={cols:{},thr:{},bcs:{},tips:{},bil:{},K};
   const COLL=0xA45CF2;   // portosystemic collaterals: brighter violet so they separate from the native portal tree
+  const VARX=0x46266C;   // v49: varices (oesophageal, gastric GOV1, fundal) dark purple, darker than the portal tree (#7A5CB4)
+  const vmatV=()=>vmat(VARX,{emissive:new THREE.Color(VARX).multiplyScalar(0.16),roughness:0.32,clearcoat:0.7});
   const vmat=(c,o={})=>mat(c,Object.assign({roughness:0.36,clearcoat:0.6,clearcoatRoughness:0.3,
     emissive:new THREE.Color(c).multiplyScalar(0.30)},o));
   const col=(key,parent,label)=>(P.cols[key]={key,parent,label,meshes:[],open:0,target:0});
@@ -1361,8 +1363,8 @@ function buildPatho(g,L,K){
     return tortuous([p,p.clone().lerp(az.getPointAt(best),0.5).add(V(0,0.05,0)),az.getPointAt(best)],0.035,3,31+i,40); });
   perf.forEach(pts=>esoList.push({pts,r:0.017}));
   P.lgvT=lgvT; P.perf=perf; P.AZY=AZY; P.gov=gov;
-  strands(eso,esoList,vmat(COLL),'Oesophageal varices');
-  if(gastricList.length) strands(eso,gastricList,vmat(COLL),'Gastric varices (GOV1)');
+  strands(eso,esoList,vmatV(),'Oesophageal varices');
+  if(gastricList.length) strands(eso,gastricList,vmatV(),'Gastric varices (GOV1)');
   const azy=col('azy',L.hepaticVein,'Azygos vein');
   strands(azy,[{pts:AZY,r:0.034}],vmat(C.vein),'Azygos vein');
 
@@ -1378,7 +1380,7 @@ function buildPatho(g,L,K){
       pts.push(FUN.clone().add(V(Math.cos(a)*Math.cos(b),Math.sin(b),-Math.sin(a)*Math.cos(b)).multiplyScalar(0.395+0.012*Math.sin(t*20)))); }
     funList.push({pts:wallFit(pts,0.046,false,false),r:0.026}); }
   P.sgv=sgv; P.funArcs=funList.slice(sgv.length).map(q=>q.pts);
-  strands(fun,funList,vmat(COLL),'Gastric fundal varices');
+  strands(fun,funList,vmatV(),'Gastric fundal varices');
 
   /* — spontaneous splenorenal shunt, draining to a dilated left renal vein — */
   const sr=col('sr',L.portal,'Splenorenal shunt');
