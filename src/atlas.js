@@ -2851,10 +2851,10 @@ const LAYERS=[
   {k:'diaphragm',   label:'Diaphragm', swatch:0xA84A40, cycle:['on','ghost','off'], ctx:1}
 ];
 const LAYER_GROUPS=[
-  {k:'g_all',    label:'All',                    members:LAYERS.filter(L=>!L.ctx).map(L=>L.k), solo:true},
-  {k:'g_liver',  label:'Liver',                  members:['parenchyma','segments']},
+  {k:'g_all',    label:'All',                    members:LAYERS.filter(L=>!L.ctx&&L.k!=='segments').map(L=>L.k), solo:true},
+  {k:'g_liver',  label:'Liver',                  members:['parenchyma']},
   {k:'g_vessels',label:'Vessels',                members:['portal','artery','hepaticVein']},
-  {k:'g_visc',   label:'All non-liver viscera',  members:['biliary','stomach','esophagus','duodenum','pancreas','spleen','kidneys']},
+  {k:'g_visc',   label:'Viscera',  members:['biliary','stomach','esophagus','duodenum','pancreas','spleen','kidneys']},
   {k:'g_ctx',    label:'Context',                members:['ribcage','diaphragm']}];
 const CYC3=['on','ghost','off'];
 /* a group's state: the shared state of its cycling layers (the liver's 'solid' counts as on), else 'mixed' */
@@ -2883,7 +2883,7 @@ const LAYER_SETS={
      {k:'lipid',label:'Lipid droplets',swatch:K.lipid},{k:'glycogen',label:'Glycogen',swatch:K.glyc},
      {k:'transporters',label:'Transporters',swatch:K.canTr},{k:'pathology',label:'Pathology',swatch:0xE36D8E}]
 };
-const state={z:0,zTarget:0,fibrosis:0,pvt:false,flow:!REDUCED,bile:false,tl:{1:{acinar:false},2:{},3:{},4:{}},
+const state={z:0,zTarget:0,fibrosis:0,pvt:false,flow:!REDUCED,bile:false,bileMicro:true,tl:{1:{acinar:false},2:{},3:{},4:{}},
   path:{pvt:'none',pvtSMV:false,bcs:'none',tips:false,bleed:false,hepatofugal:false,masld:0,mash:false,zonal:'none',bil:{cause:'none',stent:'none',cc:'none'},pds:'none',panc:{type:'none',svt:false}},
   layers:{parenchyma:'solid',segments:false,portal:'on',artery:'on',viscera:true,
           hepaticVein:'on',biliary:'on',ligaments:true,
@@ -3259,17 +3259,6 @@ const ZON_NOTE={none:'Painted across the lobule, acinus and sinusoid by acinar z
   iron:'Hereditary haemochromatosis: iron loads periportal (zone 1) hepatocytes first, pericanalicular, with a zone 1 → 3 gradient; the liver turns rust-brown.',
   aih:'Autoimmune hepatitis: a lymphoplasmacytic infiltrate breaches the limiting plate from the portal tract — interface hepatitis.',
   yf:'Yellow fever: midzonal (zone 2) necrosis with Councilman bodies, sparing periportal and pericentral cells.'};
-let toastT=0;
-let toastLay='parenchyma';
-function toast(msg,lay){
-  lay=lay||'parenchyma'; const ks=lay.split(',');
-  if(!ks.some(k=>state.layers[k]==='solid'||state.layers[k]==='on')) return;
-  toastLay=lay; $('#toast-go').textContent=lay==='parenchyma'?'Ghost parenchyma':'Ghost '+ks.join(' and ');
-  { const t=$('#toast'); if(selection&&selection.dock&&selEl.style.display==='block'){ const b=selEl.querySelector('.box').getBoundingClientRect(); t.style.bottom=(innerHeight-b.top+10)+'px'; } else t.style.bottom=''; }
-  $('#toast-t').textContent=msg; $('#toast').hidden=false; clearTimeout(toastT); toastT=setTimeout(()=>{$('#toast').hidden=true;},7000);
-}
-$('#toast-go').addEventListener('click',()=>{ toastLay.split(',').forEach(k=>{ state.layers[k]='ghost'; }); applyModes(); if(layerTier===0) refreshLayerChrome(); $('#toast').hidden=true; });
-$('#toast-x').addEventListener('click',()=>{ $('#toast').hidden=true; });
 function refreshPathUI(){
   const S=state.path, val={bcc:S.bil.cc||'none',panc:S.panc?S.panc.type:'none',pvt:S.pvt,bcs:S.bcs,bilc:S.bil.cause,bils:S.bil.stent,masld:String(S.masld),zonal:S.zonal,pds:S.pds,ercpT:ERCP_T||'trawl'};
   document.querySelectorAll('.segctl').forEach(sc=>sc.querySelectorAll('button').forEach(b=>b.dataset.on=(b.dataset.v===val[sc.dataset.key])?'1':'0'));
@@ -3302,7 +3291,7 @@ function refreshPathUI(){
 }
 function pathChanged(opts={}){
   pathTargets(); refreshPathUI(); applySim();
-  if(opts.inside) toast(opts.inside,opts.layer);
+  if(opts.inside) ghostIfSolid((opts.layer||'parenchyma').split(','));   // v50: replaces the "Ghost …" toast
 }
 document.querySelectorAll('.segctl').forEach(sc=>sc.addEventListener('click',e=>{
   const b=e.target.closest('button'); if(!b) return; const v=b.dataset.v, S=state.path, k=sc.dataset.key;
@@ -3322,8 +3311,7 @@ document.addEventListener('click',e=>{ if(e.target&&e.target.id==='svt-view') sv
    (the pancreas is already translucent while the thrombus is shown) */
 function svtView(){
   if(!tiers[0].built) return;
-  for(const k of ['parenchyma','stomach']) if(state.layers[k]==='solid'||state.layers[k]==='on') state.layers[k]='ghost';
-  applyModes(); if(layerTier===0) refreshLayerChrome();
+  ghostIfSolid(['parenchyma','stomach']);
   const inn=tiers[0].inner; inn.updateMatrixWorld(true);
   const t=inn.localToWorld(V3(1.12,-0.36,-0.22)), d=V3(0.30,-0.28,1).transformDirection(inn.matrixWorld);
   controls.target.copy(t); camera.position.copy(t).addScaledVector(d,3.6); controls.update();
@@ -3348,8 +3336,7 @@ $('#path-clear').addEventListener('click',()=>{
 });
 $('#bleed-btn').addEventListener('click',()=>{ const S=state.path; S.bleed=!S.bleed;
   // the blood is inside the gut: ghost the oesophagus, stomach and duodenum so the stream can be followed
-  if(S.bleed){ let ch=false; for(const k of ['esophagus','stomach','duodenum']) if(state.layers[k]!=='off'&&state.layers[k]!=='ghost'){ state.layers[k]='ghost'; ch=true; }
-    if(state.layers.portal==='off'){ state.layers.portal='on'; ch=true; } if(ch){ applyModes(); if(layerTier===0) refreshLayerChrome(); } }
+  if(S.bleed){ ghostIfSolid(['esophagus','stomach','duodenum']); if(state.layers.portal==='off') applyLayerMap({portal:'on'},{tier:0}); }
   pathChanged(); });
 $('#tips-btn').addEventListener('click',()=>{ state.path.tips=!state.path.tips; pathChanged({inside:state.path.tips?'TIPSS: from the right internal jugular vein the sheath enters the right hepatic vein, a needle crosses the parenchyma into the right portal vein, and the stent is released over the wire.':null}); });
 
@@ -3416,12 +3403,14 @@ function setSelection(ti,local,label,dock=false){
   selEl.style.display='block';
   document.querySelectorAll('#p-struct .chip').forEach(c=>c.dataset.sel=(c.textContent===label)?'1':'0');
   pins[ti].forEach(p=>p.el.dataset.sel=(p.a.l===label)?'1':'0');
+  refreshLayerChrome();
   if(document.body.classList.contains('mob')) mobCard(label,txt);
 }
 function clearSelection(){
   selection=null; selEl.style.display='none'; $('#detail').hidden=true; { const c=document.getElementById('mcard'); if(c) c.hidden=true; }
   document.querySelectorAll('#p-struct .chip').forEach(c=>c.dataset.sel='0');
   pins.forEach(ps=>ps.forEach(p=>p.el.dataset.sel='0'));
+  refreshLayerChrome();
 }
 
 let shownTier=-1;
@@ -3494,60 +3483,99 @@ function applyTierLayers(i){
   const LG=tiers[i].inner.userData.LG||{};
   for(const k in LG) LG[k].visible = state.tl[i][k]!==false;
 }
+/* ── v50 Layers tab ──
+   Views: layer maps (presets); the active one is derived from the current state, so any manual change clears it.
+   Tree: group rows (macroscopic) and layer rows, each with an explicit On | Ghost | Off control (the micro layers are
+   on/off, so Ghost is disabled there); a layer row expands to the tier's named structures on that layer, which is the
+   one structure list. Every layer change made by presets, pathology or procedures goes through applyLayerMap. */
+const LV=v=>v==='solid'?'on':v===true?'on':v===false?'off':v;
+const PRESETS={
+  0:[{id:'all',label:'All',map:{parenchyma:'on',portal:'on',artery:'on',hepaticVein:'on',biliary:'on',stomach:'on',esophagus:'on',duodenum:'on',pancreas:'on',spleen:'on',kidneys:'on',ribcage:'off',diaphragm:'off'}},
+     {id:'portal',label:'Portal system',map:{parenchyma:'ghost',portal:'on',artery:'off',hepaticVein:'off',biliary:'off',stomach:'ghost',esophagus:'ghost',duodenum:'ghost',pancreas:'ghost',spleen:'on',kidneys:'off',ribcage:'off',diaphragm:'off'}},
+     {id:'arterial',label:'Arterial supply',map:{parenchyma:'ghost',portal:'off',artery:'on',hepaticVein:'off',biliary:'ghost',stomach:'ghost',esophagus:'off',duodenum:'ghost',pancreas:'ghost',spleen:'ghost',kidneys:'ghost',ribcage:'off',diaphragm:'off'}},
+     {id:'venous',label:'Venous outflow',map:{parenchyma:'ghost',portal:'ghost',artery:'off',hepaticVein:'on',biliary:'off',stomach:'off',esophagus:'off',duodenum:'off',pancreas:'off',spleen:'off',kidneys:'ghost',ribcage:'off',diaphragm:'off'}},
+     {id:'biliary',label:'Biliary tree',map:{parenchyma:'ghost',portal:'ghost',artery:'ghost',hepaticVein:'off',biliary:'on',stomach:'off',esophagus:'off',duodenum:'ghost',pancreas:'ghost',spleen:'off',kidneys:'off',ribcage:'off',diaphragm:'off'}}],
+  1:[{id:'blood',label:'Blood path',map:{portal:'on',artery:'on',central:'on',plates:'on',flow:'on',bile:'off'}},
+     {id:'bile',label:'Bile path',map:{portal:'off',artery:'off',central:'off',plates:'on',flow:'off',bile:'on'}}],
+  2:[{id:'blood',label:'Blood path',map:{portal:'on',artery:'on',central:'on',sinusoids:'on',flow:'on',bile:'off'}},
+     {id:'bile',label:'Bile path',map:{portal:'off',artery:'off',central:'off',sinusoids:'off',flow:'off',bile:'on'}}]};
+function layerVal(i,k){ return i===0 ? LV(state.layers[k]) : (state.tl[i][k]!==false?'on':'off'); }
+function presetActive(i,p){ return Object.entries(p.map).every(([k,v])=>layerVal(i,k)===v); }
+function applyLayerMap(map,o={}){ const i=o.tier??Math.max(0,shownTier);
+  if(i===0){ for(const k in map){ let v=map[k]; if(k==='segments'){ state.layers.segments=!!v; continue; }
+      if(!(k in state.layers)) continue; if(k==='parenchyma'&&v==='on') v='solid'; state.layers[k]=v; }
+    applyModes(); }
+  else { for(const k in map) state.tl[i][k]=(map[k]===true||map[k]==='on'); applyTierLayers(i); }
+  refreshLayerChrome(); }
+/* ghost the named layers only where they are currently opaque (pathology that lies inside another structure) */
+function ghostIfSolid(keys){ const m={}; for(const k of keys) if(state.layers[k]==='solid'||state.layers[k]==='on') m[k]='ghost';
+  if(Object.keys(m).length) applyLayerMap(m,{tier:0}); }
+const TREE_GROUPS=LAYER_GROUPS.filter(G=>!G.solo);
+function annosOn(i,k){ return (tiers[i]?tiers[i].annos:[]).filter(a=>a.layer===k&&a.l!=='About this anatomy'); }
+function triCtl(label,onSet,noGhost){ const d=document.createElement('div'); d.className='tri'; d.setAttribute('role','group'); d.setAttribute('aria-label',label);
+  for(const v of ['on','ghost','off']){ const b=document.createElement('button'); b.dataset.v=v; b.textContent=v==='on'?'On':v==='ghost'?'Ghost':'Off';
+    b.setAttribute('aria-pressed','false'); b.setAttribute('aria-label',`${label}: ${b.textContent}`);
+    if(noGhost&&v==='ghost'){ b.disabled=true; b.title='Ghost is not available at this scale'; }
+    b.addEventListener('click',()=>onSet(v)); d.appendChild(b); }
+  return d; }
+function setTri(d,v){ d.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.v===v))); }
+function sw(hex){ return hex!=null?`<i class="lt-sw" style="background:#${hex.toString(16).padStart(6,'0')}"></i>`:'<i class="lt-sw lt-sw0"></i>'; }
 function refreshLayerChrome(){
-  if(layerTier===0) for(const G of LAYER_GROUPS){ const el=layerEls[G.k]; if(!el) continue; const v=groupValue(G);
-    el.dataset.on=v==='off'?'0':'1'; el.dataset.mixed=v==='mixed'?'1':'0'; el.querySelector('b').textContent=v;
-    el.querySelector('i').style.background = v==='off'?'var(--line)':v==='ghost'?'var(--ink-3)':'var(--ink-2)'; }
-  (LAYER_SETS[layerTier]||[]).forEach(Ld=>{
-    const el=layerEls[Ld.k]; if(!el) return;
-    const v=layerValue(layerTier,Ld.k), on=Ld.cycle? v!=='off' : !!v;
-    el.dataset.on=on?'1':'0';
-    el.querySelector('b').textContent = Ld.cycle ? v : (on?'on':'off');
-    if(!Ld.swatch) el.querySelector('i').style.background = on?'var(--ink-2)':'var(--line)';
-    else el.querySelector('i').style.opacity = on?1:0.3;
-  });
+  const i=layerTier; if(i<0) return;
+  // views
+  document.querySelectorAll('#presets button').forEach(b=>{ const p=(PRESETS[i]||[]).find(q=>q.id===b.dataset.p); b.setAttribute('aria-pressed',String(!!p&&presetActive(i,p))); });
+  // groups
+  if(i===0) for(const G of TREE_GROUPS){ const el=layerEls[G.k]; if(!el) continue; const v=groupValue(G);
+    setTri(el.querySelector('.tri'),v==='mixed'?'':v); el.classList.toggle('mixed',v==='mixed'); }
+  (LAYER_SETS[i]||[]).forEach(Ld=>{ const el=layerEls[Ld.k]; if(!el) return; setTri(el.querySelector('.tri'),layerVal(i,Ld.k));
+    el.classList.toggle('off',layerVal(i,Ld.k)==='off'); });
+  const sel=selection&&selection.tier===i?selection.label:null;
+  document.querySelectorAll('#layers .lt-list button').forEach(b=>{ const on=b.dataset.l===sel; b.classList.toggle('sel',on); b.querySelector('.lt-tag').hidden=!on; });
+  { const b=$('#btn-seg'); if(b){ b.setAttribute('aria-pressed',String(!!state.layers.segments)); b.disabled=shownTier!==0; b.title=shownTier===0?'Couinaud segments overlay':'Segments are shown at the macroscopic scale'; } }
 }
 function renderLayerButtons(i){
   layerTier=i; layerBox.innerHTML=''; layerEls={};
-  layerBox.classList.toggle('grouped',i===0);
+  // views row
+  const pr=$('#presets'); pr.innerHTML=''; $('#views-row').hidden=!(PRESETS[i]&&PRESETS[i].length);
+  (PRESETS[i]||[]).forEach(p=>{ const b=document.createElement('button'); b.className='pill'; b.dataset.p=p.id; b.textContent=p.label;
+    b.addEventListener('click',()=>applyLayerMap(p.map,{tier:i})); pr.appendChild(b); });
+  const head=document.createElement('div'); head.className='lt-head'; head.innerHTML='<span></span><span>On</span><span>Ghost</span><span>Off</span>'; layerBox.appendChild(head);
+  const row=(Ld)=>{ const wrap=document.createElement('div'); wrap.className='lt-item';
+    const list=annosOn(i,Ld.k), r=document.createElement('div'); r.className='lt-row'; r.dataset.k=Ld.k;
+    r.innerHTML=`<button class="lt-chev" aria-expanded="false" aria-label="Show structures in ${Ld.label}"${list.length?'':' hidden'}></button>${sw(Ld.swatch)}<span class="lt-name">${Ld.label}</span><span class="lt-n">${list.length||''}</span>`;
+    r.appendChild(triCtl(Ld.label,v=>{ applyLayerMap({[Ld.k]:v},{tier:i}); },i!==0||!Ld.cycle));
+    wrap.appendChild(r); layerEls[Ld.k]=r;
+    if(list.length){ const ul=document.createElement('ul'); ul.className='lt-list'; ul.hidden=true;
+      for(const a of list){ const li=document.createElement('li'), b=document.createElement('button'); b.dataset.l=a.l;
+        b.innerHTML=`<span></span><em class="lt-tag" hidden>selected</em>`; b.firstChild.textContent=a.l;
+        b.addEventListener('click',()=>{ const v=a._v||new THREE.Vector3(...a.p); setSelection(i,v,a.l); frameStructure(i,v); });
+        li.appendChild(b); ul.appendChild(li); }
+      wrap.appendChild(ul);
+      const ch=r.querySelector('.lt-chev'); ch.addEventListener('click',()=>{ ul.hidden=!ul.hidden; ch.setAttribute('aria-expanded',String(!ul.hidden)); }); }
+    return wrap; };
   if(i===0){
-    const mk=(Ld,head)=>{ const b=document.createElement('button'); b.className='lay'+(head?' lhead':''); b.dataset.k=Ld.k;
-      b.innerHTML=`<i${Ld.swatch?` style="background:#${Ld.swatch.toString(16).padStart(6,'0')}"`:''}></i><em>${Ld.label}</em><b></b>`;
-      layerEls[Ld.k]=b; return b; };
-    for(const G of LAYER_GROUPS){
-      const row=document.createElement('div'); row.className='lgrp'+(G.solo?' solo':'');
-      const h=mk(G,true); row.appendChild(h); const kids=document.createElement('div'); kids.className='kids'; row.appendChild(kids);
-      if(!G.solo){ const cx=document.createElement('s'); cx.className='cx'; cx.textContent='▸'; h.appendChild(cx);   // phones: expand a group
-        cx.addEventListener('click',e=>{ e.stopPropagation(); row.classList.toggle('x'); cx.textContent=row.classList.contains('x')?'▾':'▸'; }); }
-      h.addEventListener('click',()=>{ const v=groupValue(G); setGroup(G,v==='mixed'?'on':CYC3[(CYC3.indexOf(v)+1)%3]); applyModes(); refreshLayerChrome(); });
-      if(!G.solo) for(const k of G.members){ const Ld=LAYERS.find(L=>L.k===k), b=mk(Ld,false); kids.appendChild(b);
-        b.addEventListener('click',()=>{
-          if(Ld.cycle){ const c=Ld.cycle, j=c.indexOf(state.layers[k]); state.layers[k]=c[(j+1)%c.length]; }
-          else state.layers[k]=!state.layers[k];
-          applyModes(); refreshLayerChrome(); }); }
-      layerBox.appendChild(row);
-    }
-    layerBox.appendChild(animBox); refreshLayerChrome(); return;
-  }
-  (LAYER_SETS[i]||[]).forEach(Ld=>{
-    const b=document.createElement('button');
-    b.className='lay'; b.dataset.k=Ld.k;
-    b.innerHTML=`<i${Ld.swatch?` style="background:#${Ld.swatch.toString(16).padStart(6,'0')}"`:''}></i>`+
-                `<em>${Ld.label}</em><b></b>`;
-    b.addEventListener('click',()=>{
-      if(i===0){
-        if(Ld.cycle){ const c=Ld.cycle, j=c.indexOf(state.layers[Ld.k]); state.layers[Ld.k]=c[(j+1)%c.length];
-          if(Ld.k==='allvisc') ORGAN_KEYS.forEach(k=>{ state.layers[k]=state.layers.allvisc; }); }
-        else state.layers[Ld.k]=!state.layers[Ld.k];
-        applyModes();
-      } else { state.tl[i][Ld.k]=!(state.tl[i][Ld.k]!==false); applyTierLayers(i); }
-      refreshLayerChrome();
-    });
-    layerBox.appendChild(b); layerEls[Ld.k]=b;
-  });
-  layerBox.appendChild(animBox); refreshLayerChrome();
+    for(const G of TREE_GROUPS){ const g=document.createElement('div'); g.className='lt-grp';
+      const h=document.createElement('div'); h.className='lt-row lt-g';
+      h.innerHTML=`<button class="lt-chev" aria-expanded="true" aria-label="Collapse ${G.label}"></button><b class="lt-name">${G.label}</b><span class="lt-n">${G.members.length}</span><em class="lt-mix">mixed</em>`;
+      h.appendChild(triCtl(G.label,v=>{ const m={}; for(const k of G.members) m[k]=v; applyLayerMap(m,{tier:0}); }));
+      const kids=document.createElement('div'); kids.className='lt-kids';
+      for(const k of G.members) kids.appendChild(row(LAYERS.find(L=>L.k===k)));
+      const ch=h.querySelector('.lt-chev'); ch.addEventListener('click',()=>{ kids.hidden=!kids.hidden; ch.setAttribute('aria-expanded',String(!kids.hidden)); });
+      g.appendChild(h); g.appendChild(kids); layerBox.appendChild(g); layerEls[G.k]=h; }
+  } else (LAYER_SETS[i]||[]).forEach(Ld=>layerBox.appendChild(row(Ld)));
+  flowUI(); refreshLayerChrome();
 }
-
+/* eased camera move (the zoom's exponential chase): to a model-frame target and direction at distance d (tier 0) */
+const CAMF={on:false,t:new THREE.Vector3(),p:new THREE.Vector3()};
+function camFly(tWorld,pWorld){ CAMF.t.copy(tWorld); CAMF.p.copy(pWorld); CAMF.on=true; }
+controls.addEventListener('start',()=>{ CAMF.on=false; });
+function camFlyTick(dt){ if(!CAMF.on) return; const k=1-Math.exp(-dt*4.2);
+  controls.target.lerp(CAMF.t,k); camera.position.lerp(CAMF.p,k); controls.update();
+  if(camera.position.distanceTo(CAMF.p)<1e-3&&controls.target.distanceTo(CAMF.t)<1e-3) CAMF.on=false; }
+function frameStructure(i,local){ if(i!==0||!tiers[0].built) return;   // micro scales: selection only (their views are fixed)
+  const inn=tiers[0].inner; inn.updateMatrixWorld(true); const w=inn.localToWorld(local.clone());
+  const dir=camera.position.clone().sub(controls.target).normalize(), d=camera.position.distanceTo(controls.target);
+  const T=controls.target.clone().lerp(w,0.35); camFly(T,T.clone().addScaledVector(dir,d)); }
 function applyModes(){
   const Ls=state.layers;
   if(layerTier===0) refreshLayerChrome();
@@ -3590,13 +3618,22 @@ function applyModes(){
 }
 
 $('#sl-fib').addEventListener('input',e=>{state.fibrosis=+e.target.value; applySim();});
-$('#tg-bile').addEventListener('click',e=>{
-  state.bile=!state.bile; e.currentTarget.setAttribute('aria-pressed',String(state.bile));
-  e.currentTarget.querySelector('.led').style.background='';
-  if(state.bile&&state.layers.biliary==='off'){ state.layers.biliary='on'; applyModes(); } });
-$('#tg-flow').addEventListener('click',e=>{
-  state.flow=!state.flow; e.currentTarget.setAttribute('aria-pressed',String(state.flow));
-  e.currentTarget.querySelector('.led').style.background='';});
+/* Flow (Layers tab): Blood flow drives every blood-particle system; Bile flow drives the macroscopic biliary FlowNet
+   (state.bile, off by default) and the canalicular bile particles of the acinus and sinusoid (state.bileMicro, on by
+   default, as before). The lobule and hepatocyte scales have no bile particles, so the toggle is disabled there. */
+const BILE_TIERS=[0,2,3];
+function bileOn(){ return shownTier===0?state.bile:state.bileMicro; }
+function flowUI(){ const b=$('#tg-bile'), f=$('#tg-flow'); if(!b) return;
+  f.setAttribute('aria-pressed',String(state.flow));
+  const ok=BILE_TIERS.includes(Math.max(0,shownTier)); b.disabled=!ok;
+  b.title=ok?(shownTier===0?'Bile from the intrahepatic ducts and gallbladder down the common bile duct, through the ampulla into the duodenum.':'Bile in the canaliculi, running towards the portal tract.'):'No bile flow at this scale';
+  b.setAttribute('aria-pressed',String(ok&&bileOn())); }
+$('#tg-bile').addEventListener('click',()=>{
+  if(shownTier===0){ state.bile=!state.bile; if(state.bile&&state.layers.biliary==='off') applyLayerMap({biliary:'on'},{tier:0}); }
+  else state.bileMicro=!state.bileMicro;
+  flowUI(); });
+$('#tg-flow').addEventListener('click',()=>{ state.flow=!state.flow; flowUI(); });
+$('#btn-seg').addEventListener('click',()=>{ if(shownTier!==0) return; applyLayerMap({segments:!state.layers.segments},{tier:0}); });
 
 renderer.domElement.addEventListener('wheel',e=>{
   e.preventDefault();
@@ -4410,8 +4447,8 @@ function bxStart(mode){
   const LY = mode==='tace' ? {parenchyma:'ghost',artery:'ghost',portal:'ghost',hepaticVein:'ghost',biliary:'ghost',stomach:'ghost',duodenum:'ghost',pancreas:'ghost'}
            : mode==='resect' ? {} : mode==='ercp' ? {parenchyma:'ghost',stomach:'ghost',duodenum:'ghost',esophagus:'ghost',pancreas:'ghost',portal:'ghost',artery:'ghost',hepaticVein:'ghost',spleen:'ghost',kidneys:'ghost'}
            : mode==='tj' ? {parenchyma:'ghost',hepaticVein:'ghost'} : {parenchyma:'ghost',ribcage:'ghost'};
-  BX.prevLayers={}; for(const k in LY){ BX.prevLayers[k]=state.layers[k]; if(state.layers[k]==='solid'||state.layers[k]==='on'||(k==='ribcage'&&state.layers[k]==='off')) state.layers[k]=LY[k]; }
-  applyModes(); if(layerTier===0) refreshLayerChrome();
+  BX.prevLayers={}; { const m={}; for(const k in LY){ BX.prevLayers[k]=state.layers[k]; if(state.layers[k]==='solid'||state.layers[k]==='on'||(k==='ribcage'&&state.layers[k]==='off')) m[k]=LY[k]; }
+    applyLayerMap(m,{tier:0}); }
   const T=BX_TXT[mode];
   $('#bx-title').textContent=T.title;
   $('#bx-when').innerHTML=T.when.map(s=>`<li>${s}</li>`).join('');
@@ -4453,7 +4490,7 @@ function bxStop(){
     O.les.mesh.position.copy(O.lesP0); O.les.mesh.visible=true; if(O.cut&&lesions.includes(O.les)) removeLesion(O.les); }
   if(BX.O&&BX.mode==='tace'&&!BX.O.done){ const m=BX.O.les.mesh.material; m.color.copy(BX.O.m0.c); m.emissive.copy(BX.O.m0.e); BX.O.les.mesh.scale.setScalar(BX.O.s0); }
   if(BX.O){ const g=BX.O.g; g.parent&&g.parent.remove(g); g.traverse(o=>{ if(o.geometry) o.geometry.dispose(); }); BX.O=null; }
-  if(BX.prevLayers){ Object.assign(state.layers,BX.prevLayers); BX.prevLayers=null; applyModes(); if(layerTier===0) refreshLayerChrome(); }
+  if(BX.prevLayers){ applyLayerMap(BX.prevLayers,{tier:0}); BX.prevLayers=null; }
   $('#bx').hidden=true; document.querySelectorAll('#bx-tj,#bx-pc,#ercp-go,#tace-go,#resect-go').forEach(b=>b.dataset.on='0'); $('#ercp-go').textContent='Start ERCP';
 }
 const TACE_LIP=new THREE.Color(0xF2E7B8), TACE_LIPG=new THREE.Color(0x6A5A20), TACE_NEC=new THREE.Color(0x6E645C), TACE_BLUSH=new THREE.Color(0xB0201A);
@@ -4562,9 +4599,7 @@ function hvpgStart(){
   HVPG.grp.visible=true; HVPG.bal.visible=false;
   // see the catheter inside the liver and the hepatic veins
   HVPG.prevLayers={parenchyma:state.layers.parenchyma,hepaticVein:state.layers.hepaticVein};
-  if(state.layers.parenchyma==='solid') state.layers.parenchyma='ghost';
-  if(state.layers.hepaticVein==='on') state.layers.hepaticVein='ghost';
-  applyModes();
+  ghostIfSolid(['parenchyma','hepaticVein']);
   $('#hvpg').hidden=false; $('#hvpg-btn').dataset.on='1'; $('#hvpg-btn').textContent='End HVPG measurement';
   hvpgPanel();
 }
@@ -4572,7 +4607,7 @@ function hvpgStop(){
   if(!HVPG.on) return;
   HVPG.on=false; if(HVPG.grp) HVPG.grp.visible=false;
   if(HVPG.tube){ HVPG.grp.remove(HVPG.tube); HVPG.tube.geometry.dispose(); HVPG.tube=null; }
-  if(HVPG.prevLayers){ Object.assign(state.layers,HVPG.prevLayers); HVPG.prevLayers=null; applyModes(); }
+  if(HVPG.prevLayers){ applyLayerMap(HVPG.prevLayers,{tier:0}); HVPG.prevLayers=null; }
   $('#hvpg').hidden=true; $('#hvpg-why').hidden=true; $('#hvpg-btn').dataset.on='0'; $('#hvpg-btn').textContent='Measure HVPG';
 }
 function hvpgInterp(h){
@@ -5434,7 +5469,7 @@ function frame(){
     setFade(tr.group,w,outgoing);
   });
 
-  pathTick(dt); hvpgTick(dt); bxTick(dt); microTick(dt);
+  pathTick(dt); hvpgTick(dt); bxTick(dt); microTick(dt); camFlyTick(dt);
   // flow: acinus tier — blood portal→central, bile central→portal
   if(tiers[2].built&&tiers[2].w>0.02){
     const u=tiers[2].inner.userData, o=new THREE.Object3D();
@@ -5460,12 +5495,12 @@ function frame(){
     u.pvBlood.instanceMatrix.needsUpdate=true; u.cvBlood.instanceMatrix.needsUpdate=true;
     for(let i=0;i<u.bileState.length;i++){
       const s=u.bileState[i];
-      s.t=(s.t+(state.flow?0.05:0)*dt*3.4)%1;
+      s.t=(s.t+(state.bileMicro?0.05:0)*dt*3.4)%1;
       u.canalCurves[s.row].getPointAt(1-s.t,o.position);
       o.rotation.set(0,0,0); o.scale.setScalar(1); o.updateMatrix();
       u.bileP.setMatrixAt(i,o.matrix);
     }
-    u.bileP.instanceMatrix.needsUpdate=true;
+    u.bileP.instanceMatrix.needsUpdate=true; u.bileP.visible=state.bileMicro;
   }
   // flow: lobule tier — portal tracts → central vein → up the vein
   if(tiers[1].built&&tiers[1].w>0.02){
@@ -5505,11 +5540,11 @@ function frame(){
     u.rbc.instanceMatrix.needsUpdate=true;
     for(let i=0;i<u.bpState.length;i++){
       const s=u.bpState[i];
-      s.t=(s.t+(state.flow?0.055:0)*dt*3.4+1)%1;
+      s.t=(s.t+(state.bileMicro?0.055:0)*dt*3.4+1)%1;
       o.position.set(0,s.s*1.54,u.LEN/2-s.t*u.LEN);
       o.rotation.set(0,0,0); o.scale.setScalar(1); o.updateMatrix(); u.bp.setMatrixAt(i,o.matrix);
     }
-    u.bp.instanceMatrix.needsUpdate=true;
+    u.bp.instanceMatrix.needsUpdate=true; u.bp.visible=state.bileMicro;
     // venules: same slowing as the sinusoid (fibrosis raises resistance through the whole unit)
     const vs=state.flow?0.06*(1-0.65*state.fibrosis)*Math.max(0.2,Math.abs(HEMO.inflow)):0;
     u.pvPart.visible=u.cvPart.visible=state.flow;
