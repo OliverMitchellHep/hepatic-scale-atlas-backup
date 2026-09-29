@@ -16,7 +16,7 @@ OUT = ROOT / 'tests' / 'out'
 TABS = "(t)=>{ const b=document.getElementById('tab-'+t); if(b) b.click(); return !!b; }"
 # Extra interface states: (name, width, height, js run in the page before the screenshot)
 HARNESS_SHOTS = [
-    ('pin_layers_clinical_1440', 1440, 900, "()=>{ const d=window.__atlas.dock; if(!d) return 'no dock api'; d.unpinAll&&d.unpinAll(); d.pin('layers'); d.pin('clinical'); return d.state(); }"),
+    ('pin_layers_clinical_1440', 1440, 900, "()=>{ const d=window.__atlas.dock; if(!d) return 'no dock api'; d.unpinAll&&d.unpinAll(); d.pin('layers'); document.getElementById('tab-clinical').click(); return d.state(); }"),
     ('pin_layers_clinical_1280', 1280, 800, "()=>{ const d=window.__atlas.dock; if(!d) return 'no dock api'; d.unpinAll&&d.unpinAll(); d.pin('layers'); d.pin('clinical'); return d.state(); }"),
 ]
 IGNORE = ('fonts.g', 'ERR_', 'GL Driver')

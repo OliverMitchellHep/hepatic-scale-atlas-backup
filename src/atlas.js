@@ -3292,7 +3292,7 @@ function refreshPathUI(){
 }
 function pathChanged(opts={}){
   pathTargets(); refreshPathUI(); applySim(); clinRefresh();
-  if(opts.inside) ghostIfSolid((opts.layer||'parenchyma').split(','));   // v50: replaces the "Ghost …" toast
+  if(opts.inside){ ghostIfSolid((opts.layer||'parenchyma').split(',')); INSIDE.msg=opts.inside; INSIDE.t=performance.now(); }   // v50: replaces the "Ghost …" toast
 }
 document.querySelectorAll('.segctl').forEach(sc=>sc.addEventListener('click',e=>{
   const b=e.target.closest('button'); if(!b) return; const v=b.dataset.v, S=state.path, k=sc.dataset.key;
@@ -3393,6 +3393,298 @@ function clinGate(i){ document.querySelectorAll('#path-block .citem').forEach(d=
     const t=ts.reduce((b,x)=>Math.abs(x-i)<Math.abs(b-i)?x:b,ts[0]); a.dataset.t=t; a.textContent=`Available at ${TIER_NAMES[t]} ›`; a.hidden=false; d.open=false; }
   else if(a) a.hidden=true; }); }
 document.querySelectorAll('#path-block .citem > summary').forEach(sm=>sm.addEventListener('click',e=>{ if(sm.parentElement.classList.contains('locked')) e.preventDefault(); }));
+/* ── v50 teaching drawer: all long content, one item at a time, with history ──
+   Holds structure and pathology teaching cards (these replace the docked pathology callout), choledochal cyst
+   explanations, the procedure steppers (#bx, #hvpg and the stage-3 explainer move in; they are the same DOM, so their
+   listeners keep working) and Learn module steps. Back pops the history; Esc or × closes. */
+const DRAWER={cur:null,stack:[]};
+const SUPERSEDED_JS=[[/\bBaveno VII\b(?!I)/,'Baveno VIII (J Hepatol 2026)'],[/EASL vascular[^.]{0,20}2016/,'EASL vascular CPG 2025'],[/\bBCLC 2022\b/,'BCLC 2026 update']];
+function drawerShow(on){ const d=$('#drawer'); d.hidden=!on; document.body.classList.toggle('drawer',on);
+  if(!document.body.classList.contains('mob')&&PIN.pins.length){ pinFit(); pinLayout(); } else layoutDock();
+  if(on&&document.body.classList.contains('mob')){ $('#mcard').hidden=true; mobRaise(); } }
+function drawerRender(){ const E=DRAWER.cur, body=$('#dr-body'); if(!E) return;
+  const park=$('#dr-park'); for(const c of [...body.children]) if(c.dataset.parked==='1'){ c.dataset.parked=''; park.appendChild(c); }
+  body.innerHTML='';
+  $('#dr-tag').textContent=E.tag||''; const prev=DRAWER.stack[DRAWER.stack.length-1], b=$('#dr-back');
+  b.hidden=!prev; if(prev) b.querySelector('span').textContent=prev.title;
+  $('#drawer').classList.toggle('proc',E.type==='procedure');
+  if(E.els){ for(const el of E.els){ el.dataset.parked='1'; body.appendChild(el); } }
+  else if(E.render) E.render(body);
+  body.scrollTop=0; }
+function drawerOpen(E){ if(DRAWER.cur&&DRAWER.cur.key===E.key){ DRAWER.cur=E; drawerRender(); drawerShow(true); return; }
+  if(DRAWER.cur) DRAWER.stack.push(DRAWER.cur);
+  DRAWER.stack=DRAWER.stack.filter(x=>x.key!==E.key); DRAWER.cur=E; drawerRender(); drawerShow(true); }
+function drawerBack(){ const E=DRAWER.stack.pop(); if(!E) return; DRAWER.cur=E; drawerRender(); }
+function drawerClose(fromProc){ const cur=DRAWER.cur, stack=DRAWER.stack; DRAWER.cur=null; DRAWER.stack=[];
+  const park=$('#dr-park'); for(const c of [...$('#dr-body').children]) if(c.dataset.parked==='1'){ c.dataset.parked=''; park.appendChild(c); }
+  $('#dr-body').innerHTML=''; drawerShow(false);
+  if(!fromProc) for(const E of [cur,...stack]) if(E&&E.onClose) E.onClose(); }
+$('#dr-x').addEventListener('click',()=>drawerClose());
+$('#dr-back').addEventListener('click',drawerBack);
+addEventListener('keydown',e=>{ if(e.key==='Escape'&&DRAWER.cur&&$('#intro').hidden) drawerClose(); });
+/* procedures: the stepper cards open in the drawer whenever they are shown, and leave it when they are hidden */
+function procSync(){ const bx=!$('#bx').hidden, hv=!$('#hvpg').hidden;
+  if(bx){ drawerOpen({type:'procedure',key:'proc:bx',title:$('#bx-title').textContent,tag:'Procedure',els:[$('#bx')],onClose:()=>bxStop()}); return; }
+  if(hv){ drawerOpen({type:'procedure',key:'proc:hvpg',title:'HVPG measurement',tag:'Procedure',els:[$('#hvpg'),$('#hvpg-why')],onClose:()=>hvpgStop()}); return; }
+  if(DRAWER.cur&&DRAWER.cur.type==='procedure'){ DRAWER.stack=DRAWER.stack.filter(x=>x.type!=='procedure'); const E=DRAWER.stack.pop();
+    if(E){ DRAWER.cur=E; drawerRender(); } else drawerClose(true); } }
+{ const mo=new MutationObserver(()=>procSync()); for(const id of ['#bx','#hvpg']) mo.observe($(id),{attributes:true,attributeFilter:['hidden']}); }
+/* segmented progress bar for the steppers */
+function stepBar(bar,steps){ if(!bar) return; const n=steps.length; if(bar.children.length!==n){ bar.innerHTML=''; for(let i=0;i<n;i++) bar.appendChild(document.createElement('i')); }
+  steps.forEach((el,i)=>{ bar.children[i].dataset.s=el.dataset.s||'todo'; }); }
+/* teaching card content: sentences grouped under headings by what they are about (the source prose is unchanged) */
+const SEC_RULES=[['Diagnosis',/imag|diagnos|biops|ultrasound|\bMRI\b|\bCT\b|enhanc|LI-RADS|elastograph|FIB-4|VCTE|\bELF\b|cholangiogra|venogra|MRCP|EUS\b/i],
+  ['Management',/treat|manag|resect|transplant|\bTACE\b|ablat|stent|drain|ERCP|antibiotic|terlipressin|ligation|TIPSS|surgery|surgical|anticoag|beta-blocker|carvedilol|NSBB|follow-up|surveil|palliat|chemo|sphincterotom|prophylax|resuscitat|endoscop/i]];
+function splitSentences(t){ return (t||'').replace(/\s+/g,' ').trim().split(/(?<=[.!?])\s+(?=[A-Z0-9(“"‘])/).map(x=>x.trim()).filter(Boolean); }   // "3.0 cm" and "e.g. x" stay whole
+function sectionise(texts){ const sen=[].concat(...texts.filter(Boolean).map(splitSentences)); const sum=sen.shift()||'';
+  const groups={Features:[],Diagnosis:[],Management:[]};
+  for(const x of sen){ let g='Features'; for(const [h,re] of SEC_RULES) if(re.test(x)){ g=h; break; } groups[g].push(x); }
+  return {sum,groups}; }
+function refsFrom(names,texts){ const out=[], seen=new Set();
+  const add=c=>{ const src=c.trim().replace(/[;,.]$/,''); if(!src||seen.has(src)) return; seen.add(src);
+    const y=(src.match(/\b(19|20)\d{2}\b/)||[])[0]||''; let st='current', to=''; for(const [re,n] of SUPERSEDED_JS) if(re.test(src)){ st='check'; to=n; }
+    out.push({src:src.replace(/,?\s*\b(19|20)\d{2}\b/,'').trim()||src,year:y,status:st,to}); };
+  for(const n of names){ const m=REGMETA[n]; if(m) for(const c of m[3]) add(c); }
+  const RE=/\b(?:EASL(?:[–-]EASD[–-]EASO)?|BSG(?:\/RCR\/RCPath)?|NICE(?: NG\d+| CG\d+)?|UEG|ESGE|Baveno VIII?|AASLD|BCLC|NHSBT)(?:[^;,.)]{0,30}?\b(?:19|20)\d{2}\b)?/g;
+  for(const t of texts) for(const m of (t||'').matchAll(RE)) add(m[0].replace(/\s*\(\s*/,' '));
+  return out; }
+function critRows(sel){ const r=sel&&document.querySelector(sel); if(!r||!r.children.length) return '';
+  const kids=[...r.children]; let h='<table class="crit">'; for(let i=0;i+1<kids.length;i+=2){ if(kids[i].tagName!=='SPAN') continue; const b=kids[i+1];
+    h+=`<tr><td>${kids[i].innerHTML}</td><td data-s="${b.dataset.s||''}">${b.innerHTML}</td></tr>`; } return h+'</table>'; }
+function teachCard(o){ /* {cat, sw|swc, title, sub, texts[], names[], crit, critH, actions:[{label,proc,fn}]} */
+  return body=>{ const {sum,groups}=sectionise(o.texts), refs=refsFrom(o.names||[],o.texts);
+    body.innerHTML=`<div class="tc-eb">${o.sw?`<i class="sw ${o.sw}"></i>`:o.swc?`<i class="lt-sw" style="background:${o.swc}"></i>`:''}<span></span></div><h2 class="tc-t"></h2>${o.sub?`<div class="tc-sub"></div>`:''}<p class="tc-sum"></p>`;
+    body.querySelector('.tc-eb span').textContent=o.cat; body.querySelector('.tc-t').textContent=o.title; if(o.sub) body.querySelector('.tc-sub').textContent=o.sub; body.querySelector('.tc-sum').textContent=sum;
+    for(const k of ['Features','Diagnosis','Management']){ if(!groups[k].length) continue; const s=document.createElement('section'); s.className='tc-sec';
+      s.innerHTML=`<h3>${k==='Features'?'Key features':k}</h3><p></p>`; s.querySelector('p').textContent=groups[k].join(' '); body.appendChild(s); }
+    if(o.crit){ const c=critRows(o.crit); if(c){ const s=document.createElement('section'); s.className='tc-sec'; s.innerHTML=`<h3>${o.critH||'This patient against criteria'}</h3>${c}`; body.appendChild(s); } }
+    if(refs.length){ const s=document.createElement('section'); s.className='tc-sec'; s.innerHTML='<h3>Guidance</h3><div class="refs"></div>';
+      for(const r of refs){ const b=document.createElement('span'); b.className='ref '+r.status; b.textContent=r.src+(r.year?' '+r.year:'');
+        if(r.status==='check'){ b.title=`Superseded: check against ${r.to}`; b.insertAdjacentHTML('beforeend',' <em>check</em>'); } s.querySelector('.refs').appendChild(b); }
+      body.appendChild(s); }
+    if(o.actions&&o.actions.length){ const f=document.createElement('div'); f.className='tc-ft';
+      for(const a of o.actions){ const b=document.createElement('button'); b.className=a.proc?'pbtn':'sbtn'; b.textContent=a.label; b.addEventListener('click',a.fn); f.appendChild(b); }
+      body.appendChild(f); } }; }
+const pnoteOf=id=>{ const d=document.querySelector(`#path-block .citem[data-item="${id}"]`); return d?[...d.querySelectorAll('.pnote,.clin-note')].map(n=>n.textContent):[]; };
+const infoOf=ns=>ns.filter(n=>INFO[n]).map(n=>INFO[n]);
+const jumpAct=(label,k)=>({label,proc:true,fn:()=>clinJump(k)});
+function formLabel(id){ const seg=v=>SEG[+v]||'V';   // the segment selects hold indices into SEG
+  if(id==='hcc') return `HCC 0 · segment ${seg($('#hcc-seg').value)} · ${(+$('#hcc-size').value||3).toFixed(1)} cm`;
+  if(id==='cca'){ const t=$('#cca-type').value, cm=(+$('#cca-size').value||3).toFixed(1);
+    return t==='i'?`CCA 0 · intrahepatic · segment ${seg($('#cca-seg').value)} · ${cm} cm`:t==='p'?`CCA 0 · perihilar · Bismuth–Corlette ${$('#cca-bis').value} · ${cm} cm`:`CCA 0 · distal extrahepatic · ${cm} cm`; }
+  if(id==='pc') return `PDAC 0 · ${$('#pc-site').value} · ${(+$('#pc-size').value||3).toFixed(1)} cm`;
+  if(id==='bll'){ const t=$('#bll-type').value, sub=$('#bll-sub').value, k=t==='abs'?'Abscess':t==='cyst'?'Cyst':({hem:'Haemangioma',fnh:'FNH',hca:'Adenoma'})[sub];
+    return `${k} 0 · segment ${seg($('#bll-seg').value)} · ${(+$('#bll-size').value||4).toFixed(1)} cm`; } }
+const ITEM_TEACH={
+  hcc:()=>({texts:[info(formLabel('hcc'))],crit:'#hcc-crit',critH:'These lesions against criteria',actions:[jumpAct('TACE ›','tace'),jumpAct('Resection ›','resect')]}),
+  cca:()=>({texts:[info(formLabel('cca')),...pnoteOf('cca')],actions:[jumpAct('Drainage ›','bils'),jumpAct('ERCP ›','ercp')]}),
+  bll:()=>({texts:[info(formLabel('bll')),...pnoteOf('bll')]}),
+  pc:()=>({texts:[info(formLabel('pc')),...pnoteOf('pc')],actions:[jumpAct('Drainage ›','bils'),jumpAct('PD drainage ›','pds')]}),
+  panc:()=>({texts:[...pnoteOf('panc'),...infoOf(['Peripancreatic inflammation (fluid, fat stranding)','Pancreatic pseudocyst','Splenic vein thrombosis'])],names:['Splenic vein thrombosis','Pancreatic pseudocyst'],crit:'#panc-read',critH:'This patient'}),
+  ph:()=>({texts:[...infoOf(['Oesophageal varices','Gastric varices (GOV1)','Gastric fundal varices']),...pnoteOf('ph')],names:['Oesophageal varices','Gastric varices (GOV1)','Bleeding oesophageal varix (rupture point)'],crit:'#ph-read',critH:'This patient',actions:[jumpAct('HVPG ›','hvpg'),jumpAct('TIPSS ›','tips')]}),
+  pvt:()=>({texts:infoOf(['Portal vein thrombus (acute, occlusive)','Portal vein thrombus (partial, non-occlusive)','Portal cavernoma','SMV thrombus']),names:['Portal vein thrombus (acute, occlusive)','Portal cavernoma']}),
+  bcs:()=>({texts:infoOf(['Hepatic vein thrombosis','IVC web','Intrahepatic venovenous collaterals']),names:['Hepatic vein thrombosis','IVC web']}),
+  bil:()=>({texts:infoOf(['Common bile duct stone','Impacted stone (Mirizzi syndrome)','Choledochal cyst']),names:['Common bile duct stone','Choledochal cyst'],crit:'#bil-read',critH:'This patient',actions:[jumpAct('ERCP ›','ercp'),jumpAct('Drainage ›','bils')]}),
+  masld:()=>({texts:[...pnoteOf('masld'),...infoOf(['Fat droplets (macrovesicular steatosis)'])],names:['Fat droplets (macrovesicular steatosis)'],crit:'#masld-read',critH:'Fibrosis assessment (illustrative)'}),
+  mash:()=>({texts:infoOf(['Mallory–Denk bodies','Inflammatory cells','Councilman (acidophil) body']),names:['Mallory–Denk bodies']}),
+  zonal:()=>({texts:[$('#zon-note').textContent,...infoOf(['Zone 1','Zone 3'])],names:['Zone 3']}),
+  bx:()=>({texts:[...BX_TXT.tj.when,...BX_TXT.pc.when,...pnoteOf('bx'),...infoOf(['Percutaneous biopsy needle (16G)'])],names:['Percutaneous biopsy needle (16G)']}),
+  hvpg:()=>({texts:[...[...$('#hvpg').querySelectorAll('.hst span')].map(n=>n.textContent),...[...$('#hvpg-why').querySelectorAll('.hw-sec p')].map(n=>n.textContent)]}),
+  ercp:()=>({texts:[...BX_TXT.ercp.when,...pnoteOf('ercp')]}),
+  bils:()=>({texts:infoOf(['Plastic biliary stent','Metal biliary stent (SEMS)','PTC drain (internal–external)']),names:['Metal biliary stent (SEMS)'],crit:'.citem[data-item=bils] .bilro',critH:'This patient'}),
+  pds:()=>({texts:infoOf(['Plastic pancreatic stent','Metal pancreatic stent (fully covered)']),names:['Plastic pancreatic stent']}),
+  tips:()=>({texts:infoOf(['TIPSS stent','TIPSS stent (ePTFE-covered segment)']),names:['TIPSS stent'],crit:'#ph-read',critH:'This patient'}),
+  tace:()=>({texts:[...BX_TXT.tace.when,BX_TXT.tace.note||'',...infoOf(['TACE catheter and microcatheter'])],names:['TACE catheter and microcatheter']}),
+  resect:()=>({texts:[...BX_TXT.resect.when,BX_TXT.resect.note||'',...infoOf(['Planned resection'])],names:['Planned resection']})};
+/* Learn ›, Learn more ›, Teaching card ›: an item id from the Clinical tab, or {label, tier} for a structure */
+function learnOpen(a){
+  if(typeof a==='string'){ const d=document.querySelector(`#path-block .citem[data-item="${a}"]`), f=ITEM_TEACH[a]; if(!d||!f) return;
+    const o=f(), proc=d.classList.contains('proc'), sw=(d.querySelector('summary .sw').className.split(' ')[1]||''), title=d.querySelector('.cname').textContent;
+    drawerOpen({type:proc?'procedure-card':'pathology',key:'item:'+a,title,tag:proc?'Procedure':'Pathology',
+      render:teachCard(Object.assign({cat:(proc?'Procedure':'Pathology')+' · '+d.closest('.cgrp').querySelector('summary b').textContent,sw,title},o))});
+    return; }
+  const {label,tier}=a, txt=info(label), path=isPathLabel(label), L=lesions.find(x=>x.label===label);
+  const k=selLayer(tier,label), Ld=k&&(LAYER_SETS[tier]||[]).find(x=>x.k===k);
+  const lesItem=L?({hcc:'hcc',cca:'cca',pc:'pc',abs:'bll',cyst:'bll',bfl:'bll'})[L.kind]:null;
+  const here=selection&&selection.label===label?selection.local.clone():null;
+  const acts=[{label:'Show on model',fn:()=>{ const v=L?L.pin.a._v:here; if(v){ setSelection(tier,v,label); frameStructure(tier,v); } }}];
+  if(lesItem==='hcc') acts.push(jumpAct('TACE ›','tace'),jumpAct('Resection ›','resect'));
+  if(!path&&k) acts.push({label:'Isolate',fn:()=>{ if(here&&!selection) setSelection(tier,here,label); $('#sb-iso').click(); }});
+  drawerOpen({type:path?'pathology':'structure',key:'s:'+label,title:L?L.short:label,tag:path?'Pathology':'Anatomy',
+    render:teachCard({cat:path?'Pathology':selPath(tier,k),swc:Ld&&Ld.swatch!=null?'#'+Ld.swatch.toString(16).padStart(6,'0'):null,sw:L?(({hcc:'hcc',cca:'cca',pc:'pc'})[L.kind]||'bll'):null,
+      title:L?L.short:label,sub:L?L.sub:(path?'':TIER_NAMES[tier]),texts:[txt],names:[label],crit:lesItem==='hcc'?'#hcc-crit':null,critH:'These lesions against criteria',actions:acts})}); }
+document.body.classList.add('teach');   // the Learn › links are live
+/* ── identify box: name, category, one or two lines, Learn more › and Isolate ── */
+const INSIDE={msg:'',t:0};
+function identifyFill(ti,label,txt){ const path=isPathLabel(label), k=selLayer(ti,label);
+  selEl.querySelector('.sel-tag').textContent=path?'Pathology':selPath(ti,k);
+  let s=splitSentences(txt)[0]||''; if(s.length>120) s=s.slice(0,117).replace(/\s+\S*$/,'')+'…';   // one or two lines
+  selEl.querySelector('span').textContent=s;
+  const inn=selEl.querySelector('.sel-in'), fresh=INSIDE.msg&&performance.now()-INSIDE.t<60000&&path;
+  inn.hidden=!fresh; inn.textContent=fresh?INSIDE.msg:'';
+  $('#sel-iso').hidden=!k||path; }
+$('#sel-learn').addEventListener('click',e=>{ e.stopPropagation(); if(selection) learnOpen({label:selection.label,tier:selection.tier}); });
+$('#sel-iso').addEventListener('click',e=>{ e.stopPropagation(); $('#sb-iso').click(); });
+/* ── pinning: any tab can be pinned into its own column left of the dock; the pane's DOM moves, it is never cloned ── */
+const PIN={pins:[],collapsed:[],auto:[],COLW:361,RAILW:45,DOCKW:377,MINSTAGE:640};
+function pinLoad(){ try{ const o=JSON.parse(localStorage.getItem('hsa-dock')||'{}'); return {pins:(o.pins||[]).filter(t=>TABS.includes(t)),collapsed:(o.collapsed||[]).filter(t=>TABS.includes(t))}; }catch(e){ return {pins:[],collapsed:[]}; } }
+function pinSave(){ try{ localStorage.setItem('hsa-dock',JSON.stringify({pins:PIN.pins,collapsed:PIN.collapsed.filter(t=>!PIN.auto.includes(t))})); }catch(e){} }
+function pinWidth(pins,collapsed){ const cols=pins.reduce((w,t)=>w+(collapsed.includes(t)?PIN.RAILW:PIN.COLW),0);
+  return cols+(pins.length<TABS.length?PIN.DOCKW:0); }
+function stageRoom(pins,collapsed){ const dr=$('#drawer'); return innerWidth-pinWidth(pins,collapsed)-(dr&&!dr.hidden?dr.offsetWidth+32:0); }
+function colEl(t){ let c=document.querySelector(`#cols .col[data-t="${t}"]`); if(c) return c;
+  const L=$('#tab-'+t).firstChild.textContent.trim(); c=document.createElement('section'); c.className='col'; c.dataset.t=t; c.setAttribute('aria-label',L);
+  c.innerHTML=`<div class="col-hd"><b>${L}</b><button class="col-min" aria-label="Collapse ${L}" aria-expanded="true" title="Collapse"></button><button class="col-unpin" aria-label="Unpin ${L}" aria-pressed="true" title="Unpin ${L}">${$('#tabs .pinb').innerHTML}</button></div><div class="col-body"></div><button class="col-rail" aria-label="Expand ${L}"><span>${L}</span></button>`;
+  c.querySelector('.col-min').addEventListener('click',()=>pinCollapse(t,true));
+  c.querySelector('.col-rail').addEventListener('click',()=>pinCollapse(t,false));
+  c.querySelector('.col-unpin').addEventListener('click',()=>pinUnpin(t));
+  return c; }
+function pinLayout(){ const cols=$('#cols'), mob=document.body.classList.contains('mob'), pins=mob?[]:PIN.pins;
+  for(const t of TABS){ const pane=$('#pane-'+t), pinned=pins.includes(t);
+    if(pinned){ const c=colEl(t); if(c.parentElement!==cols) cols.appendChild(c); const b=c.querySelector('.col-body'); if(pane.parentElement!==b) b.appendChild(pane);
+      pane.hidden=false; const col=PIN.collapsed.includes(t); c.classList.toggle('min',col); c.querySelector('.col-min').setAttribute('aria-expanded',String(!col)); }
+    else{ const c=document.querySelector(`#cols .col[data-t="${t}"]`); if(c) c.remove(); if(pane.parentElement!==$('#dock-body')) $('#dock-body').appendChild(pane); }
+    const tab=document.querySelector(`#tabs .tab[data-t="${t}"]`); tab.hidden=pinned;
+    tab.querySelector('.pinb').setAttribute('aria-pressed',String(pinned)); }
+  for(const t of TABS){ const c=document.querySelector(`#cols .col[data-t="${t}"]`); if(c) cols.appendChild(c); }   // tab order, not pin order
+  for(const t of TABS){ const pane=$('#pane-'+t); if(pane.parentElement===$('#dock-body')) $('#dock-body').appendChild(pane); }
+  const left=TABS.filter(t=>!pins.includes(t)); $('#panel').classList.toggle('empty',!left.length);
+  setTab(left.length&&!left.includes(DOCK.tab)?left[0]:DOCK.tab);
+  layoutDock(); }
+function pinMsg(t){ const m=$('#dock-msg'); m.textContent=t||''; m.hidden=!t; clearTimeout(pinMsg.tm); if(t) pinMsg.tm=setTimeout(()=>{ m.hidden=true; },6000); }
+function pinFit(){ // collapse the oldest expanded pinned columns until the stage keeps its minimum width; restore them when there is room
+  if(document.body.classList.contains('mob')) return;
+  for(const t of PIN.pins){ if(stageRoom(PIN.pins,PIN.collapsed)>=PIN.MINSTAGE) break; if(!PIN.collapsed.includes(t)){ PIN.collapsed.push(t); PIN.auto.push(t); } }
+  for(const t of PIN.auto.slice().reverse()){ const c=PIN.collapsed.filter(x=>x!==t); if(stageRoom(PIN.pins,c)>=PIN.MINSTAGE){ PIN.collapsed=c; PIN.auto=PIN.auto.filter(x=>x!==t); } else break; } }
+function pinPin(t){ if(!TABS.includes(t)||PIN.pins.includes(t)) return true;
+  if(document.body.classList.contains('mob')) return false;
+  const pins=PIN.pins.concat([t]), col=PIN.collapsed.slice(), auto=PIN.auto.slice();
+  for(const x of PIN.pins){ if(stageRoom(pins,col)>=PIN.MINSTAGE) break; if(!col.includes(x)){ col.push(x); auto.push(x); } }
+  if(stageRoom(pins,col)<PIN.MINSTAGE){ col.push(t); auto.push(t); }   // the new column starts as a rail (opens when there is room)
+  if(stageRoom(pins,col)<PIN.MINSTAGE){ pinMsg('Not enough room: widen the window or unpin a panel'); return false; }
+  PIN.pins=pins; PIN.collapsed=col; PIN.auto=auto; pinSave(); pinLayout(); pinMsg(''); return true; }
+function pinUnpin(t){ if(!PIN.pins.includes(t)) return; PIN.pins=PIN.pins.filter(x=>x!==t); PIN.collapsed=PIN.collapsed.filter(x=>x!==t); PIN.auto=PIN.auto.filter(x=>x!==t);
+  pinFit(); pinSave(); pinLayout(); setTab(t); }
+function pinCollapse(t,on){ if(!PIN.pins.includes(t)) return; PIN.collapsed=PIN.collapsed.filter(x=>x!==t); PIN.auto=PIN.auto.filter(x=>x!==t);
+  if(on) PIN.collapsed.push(t);
+  else for(const x of PIN.pins){ if(x===t) continue; if(stageRoom(PIN.pins,PIN.collapsed)>=PIN.MINSTAGE) break; if(!PIN.collapsed.includes(x)) PIN.collapsed.push(x); }
+  pinSave(); pinLayout(); }
+document.querySelectorAll('#tabs .pinb').forEach(b=>b.addEventListener('click',e=>{ e.stopPropagation(); const t=b.dataset.t; PIN.pins.includes(t)?pinUnpin(t):pinPin(t); }));
+addEventListener('resize',()=>{ if(!document.body.classList.contains('mob')&&PIN.pins.length){ pinFit(); pinLayout(); } });
+{ const st=pinLoad(); PIN.pins=st.pins; PIN.collapsed=st.collapsed; if(!document.body.classList.contains('mob')&&PIN.pins.length){ pinFit(); pinLayout(); } }
+/* ── v50 Learn: guided modules. A module is data; each step runs in the teaching drawer with Back/Next and a progress
+   bar, applies its "show" state (the Key concept spec plus fibrosis and pathology) and lists what the model is now
+   showing. Numbers follow computeHemo: gradient = 3 + 16·F^1.35 mmHg (no thrombosis or outflow block); oesophageal
+   varices open from 10 mmHg, fundal and paraumbilical from 12, splenorenal and caput medusae from 14 (each fully
+   open ~7 mmHg higher); a TIPSS brings the gradient to min(native, 6 + 0.12 × native). ── */
+const MODULES=[
+  {id:'ph',title:'Portal hypertension',scope:'From a normal portal circulation to CSPH, collaterals, HVPG and TIPSS.',refs:[{src:'Baveno VII',year:'2022',status:'check'}],
+   steps:[
+    {title:'The normal portal circulation',show:{fib:0,path:{tips:false,bleed:false,pvt:'none',bcs:'none'},preset:'portal',cam:{t:[0.3,-0.35,0.1],dir:[0,0.1,1],d:5.0}},
+     body:'The portal vein, formed behind the neck of the pancreas from the splenic and superior mesenteric veins, brings about three-quarters of the liver’s blood inflow; the hepatic artery brings the rest. Blood crosses the sinusoids to the hepatic veins at low pressure: the portal pressure gradient (portal minus hepatic venous pressure) is normally 1–5 mmHg. Here, at F0, it is 3 mmHg.'},
+    {title:'Fibrosis raises sinusoidal resistance',show:{fib:0.45,path:{tips:false,bleed:false,pvt:'none',bcs:'none'},preset:'portal'},
+     body:'As fibrosis advances, activated stellate cells lay collagen in the space of Disse, the sinusoids capillarise and narrow, and regenerative nodules distort the vessels. Intrahepatic resistance rises and the gradient climbs: at this stage of the slider it is about 8 mmHg, in the subclinical range (6–9 mmHg). Drag the fibrosis slider yourself to watch the gradient and platelets change.'},
+    {title:'HVPG and clinically significant portal hypertension',show:{fib:0.56,path:{tips:false,bleed:false,pvt:'none',bcs:'none'},preset:'portal'},
+     body:'An HVPG of 10 mmHg or more is clinically significant portal hypertension (CSPH): the threshold for varices, decompensation and, after hepatectomy, liver failure. At 12 mmHg or more varices can bleed. Non-invasively, liver stiffness of 25 kPa or more rules CSPH in (Baveno VII). Here the gradient has just reached about 10 mmHg and the first collateral, the left gastric vein, begins to open.',
+     check:{q:'Which HVPG defines clinically significant portal hypertension?',options:['≥6 mmHg','≥10 mmHg','≥12 mmHg','≥20 mmHg'],answer:1,explain:'CSPH is an HVPG of 10 mmHg or more. 6–9 mmHg is subclinical portal hypertension; 12 mmHg is the threshold for variceal bleeding.'}},
+    {title:'Portosystemic collaterals open',show:{fib:1,path:{tips:false,bleed:false,pvt:'none',bcs:'none'},preset:'portal',cam:{t:[0.55,-0.2,0.0],dir:[0.1,0.25,1],d:5.2}},
+     body:'Portal blood finds its way back to the systemic veins through collaterals. From 10 mmHg the left gastric (coronary) vein feeds oesophageal and GOV1 gastric varices that drain to the azygos; in the model fundal varices and the recanalised paraumbilical vein open from 12 mmHg, and the splenorenal shunt and caput medusae from 14 mmHg. At F4 the gradient is 19 mmHg. Check the Clinical tab: Portal hypertension lists what is open.'},
+    {title:'Measuring it: HVPG',show:{fib:1,path:{tips:false,bleed:false,pvt:'none',bcs:'none'}},tryIt:{label:'Start the HVPG measurement',fn:()=>{ if(!HVPG.on) hvpgStart(); }},
+     body:'The gradient is measured through the jugular vein: a balloon catheter in a hepatic vein gives the free pressure (FHVP), then, with the balloon inflated, the wedged pressure (WHVP), which reflects sinusoidal and so portal pressure. HVPG = WHVP − FHVP. Start the measurement: it opens here in the drawer, and Back returns you to this module.'},
+    {title:'Decompressing it: TIPSS',show:{fib:1,path:{tips:true,bleed:false,pvt:'none',bcs:'none'},preset:'portal'},
+     body:'A transjugular intrahepatic portosystemic shunt joins the right hepatic vein to the right portal vein through the liver with a covered stent, so portal blood bypasses the sinusoids. In the model the gradient falls from 19 to about 8 mmHg and the collaterals collapse. Pre-emptive TIPSS within 72 h is recommended after variceal bleeding in Child–Pugh C 10–13, or B >7 with active bleeding; hepatic encephalopathy is the main risk (Baveno VII).',
+     check:{q:'With a TIPSS in place at F4, what does the model’s gradient fall to?',options:['About 3 mmHg','About 8 mmHg','About 12 mmHg','About 17 mmHg'],answer:1,explain:'19 mmHg falls to min(19, 6 + 0.12 × 19) ≈ 8 mmHg: below the 12 mmHg bleeding threshold.'}}]},
+  {id:'couinaud',title:'The functional liver (Couinaud)',soon:true},
+  {id:'jaundice',title:'Obstructive jaundice',soon:true},
+  {id:'acinus',title:'The acinus and zonal injury',soon:true},
+  {id:'focal',title:'Focal liver lesions',soon:true}];
+const LEARN={m:null,i:0,prog:{}};
+try{ LEARN.prog=JSON.parse(localStorage.getItem('hsa-learn')||'{}')||{}; }catch(e){ LEARN.prog={}; }
+const learnSave=()=>{ try{ localStorage.setItem('hsa-learn',JSON.stringify(LEARN.prog)); }catch(e){} };
+function fibSet(f){ state.fibrosis=f; $('#sl-fib').value=f; applySim(); clinRefresh(); }
+function stepApply(sp){ if(!sp) return; if(state.zTarget>0.01){ state.zTarget=0; }
+  if(sp.fib!=null) fibSet(sp.fib);
+  if(sp.path){ let ch=false; for(const k in sp.path) if(state.path[k]!==sp.path[k]){ state.path[k]=sp.path[k]; ch=true; } if(ch) pathChanged(); }
+  showApply(0,sp); }
+function stepChips(sp){ const c=[]; if(sp.fib!=null) c.push(`Fibrosis ${$('#v-fib').textContent.split('·')[0].trim()}`);
+  c.push(`Gradient ${Math.round(HEMO.ppg)} mmHg`);
+  if(sp.preset){ const p=PRESETS[0].find(q=>q.id===sp.preset); if(p) c.push(p.label+' view'); }
+  if(state.path.tips) c.push('TIPSS in place');
+  const O=HEMO.open, open=[['eso','oesophageal varices'],['fun','fundal varices'],['pu','paraumbilical vein'],['sr','splenorenal shunt'],['caput','caput medusae']].filter(([k])=>(O[k]||0)>0.3).map(x=>x[1]);
+  if(open.length) c.push('Open: '+open.join(', '));
+  return c; }
+function learnStep(m,i){ LEARN.m=m; LEARN.i=i; LEARN.prog[m.id]=Math.max(LEARN.prog[m.id]||0,i+1); learnSave(); learnList();
+  const sp=m.steps[i]; stepApply(sp.show);
+  drawerOpen({type:'module',key:'mod:'+m.id,title:m.title,tag:'Learn',render:body=>{
+    body.innerHTML=`<div class="tc-eb"><span>Module · ${m.title}</span></div><div class="stepbar mod"></div><div class="tc-sub">Step ${i+1} of ${m.steps.length}</div><h2 class="tc-t"></h2><p class="tc-body"></p>`;
+    const bar=body.querySelector('.stepbar'); m.steps.forEach((_,j)=>{ const e=document.createElement('i'); e.dataset.s=j<i?'done':j===i?'now':'todo'; bar.appendChild(e); });
+    body.querySelector('.tc-t').textContent=sp.title; body.querySelector('.tc-body').textContent=sp.body;
+    const shows=document.createElement('section'); shows.className='tc-sec'; shows.innerHTML='<h3>The model is now showing</h3><div class="mchips"></div>';
+    for(const t of stepChips(sp.show||{})){ const s=document.createElement('span'); s.className='mchip'; s.textContent=t; shows.querySelector('.mchips').appendChild(s); }
+    body.appendChild(shows);
+    if(sp.tryIt){ const b=document.createElement('button'); b.className='pbtn tryit'; b.textContent=sp.tryIt.label+' ›'; b.addEventListener('click',sp.tryIt.fn); body.appendChild(b); }
+    if(sp.check){ const q=document.createElement('section'); q.className='tc-sec qz'; q.innerHTML='<h3>Check</h3><p></p><div class="qo"></div><p class="qx" hidden></p>';
+      q.querySelector('p').textContent=sp.check.q;
+      sp.check.options.forEach((o,j)=>{ const b=document.createElement('button'); b.className='sbtn'; b.textContent=o;
+        b.addEventListener('click',()=>{ q.querySelectorAll('.qo button').forEach((x,k)=>{ x.disabled=true; x.classList.toggle('right',k===sp.check.answer); x.classList.toggle('wrong',k===j&&j!==sp.check.answer); });
+          const x=q.querySelector('.qx'); x.hidden=false; x.textContent=(j===sp.check.answer?'Correct. ':'Not quite. ')+sp.check.explain; });
+        q.querySelector('.qo').appendChild(b); });
+      body.appendChild(q); }
+    if(i===m.steps.length-1&&m.refs){ const s=document.createElement('section'); s.className='tc-sec'; s.innerHTML='<h3>Guidance</h3><div class="refs"></div>';
+      for(const r of m.refs){ const b=document.createElement('span'); b.className='ref '+r.status; b.textContent=r.src+' '+r.year;
+        if(r.status==='check'){ b.title='Baveno VIII (J Hepatol 2026) has been published; not yet verified against the primary source'; b.insertAdjacentHTML('beforeend',' <em>check</em>'); } s.querySelector('.refs').appendChild(b); }
+      body.appendChild(s); }
+    const ft=document.createElement('div'); ft.className='hv-ft mod-ft';
+    ft.innerHTML=`<button class="gobtn clearall">Restart</button><span></span><button class="gobtn clearall"${i===0?' disabled':''}>◀ Back</button><button class="gobtn nx">${i===m.steps.length-1?'Finish':'Next ▶'}</button>`;
+    const [rs,,bk,nx]=ft.children; rs.addEventListener('click',()=>learnStep(m,0)); bk.addEventListener('click',()=>{ if(i>0) learnStep(m,i-1); });
+    nx.addEventListener('click',()=>{ if(i<m.steps.length-1) learnStep(m,i+1); else { LEARN.prog[m.id]=m.steps.length; learnSave(); learnList(); drawerClose(); } });
+    body.appendChild(ft); }});
+  shareSync(); }
+function learnList(){ const box=$('#learn-list'); if(!box) return; box.innerHTML='';
+  for(const m of MODULES){ const c=document.createElement('div'); c.className='mcard'+(m.soon?' soon':'');
+    if(m.soon){ c.innerHTML=`<b></b><span class="msoon">Coming soon</span>`; c.querySelector('b').textContent=m.title; box.appendChild(c); continue; }
+    const n=m.steps.length, p=Math.min(n,LEARN.prog[m.id]||0);
+    c.innerHTML=`<div class="mh"><b></b><span class="mn">${p&&p<n?`${p} / ${n}`:`${n} steps`}</span></div><p></p>${p&&p<n?`<div class="mprog"><i style="width:${Math.round(p/n*100)}%"></i></div>`:''}<button class="gobtn">${p&&p<n?'Continue':p>=n?'Review':'Start'}</button>`;
+    c.querySelector('b').textContent=m.title; c.querySelector('p').textContent=m.scope;
+    c.querySelector('.gobtn').addEventListener('click',()=>learnStep(m,p&&p<n?p:0)); box.appendChild(c); } }
+learnList();
+/* ── Share this view: tier, camera, layers, fibrosis, pathology (lesions re-created from their labels) and module step
+   in the URL hash (#v=…). The teaching website deep-links into the atlas with it. ── */
+function shareState(){ const inn=tiers[0].inner, P=o=>o.toArray().map(x=>+x.toFixed(3));
+  const cam=inn&&tiers[0].built?{p:P(inn.worldToLocal(camera.position.clone())),t:P(inn.worldToLocal(controls.target.clone()))}:null;
+  return {v:1,z:+state.zTarget.toFixed(2),cam,L:state.layers,tl:state.tl,f:+state.fibrosis.toFixed(3),path:state.path,les:lesions.map(L=>L.label),
+    flow:state.flow,bile:state.bile,m:LEARN.m&&DRAWER.cur&&DRAWER.cur.type==='module'?[LEARN.m.id,LEARN.i]:null}; }
+const b64u={enc:s=>btoa(unescape(encodeURIComponent(s))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,''),
+  dec:s=>decodeURIComponent(escape(atob(s.replace(/-/g,'+').replace(/_/g,'/'))))};
+function shareURL(){ return location.href.split('#')[0]+'#v='+b64u.enc(JSON.stringify(shareState())); }
+function shareSync(){}
+function relesion(label){ const segK=n=>Math.max(0,SEG.indexOf(n)); let m;
+  const set=(id,v)=>{ const e=$('#'+id); if(e){ e.value=v; e.dispatchEvent(new Event('change')); } };
+  if((m=label.match(/^HCC \d+ · segment (\S+) · ([\d.]+) cm/))){ set('hcc-size',m[2]); set('hcc-seg',segK(m[1])); addHCC(); return; }
+  if((m=label.match(/^CCA \d+ · intrahepatic · segment (\S+) · ([\d.]+) cm/))){ set('cca-type','i'); ccaForm(); set('cca-size',m[2]); set('cca-seg',segK(m[1])); addCCA(); return; }
+  if((m=label.match(/^CCA \d+ · perihilar · Bismuth–Corlette (\S+) · ([\d.]+) cm/))){ set('cca-type','p'); ccaForm(); set('cca-bis',m[1]); set('cca-size',m[2]); addCCA(); return; }
+  if((m=label.match(/^CCA \d+ · distal extrahepatic · ([\d.]+) cm/))){ set('cca-type','d'); ccaForm(); set('cca-size',m[1]); addCCA(); return; }
+  if((m=label.match(/^PDAC \d+ · (head|tail) · ([\d.]+) cm/))){ set('pc-site',m[1]); set('pc-size',m[2]); addPC(); return; }
+  if((m=label.match(/^(Abscess|Cyst|Haemangioma|FNH|Adenoma) \d+ · segment (\S+) · ([\d.]+) cm/))){ const t={Abscess:['abs'],Cyst:['cyst'],Haemangioma:['bfl','hem'],FNH:['bfl','fnh'],Adenoma:['bfl','hca']}[m[1]];
+    set('bll-type',t[0]); if(t[1]) set('bll-sub',t[1]); set('bll-size',m[3]); set('bll-seg',segK(m[2])); addBLL(); } }
+function shareRestore(){ const h=location.hash.match(/#v=([A-Za-z0-9_-]+)/); if(!h) return; let S; try{ S=JSON.parse(b64u.dec(h[1])); }catch(e){ return; }
+  if(!S||S.v!==1) return; if(!tiers[0].built||!CT_ORGANS){ setTimeout(shareRestore,300); return; }
+  try{
+    Object.assign(state.layers,S.L||{}); for(const k in (S.tl||{})) Object.assign(state.tl[k]||{},S.tl[k]);
+    if(S.path){ const b=JSON.parse(JSON.stringify(S.path)); Object.assign(state.path,b); }
+    for(const l of (S.les||[])) relesion(l);
+    if(typeof S.flow==='boolean') state.flow=S.flow; if(typeof S.bile==='boolean') state.bile=S.bile;
+    fibSet(S.f||0); bilStentBuild(tiers[0].inner.userData.P); pdStentBuild(tiers[0].inner.userData.P); pathChanged();
+    applyModes(); for(let k=1;k<tiers.length;k++) applyTierLayers(k); refreshLayerChrome(); flowUI();
+    if(S.cam){ const inn=tiers[0].inner; inn.updateMatrixWorld(true); camera.position.copy(inn.localToWorld(new THREE.Vector3(...S.cam.p))); controls.target.copy(inn.localToWorld(new THREE.Vector3(...S.cam.t))); controls.update(); }
+    if(S.z) state.zTarget=S.z;
+    clearSelection(); if(DRAWER.cur) drawerClose(true);
+    if(S.m){ const m=MODULES.find(x=>x.id===S.m[0]); if(m&&m.steps) learnStep(m,Math.min(S.m[1],m.steps.length-1)); }
+  }catch(e){ console.warn('share link could not be restored',e); } }
+$('#share-copy').addEventListener('click',async()=>{ const u=shareURL(), st=$('#share-st');
+  try{ await navigator.clipboard.writeText(u); st.textContent='Link copied'; }catch(e){ const i=$('#share-url'); i.hidden=false; i.value=u; i.select(); st.textContent='Copy the link below'; }
+  history.replaceState(null,'',u); setTimeout(()=>{ st.textContent=''; },5000); });
+
 $('#hvpg-btn').addEventListener('click',()=>{ HVPG.on?hvpgStop():hvpgStart(); });
 $('#hvpg-x').addEventListener('click',hvpgStop);
 $('#hvpg-why-x').addEventListener('click',()=>{ HVPG.whyX=true; $('#hvpg-why').hidden=true; });
@@ -3464,13 +3756,14 @@ function isPathLabel(label){
   return s.has(label);
 }
 function setSelection(ti,local,label,dock=false){
-  selection={tier:ti,local:local.clone(),label,dock};
-  selEl.classList.toggle('dock',!!dock);
-  if(!dock&&isPathLabel(label)){ dock=true; selection.dock=true; selEl.classList.add('dock'); }
+  // v50: one identify box for everything; pathology (lesions, devices, thrombi, cysts…) also opens its teaching card
+  // in the drawer, which replaces the docked callout
+  selection={tier:ti,local:local.clone(),label};
   selEl.querySelector('b').textContent=label;
   const txt=info(label);
-  selEl.querySelector('span').textContent=txt; selEl.classList.toggle('long',txt.length>260);
+  identifyFill(ti,label,txt);
   selEl.style.display='block';
+  if(isPathLabel(label)&&!(DRAWER.cur&&DRAWER.cur.type==='procedure')) learnOpen({label,tier:ti});
   pins[ti].forEach(p=>p.el.dataset.sel=(p.a.l===label)?'1':'0');
   selboxShow(ti,label,txt);
   refreshLayerChrome();
@@ -3620,6 +3913,7 @@ function layoutDock(){ const app=$('#app'), mob=document.body.classList.contains
   const dr=document.getElementById('drawer'), dOpen=!mob&&dr&&!dr.hidden;
   app.style.setProperty('--stageL',(dOpen?dr.offsetWidth+32:0)+'px');
   app.style.setProperty('--stripL',(dOpen?dr.offsetWidth+32:264)+'px');
+  { const sb=$('#simbar'); if(sb) sb.classList.toggle('narrow',!mob&&innerWidth-w-(dOpen?dr.offsetWidth+32:264)-16<640); }
   resize(); }
 const togglePanel=()=>{ if(document.body.classList.contains('mob')){ if(performance.now()-MOB.justDragged<400) return; mobSheet(MOB.state==='peek'?'half':'peek'); return; }
   const c=$('#dockwrap').classList.toggle('closed'); $('#btn-panel').setAttribute('aria-pressed',String(!c)); layoutDock(); };
@@ -4656,6 +4950,7 @@ function bxPanel(){
   $('#bx-prev').disabled=st<=1; $('#bx-next').disabled=st>=n||!done;
   $('#bx-st').textContent=`Stage ${st} of ${n} · `+(done?(st<n?'complete — press Next':'complete'):'in progress…');
   document.querySelectorAll('#bx .hst').forEach((el,i)=>{ el.dataset.s=i+1<st?'done':i+1===st?'now':'todo'; });
+  stepBar($('#bx-bar'),[...document.querySelectorAll('#bx .hst')]);
 }
 function bxTick(dt){
   if(!BX.on||!BX.O) return;
@@ -4774,6 +5069,7 @@ function hvpgPanel(){
   $('#hvpg-next').disabled=st>=3 || !done || (HVPG.blocked&&st>=2);
   $('#hv-st').textContent=`Stage ${st} of 3 · `+(done?(st<3&&!(HVPG.blocked&&st>=2)?'complete — press Next':'complete'):'in progress…');
   document.querySelectorAll('#hvpg .hst').forEach((el,i)=>{ el.dataset.s = i+1<st?'done':i+1===st?'now':'todo'; });
+  stepBar($('#hv-bar'),[...document.querySelectorAll('#hvpg .hst')]);
   const f=HVPG.F, w=HVPG.dispW;
   $('#hv-f').textContent = f==null?'—':Math.round(f)+' mmHg';
   $('#hv-w').textContent = HVPG.blocked?'not obtainable' : w==null?'—':Math.round(w)+' mmHg';
@@ -5340,10 +5636,10 @@ function mobCam(){ if(!MOB.on) return; const T=new THREE.Vector3(0,-0.45,0), a=i
   camera.position.copy(HOME).sub(T).multiplyScalar(k).add(T); controls.target.copy(T); controls.update(); }
 function mobApply(){ const on=MOBQ();
   if(on===MOB.on){ if(on) mobSheet(MOB.state); return; }
-  MOB.on=on; document.body.classList.toggle('mob',on); layoutDock();
+  MOB.on=on; document.body.classList.toggle('mob',on); if(typeof pinLayout==='function'&&PIN) pinLayout(); layoutDock();
   if(on){ const sc=$('#panel .scroll'), after=$('#mcard').nextSibling;
     mobMove($('#simbar'),$('#mslot-sim')); mobMove($('#tabs'),$('#mslot-tabs')); mobMove($('#dock-scale'),sc,sc.firstChild);
-    mobMove($('#bx'),sc,after); mobMove($('#hvpg'),sc,after); mobMove($('#hvpg-why'),sc,after);
+    mobMove($('#drawer'),sc,after);
     $('#dockwrap').classList.remove('closed'); $('#btn-reset').textContent='Reset';
     mobTab('explore'); requestAnimationFrame(()=>{ mobSheet('peek'); mobCam(); }); }
   else { mobRestore(); window.__mobH=0; document.body.style.removeProperty('--sheetH'); mobTab('explore'); $('#mcard').hidden=true;
@@ -5360,7 +5656,7 @@ function mobApply(){ const on=MOBQ();
   $('#grip').addEventListener('pointerdown',start); $('#mhead').addEventListener('pointerdown',start);
   addEventListener('pointermove',move); addEventListener('pointerup',end); addEventListener('pointercancel',end); }
 { const mo=new MutationObserver(ms=>{ for(const m of ms){ if(MOB.on&&!m.target.hidden){ $('#mcard').hidden=true; mobRaise(); } } });
-  for(const id of ['#bx','#hvpg','#hvpg-why']) mo.observe($(id),{attributes:true,attributeFilter:['hidden']}); }
+  for(const id of ['#drawer']) mo.observe($(id),{attributes:true,attributeFilter:['hidden']}); }
 addEventListener('resize',mobApply); mobApply();
 if(MOB.on){ anno.classList.add('nolabels'); $('#btn-lab').setAttribute('aria-pressed','false'); }
 /* first-run introduction: a card in the centre, dashed arrows to the layer bar, the panel and the fibrosis slider */
@@ -5402,7 +5698,7 @@ function introCheck(){ const el=$('#intro'), mob=el.classList.contains('mob');
   if(el.querySelector('.intro-card').classList.contains('off') && (mob||!left.length)) introDone(); else introLayout(); }
 function introHide(){ const el=$('#intro'); el.querySelector('.intro-card').classList.add('off'); el.classList.add('nocard'); introCheck(); }
 function introCardOpen(){ return !$('#intro').hidden && !$('#intro .intro-card').classList.contains('off'); }
-$('#intro-x').addEventListener('click',introHide); $('#intro-go').addEventListener('click',introHide);
+$('#intro-x').addEventListener('click',introHide); $('#intro-go').addEventListener('click',introDone);   // v50: closes the card and every pointer
 $('#intro').addEventListener('click',e=>{ if(e.target.id==='intro') introHide(); });
 document.querySelectorAll('#intro .intro-tx').forEach(b=>b.addEventListener('click',()=>{ b.parentElement.classList.add('off'); introCheck(); }));
 $('#btn-intro').addEventListener('click',()=>{ if(shownTier>0) coachFor(shownTier,true); else introShow(); });
@@ -5821,11 +6117,15 @@ function frame(){
 
 
 applySim(); applyModes(); paintPanel(0); pathTargets(); refreshPathUI(); clinRefresh(); frame();
+if(/#v=/.test(location.hash)) setTimeout(shareRestore,400);   // v50: deep link
 
 // exposed for the headless build check
 
 /* v40: extra harness screenshots (model-frame cameras; see harness.js) */
 const HARNESS_SHOTS=[
+  // v50 dock: Layers pinned beside Clinical (1440 keeps both open); both pinned at 1280, where the oldest column collapses to its rail
+  {name:'dock_pin_layers_clinical_1440', viewport:[1440,900], cam:{keep:true,layers:null}, pre:"(()=>{const d=window.__atlas.dock; d.unpinAll(); d.pin('layers'); document.getElementById('tab-clinical').click();})()", post:"window.__atlas.dock.unpinAll()"},
+  {name:'dock_pin_layers_clinical_1280', viewport:[1280,800], cam:{keep:true,layers:null}, pre:"(()=>{const d=window.__atlas.dock; d.unpinAll(); d.pin('layers'); d.pin('clinical');})()", post:"window.__atlas.dock.unpinAll()"},
   {name:'ctx_ribcage_front', wait:'ctx', cam:{model:true,t:[0.46,0.95,0.35],dir:[0,0.06,1],d:11.0,layers:{ribcage:'on'}}},
   {name:'ctx_ribcage_ghost', wait:'ctx', cam:{model:true,t:[-0.25,0.05,0.35],dir:[-0.35,0.12,1],d:6.4,layers:{ribcage:'ghost'}}},
   {name:'ctx_ribcage_right', wait:'ctx', cam:{model:true,t:[-0.55,0.25,0.0],dir:[-1,0.08,0.12],d:7.0,layers:{ribcage:'on'}}},
@@ -5843,5 +6143,8 @@ const HARNESS_SHOTS=[
   {name:'svt_preset',        cam:{model:true,t:[1.12,-0.36,-0.22],dir:[0.30,-0.28,1],d:3.6,layers:{parenchyma:'ghost',stomach:'ghost'}},
      pre:"(()=>{document.querySelector('.segctl[data-key=\"panc\"] button[data-v=\"acute\"]').click(); const c=document.getElementById('panc-svt'); c.checked=true; c.dispatchEvent(new Event('change'));})()", settle:1.5, post:"document.getElementById('path-clear').click()"}
 ];
-window.__atlas = {ORG_TEX, spineCheck, ROD, sceneSig, ensure, QUAL, qualSet, LIVER_TEX, R36, LIGHTS, studioEnv, SKIN_ENV, scene, AO, gtao, composer, aoFrame, AO_BG, AXIS, AXIS_Q, AXIS_A, HOME, SKIN, mz, CT_ORGANS:()=>CT_ORGANS, tiers, state, snapAnnos, SEG, SEG_CENTROID, sdfLiver, insideLiver, segAt, HILUM_IN,
+window.__atlas = {dock:{pin:t=>pinPin(t),unpin:t=>pinUnpin(t),collapse:(t,on=true)=>pinCollapse(t,on),unpinAll:()=>{ PIN.pins.slice().forEach(pinUnpin); },
+    state:()=>({pins:PIN.pins.slice(),collapsed:PIN.collapsed.slice(),tab:DOCK.tab,stage:Math.round(stageRoom(PIN.pins,PIN.collapsed))})},
+  drawer:{open:learnOpen,close:()=>drawerClose(),state:()=>DRAWER.cur?{key:DRAWER.cur.key,type:DRAWER.cur.type,history:DRAWER.stack.map(e=>e.key)}:null},
+  ORG_TEX, spineCheck, ROD, sceneSig, ensure, QUAL, qualSet, LIVER_TEX, R36, LIGHTS, studioEnv, SKIN_ENV, scene, AO, gtao, composer, aoFrame, AO_BG, AXIS, AXIS_Q, AXIS_A, HOME, SKIN, mz, CT_ORGANS:()=>CT_ORGANS, tiers, state, snapAnnos, SEG, SEG_CENTROID, sdfLiver, insideLiver, segAt, HILUM_IN,
   CT_MODE, SEGP, falcX, SURF, LIVER_CM, UNIT_M, pins, updateOcclusion, CTP, PT, ORGAN_KEYS, SDF:{O:SO,N:[SNX,SNY,SNZ],P:SPITCH}, info, hitInfo, setSelection, camera, controls, applyModes, applySim, THREE, PERF, renderer, HVPG, hvpgStart, hvpgStop, hvpgGo, BIL, BX, bxPanel, pathCur, CTX, ctxLoad, svtView, HARNESS_SHOTS, LAYER_DEFAULTS, ribClear, DIA, diaLoad, pcView, forceRamps, frameStats, CTX_KEYS:['ribcage','diaphragm']};

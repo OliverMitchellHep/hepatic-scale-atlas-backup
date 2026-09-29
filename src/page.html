@@ -11,7 +11,7 @@
 <div id="app">
   <div id="stage"></div>
   <div id="vignette"></div>
-  <div id="anno"><div id="sel"><div class="box"><b></b><span></span></div><div class="stem"></div></div></div>
+  <div id="anno"><div id="sel" role="dialog" aria-label="Identify"><div class="box"><b></b><em class="sel-tag"></em><span></span><div class="sel-in" hidden></div><div class="sel-l"><button id="sel-learn">Learn more ›</button><button id="sel-iso">Isolate</button></div></div><div class="stem"></div></div></div>
   <div id="hover"></div>
 
   <header id="topbar">
@@ -58,7 +58,7 @@
         <div id="p-sub">&mdash;</div>
         <p id="p-lede">&mdash;</p>
       </div>
-      <div id="tabs" role="tablist" aria-label="Panel"><div class="tab" data-t="explore"><button class="tab-b" role="tab" id="tab-explore" aria-controls="pane-explore" aria-selected="false">Explore</button></div><div class="tab" data-t="layers"><button class="tab-b" role="tab" id="tab-layers" aria-controls="pane-layers" aria-selected="false">Layers</button></div><div class="tab" data-t="clinical"><button class="tab-b" role="tab" id="tab-clinical" aria-controls="pane-clinical" aria-selected="false">Clinical<span class="badge" id="clin-count" hidden></span></button></div><div class="tab" data-t="learn"><button class="tab-b" role="tab" id="tab-learn" aria-controls="pane-learn" aria-selected="false">Learn</button></div></div>
+      <div id="tabs" role="tablist" aria-label="Panel"><div class="tab" data-t="explore"><button class="tab-b" role="tab" id="tab-explore" aria-controls="pane-explore" aria-selected="false">Explore</button><button class="pinb" data-t="explore" aria-pressed="false" aria-label="Pin Explore" title="Pin Explore beside the panel"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M6 1.5h4l-.6 4.2 2.6 2.3v1.2H8.6V15h-1.2V9.2H4V8l2.6-2.3z" fill="currentColor"/></svg></button></div><div class="tab" data-t="layers"><button class="tab-b" role="tab" id="tab-layers" aria-controls="pane-layers" aria-selected="false">Layers</button><button class="pinb" data-t="layers" aria-pressed="false" aria-label="Pin Layers" title="Pin Layers beside the panel"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M6 1.5h4l-.6 4.2 2.6 2.3v1.2H8.6V15h-1.2V9.2H4V8l2.6-2.3z" fill="currentColor"/></svg></button></div><div class="tab" data-t="clinical"><button class="tab-b" role="tab" id="tab-clinical" aria-controls="pane-clinical" aria-selected="false">Clinical<span class="badge" id="clin-count" hidden></span></button><button class="pinb" data-t="clinical" aria-pressed="false" aria-label="Pin Clinical" title="Pin Clinical beside the panel"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M6 1.5h4l-.6 4.2 2.6 2.3v1.2H8.6V15h-1.2V9.2H4V8l2.6-2.3z" fill="currentColor"/></svg></button></div><div class="tab" data-t="learn"><button class="tab-b" role="tab" id="tab-learn" aria-controls="pane-learn" aria-selected="false">Learn</button><button class="pinb" data-t="learn" aria-pressed="false" aria-label="Pin Learn" title="Pin Learn beside the panel"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M6 1.5h4l-.6 4.2 2.6 2.3v1.2H8.6V15h-1.2V9.2H4V8l2.6-2.3z" fill="currentColor"/></svg></button></div></div>
       <div id="dock-msg" role="status" hidden></div>
     </div>
     <div class="scroll" id="dock-body">
@@ -307,16 +307,26 @@
       </div>
       </section>
       <section class="pane" id="pane-learn" role="tabpanel" aria-labelledby="tab-learn" data-t="learn" hidden>
-        <div class="eyebrow">Modules</div>
-        <p class="pnote-in">Guided modules arrive in a later phase.</p>
+        <div class="lsec-k">Modules</div>
+        <div id="learn-list"></div>
+        <div class="lsec-k">Share this view</div>
+        <p class="pnote-in">A link that reopens the atlas at this scale, camera, layers, fibrosis, pathology and module step.</p>
+        <div class="share"><button class="sbtn" id="share-copy">Copy link</button><span id="share-st" role="status"></span></div>
+        <input id="share-url" type="text" readonly hidden aria-label="Link to this view">
       </section>
     </div>
   </aside>
   </div>
 
+  <aside id="drawer" hidden aria-label="Teaching">
+    <div class="dr-hd"><button id="dr-back" hidden>‹ <span></span></button><span class="dr-tag" id="dr-tag"></span><button id="dr-x" aria-label="Close">×</button></div>
+    <div class="dr-body" id="dr-body"></div>
+  </aside>
+  <div id="dr-park" hidden>
   <div id="bx" hidden role="dialog" aria-label="Liver biopsy">
     <div class="hv-hd"><b id="bx-title">Liver biopsy</b><button id="bx-x" aria-label="End biopsy simulation">×</button></div>
     <div class="bx-when"><em>When this route is chosen</em><ul id="bx-when"></ul></div>
+    <div class="stepbar" id="bx-bar"></div>
     <ol class="hv-steps" id="bx-steps"></ol>
     <div class="hv-note" id="bx-note"></div>
     <div class="hv-st" id="bx-st"></div>
@@ -325,6 +335,7 @@
   </div>
   <div id="hvpg" hidden role="dialog" aria-label="HVPG measurement">
     <div class="hv-hd"><b>HVPG measurement</b><button id="hvpg-x" aria-label="End HVPG measurement">×</button></div>
+    <div class="stepbar" id="hv-bar"></div>
     <ol class="hv-steps">
       <li class="hst"><em>1 · Catheterisation</em><span>A balloon catheter is passed from the right internal jugular vein through the right atrium and down the IVC to the hepatic vein ostia under fluoroscopy.</span></li>
       <li class="hst"><em>2 · Free hepatic venous pressure</em><span>The tip is advanced 2–4 cm into the right hepatic vein with the balloon deflated. FHVP approximates IVC pressure and is the zero reference that cancels intra-abdominal pressure.</span></li>
@@ -377,6 +388,7 @@
     <div class="hw-sec"><em>Why a gradient, not the wedge alone</em>
       <p>The wedged pressure is an absolute value. It also contains everything that raises pressure around and downstream of the liver: intra-abdominal pressure (tense ascites), IVC and right atrial pressure (heart failure, tricuspid regurgitation), and the level at which the transducer was zeroed. The free hepatic venous pressure, measured in the same vein in the same sitting, carries the same offsets, so subtracting it cancels them.</p>
       <p>HVPG = WHVP − FHVP is what remains: the pressure drop across the sinusoidal bed, set by intrahepatic resistance and portal inflow. That is why the thresholds (≥ 10 mmHg clinically significant; ≥ 12 mmHg bleeding risk) are defined for the gradient. A pre-sinusoidal block (e.g. portal vein thrombosis) raises portal pressure without raising the wedge, so HVPG underestimates it.</p></div>
+  </div>
   </div>
   <div id="intro" hidden>
     <svg id="intro-svg" aria-hidden="true"><defs><marker id="intro-ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
