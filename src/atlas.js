@@ -4423,6 +4423,16 @@ function hvpgBuild(){
   HVPG.bal=tag(new THREE.Mesh(new THREE.SphereGeometry(1,24,16),mat(0xF2D27A,{roughness:0.2,clearcoat:1,opacity:0.8,
     emissive:new THREE.Color(0xF2D27A).multiplyScalar(0.3)})),'Occlusion balloon (wedged position)');
   HVPG.bal.visible=false; g.add(HVPG.tip); g.add(HVPG.bal);
+  /* v49: the balloon sits on the right hepatic vein's own centreline and inflates to 85% of the narrowest calibre along its
+     length, so it never pushes through the wall */
+  { const M=u.hvMesh, mo=M&&M.userData.mo, c=HVPG.path.getPointAt(0.95), q=new THREE.Vector3(), p0=new THREE.Vector3();
+    HVPG.balC=c.clone(); HVPG.rMax=0.062;
+    if(mo){ const segs=K.HVsegs; let main=-1; segs.forEach((sg,i)=>{ if(sg.name==='Right hepatic vein'&&(main<0||sg.pts.length>segs[main].pts.length)) main=i; });
+      const n=mo.ctr.length/3; let bd=1e9;
+      for(let v=0;v<n;v++){ if(mo.bt[v*2+1]!==main) continue; q.fromArray(mo.ctr,v*3); const d=q.distanceToSquared(c); if(d<bd){ bd=d; HVPG.balC.copy(q); } }
+      let rMin=1e9; for(let v=0;v<n;v++){ if(mo.bt[v*2+1]!==main) continue; q.fromArray(mo.ctr,v*3); if(q.distanceTo(HVPG.balC)>0.15) continue;
+        const r=p0.fromArray(mo.P0,v*3).distanceTo(q); if(r>1e-4&&r<rMin) rMin=r; }
+      if(rMin<1e8) HVPG.rMax=Math.min(0.062,0.85*rMin); } }
   g.userData.noAO=true; tiers[0].inner.add(g); HVPG.grp=g;
 }
 function hvpgTube(s){
@@ -4517,8 +4527,8 @@ function hvpgTick(dt){
   // balloon: inflates just behind the tip to the calibre of the vein
   const inflate=T.blocked?0:sm(t,e2b,e3a);
   HVPG.bal.visible=inflate>0.01;
-  if(HVPG.bal.visible){ const tg=HVPG.path.getTangentAt(0.985), c=HVPG.path.getPointAt(0.95);
-    const r=0.050*inflate+0.012; HVPG.bal.position.copy(c);
+  if(HVPG.bal.visible){ const tg=HVPG.path.getTangentAt(0.985), c=HVPG.balC;
+    const r=HVPG.rMax*(0.2+0.8*inflate); HVPG.bal.position.copy(c);
     HVPG.bal.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),tg); HVPG.bal.scale.set(r,r*2.3,r); }
   if(!T.blocked && t>=e3b){ HVPG.dispW = HVPG.dispW==null ? T.W : HVPG.dispW+(T.W-HVPG.dispW)*Math.min(1,dt*1.2); }
   else if(!T.blocked && t>=e3a && HVPG.dispW==null){ /* rising: shown on the trace, value filled at plateau */ }
@@ -4669,11 +4679,17 @@ function pathTick(dt){
     P.tips.marker.material.userData.baseOpacity=Math.min(1,td*4); }
   // the right hepatic vein is held open around the stent (the stent lies inside the vein, not through its wall)
   if(u.hvMesh&&u.hvMesh.userData.mo){ const M=u.hvMesh, mo=M.userData.mo;
-    if(!P.tips.vIdx){ const S=[], n=mo.P0.length/3, c=P.tips.curve, L=c.getLength(), N=Math.ceil(L*(1-P.tips.uJ)/0.006);
-      for(let i=0;i<=N;i++) S.push(c.getPointAt(P.tips.uJ+(1-P.tips.uJ)*i/N));
-      const out=[], q=new THREE.Vector3(), p0=new THREE.Vector3();
-      for(let v=0;v<n;v++){ q.fromArray(mo.ctr,v*3); let near=false; for(const s of S){ if(s.distanceToSquared(q)<0.0004){ near=true; break; } }
-        if(!near) continue; const r0=p0.fromArray(mo.P0,v*3).distanceTo(q); if(r0>1e-4&&r0<0.060) out.push([v,0.060/r0]); }
+    /* v49: only the right hepatic vein itself (not its tributaries) is widened, about the vein's own centreline, far enough
+       to enclose the stent (wire radius 0.052 + strut) wherever the stent axis sits in the lumen, with ~0.8 mm to spare;
+       the widening tapers off where the stent leaves the vein (puncture site) and beyond its ends */
+    if(!P.tips.vIdx){ const S=[], n=mo.P0.length/3, c=P.tips.curve, L=c.getLength(), u0=Math.max(0,P.tips.uJ-0.04), N=Math.ceil(L*(1-u0)/0.004);
+      for(let i=0;i<=N;i++) S.push(c.getPointAt(u0+(1-u0)*i/N));
+      const segs=u.K.HVsegs; let main=-1; segs.forEach((sg,i)=>{ if(sg.name==='Right hepatic vein'&&(main<0||sg.pts.length>segs[main].pts.length)) main=i; });
+      const out=[], q=new THREE.Vector3(), p0=new THREE.Vector3(), sm=THREE.MathUtils.smoothstep;
+      for(let v=0;v<n;v++){ if(mo.bt[v*2+1]!==main) continue; q.fromArray(mo.ctr,v*3);
+        let off=1e9; for(const s of S){ const d=s.distanceToSquared(q); if(d<off) off=d; } off=Math.sqrt(off); if(off>0.08) continue;
+        const r0=p0.fromArray(mo.P0,v*3).distanceTo(q), need=Math.min(off,0.02)+0.064; if(r0<1e-4||r0>=need) continue;
+        out.push([v,1+(need/r0-1)*(1-sm(off,0.02,0.08))]); }
       P.tips.vIdx=out; }
     const key=td.toFixed(2);
     if(key!==P.tips.vKey){ P.tips.vKey=key; const Kv=P.tips.vK||(P.tips.vK=new Float32Array(mo.P0.length/3).fill(1));
