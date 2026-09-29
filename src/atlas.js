@@ -226,7 +226,8 @@ const camera = new THREE.PerspectiveCamera(42, 1, 0.05, 500);
 /* v45: pulled back along the v38 direction (×2.04 from the orbit target) so the whole ribcage (ribs 1–12, costal cartilages,
    sternum, T1–T12) fits a 16:9 desktop frame with the side panel open; the orbit target (0,−0.45,0) is unchanged.
    v38–v44: (0.061,−0.145,7.137). */
-const HOME = new THREE.Vector3(0.124, 0.172, 14.559);
+// v51: 0.78 × the v45 distance to the orbit target (0, −0.45, 0), same direction: the organs fill more of the stage
+const HOME_K=0.78, HOME = new THREE.Vector3(0.124, 0.172+0.45, 14.559).multiplyScalar(HOME_K).add(new THREE.Vector3(0,-0.45,0));
 camera.position.copy(HOME);
 
 const pmrem = new THREE.PMREMGenerator(renderer);
@@ -2806,7 +2807,7 @@ const tiers=TIERS.map((t,i)=>{
 /* Lobule and acinus are posed identically: vessel axes point at the viewer, tilted 0.55 rad so the
    plates read in depth; one portal tract sits on the left and the central vein on the right, with the
    midpoint of that axis at the zoom origin — so zooming into the lobule lands in the acinus. */
-const TILT=0.55, MICRO_TILT=0.45;
+const TILT=0.55, MICRO_TILT=Math.PI/2-TILT;   // v51: was 0.45, which left the acinus 0.57 rad oblique
 /* the sinusoid tier is drawn 1.12× larger while it cross-fades with the acinus (plates and cells coincide), easing to
    its native size before the hepatocyte tier appears */
 const SIN_K=z=>1.12-0.12*THREE.MathUtils.smoothstep(z,3.0,3.45);
@@ -5576,7 +5577,8 @@ function declutter(list){
    MACRO_ZOOM^MACRO_HOLD × the home framing: v44 10^0.82 = 6.6×; v45 75.4^0.82 = 34.6× from the new home, which is 2.04×
    further out (Task 1), so 17.0× = 6.6^1.5 in v44 terms: the log-zoom travelled before the switch is 1.5× v44's.
    MACRO_STEP keeps each wheel notch / pinch the same magnification as v44 (0.6 at MACRO_ZOOM 10). */
-const MACRO_ZOOM=75.4, MACRO_HOLD=0.82, MACRO_STEP=0.6*Math.log(10)/Math.log(MACRO_ZOOM);
+const MACRO_HOLD=0.82, MACRO_ZOOM=75.4*Math.pow(HOME_K,1/MACRO_HOLD),   // v51: the lobule still fades in at the same on-screen magnification from the closer home
+      MACRO_STEP=0.6*Math.log(10)/Math.log(MACRO_ZOOM);
 /* v48: the lobule, acinus, sinusoid and hepatocyte tiers were framed for the v44 camera distance (7.144 from the target);
    the v45 home moved the camera 2.04× further out, which shrank them on screen. MICRO_K scales the microscopic tiers by the
    same ratio so they open at their original size (and METRES, the scale bar's field, is true again). */
@@ -5629,7 +5631,7 @@ const HEP_G=new THREE.Vector3(0,-1.06,0.55).multiplyScalar(0.60);
    the acinus zoomed about its centre, which is a hepatocyte plate. From z 2 → 3 the acinus is drawn towards one of its
    sinusoids (row at y +0.14) so that sinusoid ends on the aim point, where the sinusoid scale then appears centred;
    the sinusoid scale gives the offset back while the hepatocyte scale takes over (z 3.05 → 3.85). */
-const AC_SIN=new THREE.Vector3(0,0.14,0.03), _mcv=new THREE.Vector3(), _zero3=new THREE.Vector3();
+const AC_SIN=new THREE.Vector3(0,0.14,0.03), _mcv=new THREE.Vector3(), _zero3=new THREE.Vector3(), _camFront=new THREE.Vector3(0,0,1);
 function microCentre(grp,inner,local,k){ if(k<=0) return;
   _mcv.copy(local).applyMatrix4(inner.matrix).applyQuaternion(grp.quaternion).multiplyScalar(grp.scale.x);
   grp.position.addScaledVector(_mcv.sub(controls.target).negate(),k); }
@@ -5637,7 +5639,9 @@ function hepFocus(grp,s,z){
   if(z<3){ grp.position.set(0,0,0); return; }
   if(!HEP_G.userData){ HEP_G.applyMatrix4(xfMatrix(3)); HEP_G.userData=1; }
   const g=THREE.MathUtils.smoothstep(z,3.05,3.85);
-  grp.position.copy(HEP_G).applyQuaternion(grp.quaternion).multiplyScalar(1-g-s);
+  // v51: the cell's offset at the group's scale, removed as g rises (was × (1 − g − s), which jumped by (1 − s) at z = 3
+  // once v48's MICRO_K made s ≈ 2: the whole sinusoid leapt up and to the left as it arrived)
+  grp.position.copy(HEP_G).applyQuaternion(grp.quaternion).multiplyScalar(-s*g);
 }
 
 /* ════════════ loop ════════════ */
@@ -5949,7 +5953,10 @@ function frame(){
   const dt=Math.min(clock.getDelta(),0.05), el=clock.elapsedTime;
   frameNo++;
 
-  state.z+=(state.zTarget-state.z)*Math.min(1,dt*3.2);
+  state.z+=(state.zTarget-state.z)*Math.min(1,dt*(state.z>1.9?2.2:3.2));   // v51: gentler through acinus → sinusoid → hepatocyte
+  // v51: zooming in from the lobule to the acinus, the camera swings to face the acinus straight on (orbit undone)
+  if(state.zTarget>state.z+0.01&&state.z>1.2&&state.z<2.2&&!window.__camLock){ const off=camera.position.clone().sub(controls.target), d=off.length();
+    const k=Math.min(1,dt*2.5), n=off.divideScalar(d).lerp(_camFront,k).normalize(); camera.position.copy(controls.target).addScaledVector(n,d); }
   const z=state.z;
 
   const i0=Math.floor(Math.min(z,tiers.length-1-1e-6));
@@ -5972,6 +5979,7 @@ function frame(){
     tr.group.scale.setScalar(sc);
     if(!tr.snapped && frameNo%4===0){ tr.snapped=true; snapAnnos(i); }
     // below the lobule the microvascular unit tips up so the acinar sheet faces the viewer
+    // v51: the full tilt, so the acinus ends straight on: venules vertical (screen y), plates horizontal (screen x)
     if(i>=1&&i<=4) tr.group.rotation.x=-MICRO_TILT*THREE.MathUtils.smoothstep(z,1.3,2.0);
     if(i===0) macroFocus(tr.group,sc);
     if(i===2){ tr.group.position.set(0,0,0); microCentre(tr.group,tr.inner,AC_SIN,THREE.MathUtils.smoothstep(z,2.0,2.95)); }
