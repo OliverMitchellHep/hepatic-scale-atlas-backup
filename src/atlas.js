@@ -3403,7 +3403,7 @@ $('#btn-reset').addEventListener('click',()=>{camera.position.copy(HOME); contro
 $('#btn-lab').addEventListener('click',e=>{
   const on=anno.classList.toggle('nolabels'); e.currentTarget.setAttribute('aria-pressed',String(!on));});
 /* ---- layer switches: one list per scale ---- */
-const layerBox=$('#layers'); let layerEls={}, layerTier=-1;
+const layerBox=$('#layers'), animBox=$('#animbox'); let layerEls={}, layerTier=-1;   // animBox: v48, re-attached after each rebuild
 function layerValue(i,k){ return i===0 ? state.layers[k] : (state.tl[i][k]!==false); }
 function applyTierLayers(i){
   if(i===0||!tiers[i]||!tiers[i].built) return;
@@ -3423,6 +3423,12 @@ function refreshLayerChrome(){
     else el.querySelector('i').style.opacity = on?1:0.3;
   });
 }
+/* v48: on mid-size windows the wrapped layer list (with the Animate box) can reach the scale rail; move the rail below it */
+function railPlace(){ const r=$('#rail'); r.style.top='';
+  if(innerWidth<=860||document.body.classList.contains('mob')) return;
+  const lb=layerBox.getBoundingClientRect().bottom, h=r.offsetHeight;
+  if(innerHeight/2-h/2<lb+12) r.style.top=Math.round(lb+12+h/2)+'px'; }
+addEventListener('resize',()=>railPlace());
 function renderLayerButtons(i){
   layerTier=i; layerBox.innerHTML=''; layerEls={};
   layerBox.classList.toggle('grouped',i===0);
@@ -3443,7 +3449,7 @@ function renderLayerButtons(i){
           applyModes(); refreshLayerChrome(); }); }
       layerBox.appendChild(row);
     }
-    refreshLayerChrome(); return;
+    layerBox.appendChild(animBox); refreshLayerChrome(); railPlace(); return;
   }
   (LAYER_SETS[i]||[]).forEach(Ld=>{
     const b=document.createElement('button');
@@ -3461,7 +3467,7 @@ function renderLayerButtons(i){
     });
     layerBox.appendChild(b); layerEls[Ld.k]=b;
   });
-  refreshLayerChrome();
+  layerBox.appendChild(animBox); refreshLayerChrome(); railPlace();
 }
 
 function applyModes(){

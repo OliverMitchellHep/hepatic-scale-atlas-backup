@@ -264,6 +264,15 @@ input[type=range]::-moz-range-thumb{width:11px;height:11px;border:0;border-radiu
   .lgrp:not(.solo) .lay.lhead{min-width:0}
   .lay .cx{display:inline}
 }
+/* v48: the flow animations sit in their own box at the foot of the layer list */
+#animbox{display:flex;align-items:center;flex-wrap:wrap;gap:5px;margin-top:6px;padding:4px 5px 4px 9px;
+  background:rgba(13,18,24,.78);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  border:1px solid var(--rule);border-left:2px solid var(--amber-dim);border-radius:2px}
+.layers:not(.grouped) #animbox{margin-top:0}
+#animbox .ab-k{font-family:"IBM Plex Mono",monospace;font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--amber);margin-right:5px}
+#animbox .toggle{width:auto;padding:4px 9px;gap:7px}
+#animbox .toggle span{font-size:12px}
+body.mob #animbox{margin-top:8px}
 .lay{display:inline-flex;align-items:center;gap:7px;background:rgba(13,18,24,.78);backdrop-filter:blur(8px);
   -webkit-backdrop-filter:blur(8px);border:1px solid var(--rule);border-radius:2px;padding:5px 9px;
   text-align:left;transition:.15s;white-space:nowrap}
@@ -272,7 +281,7 @@ input[type=range]::-moz-range-thumb{width:11px;height:11px;border:0;border-radiu
 .lay em{font-style:normal;font-size:12px;color:var(--ink-3)}
 #simbar{position:absolute;z-index:19;bottom:calc(12px + env(safe-area-inset-bottom,0px));
   left:250px;right:calc(var(--pw) + 16px);margin:0 auto;max-width:780px;
-  display:grid;grid-template-columns:1fr auto;align-items:center;gap:8px 18px;
+  display:grid;grid-template-columns:1fr;align-items:center;gap:8px 18px;
   background:var(--panel);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
   border:1px solid var(--rule);border-radius:2px;padding:10px 14px}
 #simbar .sim-fib{display:flex;flex-direction:column;gap:2px;min-width:0}
