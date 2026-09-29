@@ -4791,6 +4791,10 @@ function declutter(list){
    further out (Task 1), so 17.0× = 6.6^1.5 in v44 terms: the log-zoom travelled before the switch is 1.5× v44's.
    MACRO_STEP keeps each wheel notch / pinch the same magnification as v44 (0.6 at MACRO_ZOOM 10). */
 const MACRO_ZOOM=75.4, MACRO_HOLD=0.82, MACRO_STEP=0.6*Math.log(10)/Math.log(MACRO_ZOOM);
+/* v48: the lobule, acinus, sinusoid and hepatocyte tiers were framed for the v44 camera distance (7.144 from the target);
+   the v45 home moved the camera 2.04× further out, which shrank them on screen. MICRO_K scales the microscopic tiers by the
+   same ratio so they open at their original size (and METRES, the scale bar's field, is true again). */
+const MICRO_K=HOME.distanceTo(new THREE.Vector3(0,-0.45,0))/7.144;
 const mz={s:1,pos:new THREE.Vector3(),Q:null};
 /* v44: the rotation lives on the macroscopic scene root (tier 0 group), never on the camera or on meshes. AXIS_UP is the
    least-squares centreline through the T1–L5 vertebral body centroids (pipeline/spine44.py), so the spine is vertical in
@@ -5164,7 +5168,7 @@ function frame(){
     tr.w=w;
     if(w<=0.004||!tr.built){tr.group.visible=false; return;}
     tr.group.visible=true;
-    const sc = i===0 ? Math.pow(MACRO_ZOOM,z) : Math.pow(4.2,z-i)*(i===1?0.78:i===3?SIN_K(z):1);   // lobule framed wider
+    const sc = i===0 ? Math.pow(MACRO_ZOOM,z) : MICRO_K*Math.pow(4.2,z-i)*(i===1?0.78:i===3?SIN_K(z):1);   // lobule framed wider
     tr.group.scale.setScalar(sc);
     if(!tr.snapped && frameNo%4===0){ tr.snapped=true; snapAnnos(i); }
     // below the lobule the microvascular unit tips up so the acinar sheet faces the viewer
