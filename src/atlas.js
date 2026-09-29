@@ -1334,7 +1334,7 @@ function buildPatho(g,L,K){
     for(let i=0;i<=40;i++){ const u=1-0.46*i/40, p=oes.getPointAt(u), fi=Math.round(u*80);
       const ph=j/4*Math.PI*2+0.4+0.42*Math.sin(u*36+j*1.7), rr=0.072;
       pts.push(p.addScaledVector(ofr.normals[fi],Math.cos(ph)*rr).addScaledVector(ofr.binormals[fi],Math.sin(ph)*rr)); }
-    esoList.push({pts:wallFit(pts,0.024+0.006*(j%2)+0.02,false,true),r:0.024+0.006*(j%2)});   // entry: at the cardia (left gastric vein)
+    esoList.push({pts:wallFit(pts,0.024+0.006*(j%2)+0.02,true,false),r:0.024+0.006*(j%2)});   // entry: pts[0] at the cardia (left gastric vein)
   }
   P.esoCols=esoList.map(q=>q.pts);
   const LGV=[K.LGV0.clone(),PT(0.40,-0.98,-0.42),PT(0.56,-0.62,-0.42),K.GOJ.clone()];
