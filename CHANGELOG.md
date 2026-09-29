@@ -1,5 +1,14 @@
 # Changelog
 
+## v47 — vessels, falciform, gut surfaces, pancreatic head, gallbladder, kidneys (29 Sept 2026)
+Commits are labelled "v46b" (work started as a revision of v46).
+- Vessels: the middle/left hepatic vein trunk starts on the IVC axis and flares from the cava (its rounded end bulged through the caval wall); the inferior ends of the IVC and aorta are square-cut (sphere caps removed, crisp flat caps); varices and portosystemic shunts carry the portal surface-vessel pattern; arterial, portal and venous walls are darker (×0.82–0.84) with their darkness varying along the course.
+- Falciform ligament: raised ~2 mm and much more transparent (painted opacity 0.92 → 0.24; fan and coronary fainter), same pale colour.
+- Stomach and duodenum: darker areas of tissue colour blending softly into the lighter serosa; the v44 subserosal vessel network restored under the serosa; surface vessels vary in opacity along their course, are raised in sections, and the arcades run a tortuous course. Oesophagus: six pale subserosal vessels running lengthwise, irregular and tortuous, no branches.
+- Pancreas: the head is reshaped after the v43 head (taller, flattened front to back, widening down to D2), blended into the neck; it meets D2 at the ampulla and no vessel runs through it (new check in `pancreas44.py`).
+- Gallbladder: slight nodularity (±0.7 mm, strongest over the fundus); gallbladder and bile ducts darker with soft patchy colour.
+- Kidneys: the hollow on the right kidney's inferior pole is filled (`pipeline/kidney46.py`, 19 → 0.5 mm, renal sinus untouched); both capsules rougher with slightly paler, softly blended areas.
+
 ## v46 — vessel courses, pancreatic head, spleen fit, falciform, organ surfaces (28 Sept 2026)
 - Common hepatic artery: runs along the upper border of the pancreas and passes above and in front of the portal trunk (2.2 mm); v45's ran through the trunk and grazed the splenic vein. The GDA and proper hepatic artery now leave it in front of the portal vein; the hepatic artery divides below the portal bifurcation. Intrahepatic companion arteries are offset perpendicular to each portal branch with a relaxation pass: 0 artery–portal contacts in the hepatic tree (was ~70). Remaining: the splenic artery still touches the splenic vein at the splenic hilum (pre-existing; needs both re-laid through the pancreas pipeline).
 - Pancreatic head: one near-spherical mass (≈33 × 35 × 30 mm) in the C-loop; the second lobe, the uncinate tube and the sheath that rose round the CBD are gone. The CBD enters the head from above (y −0.74) and stays inside to the ampulla. Pancreas maps re-baked.

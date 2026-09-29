@@ -60,3 +60,12 @@ Every new or re-exported mesh states its simplification error limit (default 0.1
 - `pancreas44.py`: v46 head (one ellipsoid; no HEAD2 / uncinate; duct sheath only below SHEATH_Y), then `bake44.py pancreas`.
 - `falc45.py`: v46 band / fan / coronary sizes and the run down to the inferior border, then `bake44.py liver`.
 - `organs45.py`: v46 kidney colour (no fat, no vessels), sparser oesophageal vessels; re-bake those organs.
+
+## v47 additions
+    python3 pipeline/kidney46.py            # right kidney: fill the inferior-pole hollow (then bake44.py kidney_right)
+
+- `pancreas44.py`: the head is taken from the v43 gland (read from git, commit 233307b) and blended into the neck; reports
+  whether any vessel axis runs through the gland.
+- `falc45.py` / `bake44.py`: falciform raised ~2 mm, painted much more transparently.
+- `organs45.py`: tortuous gastric / duodenal arcades, vessels raised in sections and varying in opacity, the v44 subserosal
+  network, darker colour patches; lengthwise pale oesophageal vessels; rougher kidneys with paler patches.
