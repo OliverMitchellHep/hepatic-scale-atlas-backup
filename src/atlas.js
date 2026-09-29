@@ -4970,6 +4970,14 @@ function setMacroFocus(cx,cy){
 /* sinusoid → hepatocyte: the zoom closes on one hepatocyte of the lower plate, which glides to centre
    where the cell view (same shape and pose) takes over */
 const HEP_G=new THREE.Vector3(0,-1.06,0.55).multiplyScalar(0.60);
+/* v49: acinus → sinusoid. The micro tiers sit at the scene origin, above the camera's aim point (controls.target), and
+   the acinus zoomed about its centre, which is a hepatocyte plate. From z 2 → 3 the acinus is drawn towards one of its
+   sinusoids (row at y +0.14) so that sinusoid ends on the aim point, where the sinusoid scale then appears centred;
+   the sinusoid scale gives the offset back while the hepatocyte scale takes over (z 3.05 → 3.85). */
+const AC_SIN=new THREE.Vector3(0,0.14,0.03), _mcv=new THREE.Vector3(), _zero3=new THREE.Vector3();
+function microCentre(grp,inner,local,k){ if(k<=0) return;
+  _mcv.copy(local).applyMatrix4(inner.matrix).applyQuaternion(grp.quaternion).multiplyScalar(grp.scale.x);
+  grp.position.addScaledVector(_mcv.sub(controls.target).negate(),k); }
 function hepFocus(grp,s,z){
   if(z<3){ grp.position.set(0,0,0); return; }
   if(!HEP_G.userData){ HEP_G.applyMatrix4(xfMatrix(3)); HEP_G.userData=1; }
@@ -5305,7 +5313,8 @@ function frame(){
     // below the lobule the microvascular unit tips up so the acinar sheet faces the viewer
     if(i>=1&&i<=4) tr.group.rotation.x=-MICRO_TILT*THREE.MathUtils.smoothstep(z,1.3,2.0);
     if(i===0) macroFocus(tr.group,sc);
-    if(i===3) hepFocus(tr.group,sc,z);
+    if(i===2){ tr.group.position.set(0,0,0); microCentre(tr.group,tr.inner,AC_SIN,THREE.MathUtils.smoothstep(z,2.0,2.95)); }
+    if(i===3){ hepFocus(tr.group,sc,z); microCentre(tr.group,tr.inner,_zero3,1-THREE.MathUtils.smoothstep(z,3.05,3.85)); }
     const outgoing=(i===i0&&t>0.001);
     tr.group.renderOrder=outgoing?-2:2;
     setFade(tr.group,w,outgoing);
