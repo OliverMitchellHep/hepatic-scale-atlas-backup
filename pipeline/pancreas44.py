@@ -29,6 +29,10 @@ tube are gone, and the neck tapers into the head instead of ending in a thick lo
 enters the head from above: the duct sheath is kept only for the last few millimetres at the ampulla (y < SHEATH_Y), where
 the head meets D2, instead of wrapping the CBD from y = -0.62 down (which raised a tower of gland around the duct).
 
+v46b: the v46 head was too spherical; the head is now the v43 head (the thinned CT gland, taller and flattened
+front to back, widening down to D2), read from git and blended into the v44+ neck; still carved by the duodenum and
+every vessel, and the ducts' sheath still meets D2 at the ampulla.
+
 Output mesh: marching cubes (0.011 units ≈ 0.8 mm), Taubin smoothing, quantised like the other viscera (Int16 × ct.qs,
 Uint16 index, base64). Needs numpy, scipy, scikit-image, fast-simplification, trimesh (+ rtree).
 """
@@ -71,7 +75,6 @@ CL = np.array([
 # half-thickness (antero-posterior, a) and half-height (cranio-caudal, b) along the centreline, tail → head (param s∈[0,1])
 A_PROF = [(0.00, 0.050), (0.12, 0.070), (0.40, 0.085), (0.62, 0.080), (0.75, 0.072), (1.00, 0.085)]   # v46: end 0.110 → 0.085
 B_PROF = [(0.00, 0.075), (0.12, 0.115), (0.40, 0.135), (0.62, 0.130), (0.75, 0.120), (1.00, 0.120)]   # v46: end 0.170 → 0.120
-HEAD = dict(c=[-0.060, -0.960, 0.370], r=[0.235, 0.250, 0.215])            # v46: one near-spherical head in the C-loop
 # v45: CBD (cystic junction -> ampulla) and the terminal main duct, from src/atlas.js (cysJ, BD_CBD, amp0; PANC_MPD tail)
 CBD = np.array([[-0.27, -0.37, 0.37], [-0.13, -0.49, 0.38], [-0.08, -0.66, 0.40], [-0.11, -0.82, 0.44], [-0.17, -0.93, 0.40],
                 [-0.23, -1.00, 0.33], [-0.273, -1.049, 0.259]]); CBD_R = 0.044
@@ -172,6 +175,26 @@ def centreline(n=500):
     return s, P, T, U, Aant
 
 
+_H43 = None
+
+
+def head_v43(X):
+    """v46b: signed distance to the v43 pancreatic head (the thinned CT gland of commit 233307b, x < HEAD43_X), cut off
+    smoothly towards the neck so the v44+ body joins it. The v43 mesh is read from git (assets/ never held it)."""
+    global _H43
+    if _H43 is None:
+        import subprocess
+        J = json.loads(subprocess.run(['git', 'show', '233307b:data/liver-data.json'], cwd=ROOT, capture_output=True, text=True, check=True).stdout)
+        P, F = decode(J['ct']['viscera']['pancreas'], J['ct']['qs']); _H43 = (MeshSDF(P, F), P.min(0) - 0.03, P.max(0) + 0.03)
+    m, lo, hi = _H43; d = m.T.query(X)[0]
+    box = ((X >= lo) & (X <= hi)).all(1) & (X[:, 0] < HEAD43_X + 0.05) & (d < 0.30)
+    if box.any(): d[box] = np.where(m.inside(X[box]), -d[box], d[box])
+    return smax(d, X[:, 0] - HEAD43_X, 0.05)
+
+
+HEAD43_X = 0.22                                    # v46b: the head is taken from v43 left of this plane (patient right of the neck)
+
+
 def gland_sdf(X, cl):
     s, P, T, U, Aa = cl; tree = cKDTree(P); _, i = tree.query(X)
     d = X - P[i]; a = interp(A_PROF, s[i]); b = interp(B_PROF, s[i])
@@ -179,8 +202,8 @@ def gland_sdf(X, cl):
     q = np.sqrt((u / a) ** 2 + (v / b) ** 2); body = (q - 1) * np.minimum(a, b)
     # round both ends: beyond the first / last centreline sample, grow with the along-axis offset
     end = ((i == 0) & (w < 0)) | ((i == len(s) - 1) & (w > 0)); body = np.where(end, np.sqrt(np.maximum(body, 0) ** 2 + w ** 2) + np.minimum(body, 0), body)
-    c, r = np.array(HEAD['c']), np.array(HEAD['r']); e = np.linalg.norm((X - c) / r, axis=1); head = (e - 1) * r.min()
-    f = smin(body, head, K_BLEND * 2.0)            # v46: no second lobe (HEAD2) or uncinate tube (UNC); wider neck blend
+    head = head_v43(X)                             # v46b: the v43 head shape (was one near-spherical ellipsoid, v46)
+    f = smin(body, head, K_BLEND * 2.0)            # no second lobe (HEAD2) or uncinate tube (UNC); wide neck blend
     return smin(f, ducts_sdf(X), 0.03)
 
 
@@ -299,6 +322,10 @@ if __name__ == '__main__':
     ent = cb[np.argmax(ins)] if ins.any() else None
     print('CBD: enters the gland at', None if ent is None else np.round(ent, 3), f'; inside from there to the ampulla: {ins[np.argmax(ins):].mean()*100:.0f} %',
           f'; head extent (x<0.2) {np.round((verts[verts[:,0]<0.2].max(0)-verts[verts[:,0]<0.2].min(0))*MM)} mm')
+    # v46b: no vessel may run through the gland (a carved tunnel = encased): vessel axes must stay outside it
+    enc = {n: float((G(dense(np.asarray(v, float), 200)) < 0).mean()) for n, v in
+           [('SMV', SMV), ('portal', PVT), ('IVC', IVC), ('aorta', AORTA), ('SMA', SMA), ('LRV', LRV), ('splenic a.', SPA), ('GDA', GDA)]}
+    print('vessel axis inside the gland (fraction, 0 = not encased):', {k: round(v, 3) for k, v in enc.items()})
     SV, MPD = veins(cl)
     sv_r = np.linspace(SV_R0, SV_R1, len(SV)); sv_pts = np.vstack([np.linspace(SV[i], SV[i + 1], 12) for i in range(len(SV) - 1)])
     sv_rr = np.repeat([(sv_r[i] + sv_r[i + 1]) / 2 for i in range(len(SV) - 1)], 12)
