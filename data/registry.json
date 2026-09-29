@@ -1341,6 +1341,21 @@
    ]
   },
   {
+   "id": "bleeding-oesophageal-varix",
+   "name": "Bleeding oesophageal varix (rupture point)",
+   "info": "Acute variceal haemorrhage: a tense lower oesophageal varix ruptures (risk rises with HVPG ≥12 mmHg, large varices, red signs and Child–Pugh class). Resuscitate with restrictive transfusion (target Hb 70–80 g/L), start terlipressin and antibiotics, and perform endoscopy within 12 h with band ligation. Pre-emptive TIPSS within 72 h for Child–Pugh C 10–13 or B >7 with active bleeding; rescue TIPSS or balloon tamponade/oesophageal stent for refractory bleeding (Baveno VII, 2022; BSG variceal guidance 2015).",
+   "cites": [
+    "Baveno VII",
+    "BSG variceal 2015"
+   ],
+   "tier": [
+    0
+   ],
+   "layer": [
+    "portal"
+   ]
+  },
+  {
    "id": "gastric-fundal-varices",
    "name": "Gastric fundal varices",
    "info": "Fed by the short gastric (and posterior gastric) veins from the splenic hilum; commonly drain through a gastrorenal shunt. Treat bleeding with cyanoacrylate injection or TIPSS; BRTO where a gastrorenal shunt exists. Also the classic sign of splenic vein thrombosis (sinistral portal hypertension).",

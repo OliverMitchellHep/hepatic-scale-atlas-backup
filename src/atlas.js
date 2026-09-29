@@ -1565,6 +1565,14 @@ function buildPatho(g,L,K){
   P.ostArc={rhv:hf.arc(hv.rhv,K.OST)-0.06,mhv:hf.arc(hv.mhv,K.CT)-0.06,lhv:hf.arc(hv.lhv,K.CT)-0.06};
   P.clotArc=P.routes.hp.map(R=>pf.arc(R,trunkC.getPointAt(0.10)));
   pf.lumen=hf.lumen=null;
+  /* v49: oesophageal variceal bleed. A column ruptures ~2.5 cm above the cardia: portal blood is diverted up the left
+     gastric vein into that column and leaves it at the rupture point (turning red); the luminal stream is built on
+     first use (bleedBuild) */
+  { const col0=P.esoCols[0], RI=10;
+    P.bleed={k:0,rup:col0[RI].clone(),F:null};
+    rt.vb=pf.route('vb',SRC_S.concat(lgvT.filter((_,k)=>k%2===0),col0.slice(0,RI+1)),{c0:lil,c1:new THREE.Color(0xD0202A)}); rt.vb.split=0.985; rt.vb.speed=1.3;
+    const mk=tag(new THREE.Mesh(new THREE.SphereGeometry(0.032,16,12),mat(0xB0141C,{roughness:0.3,clearcoat:0.8,emissive:new THREE.Color(0x5A0508)})),'Bleeding oesophageal varix (rupture point)');
+    mk.position.copy(P.bleed.rup); mk.visible=false; mk.userData.keepInGhost=true; L.portal.add(mk); P.bleed.mk=mk; }
   P.cavUp=HILUM_IN;
   // morph state (current values chase targets in pathTick)
   P.m={caud:0,cong:0,fat:0,iron:0,spl:0,vasc:0,bil:0};
@@ -2876,7 +2884,7 @@ const LAYER_SETS={
      {k:'transporters',label:'Transporters',swatch:K.canTr},{k:'pathology',label:'Pathology',swatch:0xE36D8E}]
 };
 const state={z:0,zTarget:0,fibrosis:0,pvt:false,flow:!REDUCED,bile:false,tl:{1:{acinar:false},2:{},3:{},4:{}},
-  path:{pvt:'none',pvtSMV:false,bcs:'none',tips:false,hepatofugal:false,masld:0,mash:false,zonal:'none',bil:{cause:'none',stent:'none',cc:'none'},pds:'none',panc:{type:'none',svt:false}},
+  path:{pvt:'none',pvtSMV:false,bcs:'none',tips:false,bleed:false,hepatofugal:false,masld:0,mash:false,zonal:'none',bil:{cause:'none',stent:'none',cc:'none'},pds:'none',panc:{type:'none',svt:false}},
   layers:{parenchyma:'solid',segments:false,portal:'on',artery:'on',viscera:true,
           hepaticVein:'on',biliary:'on',ligaments:true,
           stomach:'on',esophagus:'on',duodenum:'on',pancreas:'on',spleen:'on',kidneys:'on',ribcage:'off',diaphragm:'off'}};
@@ -3273,6 +3281,7 @@ function refreshPathUI(){
                          : `<span>Gland</span><b data-s="warn">atrophic, calcified</b><span>Main duct</span><b data-s="warn">dilated, irregular</b><span>Collections</span><b>pseudocysts</b>`)+
       (pn.svt ? `<span>Splenic vein</span><b data-s="crit">thrombosed · sinistral portal hypertension</b><button id="svt-view" type="button">View thrombus</button>` : ''); }
   $('#tips-btn').textContent=S.tips?'Remove TIPSS':'Insert TIPSS'; $('#tips-btn').dataset.on=S.tips?'1':'0';
+  $('#bleed-btn').textContent=S.bleed?'Stop variceal bleed':'Oesophageal variceal bleed'; $('#bleed-btn').dataset.on=S.bleed?'1':'0';
   $('#zon-note').textContent=ZON_NOTE[S.zonal]||ZON_NOTE.none;
   const P=tiers[0].built?tiers[0].inner.userData.P:null, O=HEMO.open;
   const svtOn=!!(S.panc&&S.panc.svt&&S.panc.type!=='none');
@@ -3280,7 +3289,8 @@ function refreshPathUI(){
   $('#ph-read').innerHTML=`<span>Gradient</span><b data-s="${HEMO.ppg>=12?'crit':HEMO.ppg>=10?'warn':''}">${Math.round(HEMO.ppg)} mmHg${S.tips?` <em>(was ${Math.round(HEMO.ppgNat)})</em>`:''}</b>`+
     `<span>HVPG</span><b>${HEMO.hvpgOK?Math.round(HEMO.hvpg)+' mmHg':'not measurable'}</b>`+
     `<span>Collaterals</span><b>${openList.length?openList.join(', '):'none'}</b>`+
-    `<span>Spleen</span><b>${HEMO.ppg>=14||svtOn?'enlarged':HEMO.ppg>=10?'mildly enlarged':'normal'}</b>`;
+    `<span>Spleen</span><b>${HEMO.ppg>=14||svtOn?'enlarged':HEMO.ppg>=10?'mildly enlarged':'normal'}</b>`+
+    (S.bleed?`<span>Bleeding</span><b data-s="crit">oesophageal varix · blood in stomach and duodenum</b>`:'');
   if(BIL.ready&&BIL.O){ const O2=BIL.O, dil=O2.dilR&&O2.dilL?(O2.mainBlocked?'intra- and extrahepatic':'both lobes, intrahepatic'):O2.dilR?'right intrahepatic':O2.dilL?'left intrahepatic':O2.psc?'beaded (strictures and saccules)':'none';
     const bilH=`<span>Level</span><b>${O2.label}</b><span>Dilatation</span><b data-s="${dil==='none'||dil.startsWith('beaded')?'':'warn'}">${dil}</b>`+
       `<span>Gallbladder</span><b>${O2.gbDist?'distended (Courvoisier)':O2.gbStones?'stones, not distended':'normal'}</b>`+
@@ -3331,11 +3341,16 @@ $('#hvpg-replay').addEventListener('click',()=>{ hvpgStop(); hvpgStart(); });
 $('#path-clear').addEventListener('click',()=>{ hvpgStop(); bxStop(); });
 $('#path-clear').addEventListener('click',()=>{
   lesions.slice().forEach(removeLesion);
-  Object.assign(state.path,{pvt:'none',pvtSMV:false,bcs:'none',tips:false,hepatofugal:false,masld:0,mash:false,zonal:'none',bil:{cause:'none',stent:'none',cc:'none'},pds:'none',panc:{type:'none',svt:false}});
+  Object.assign(state.path,{pvt:'none',pvtSMV:false,bcs:'none',tips:false,bleed:false,hepatofugal:false,masld:0,mash:false,zonal:'none',bil:{cause:'none',stent:'none',cc:'none'},pds:'none',panc:{type:'none',svt:false}});
   state.fibrosis=0; $('#sl-fib').value=0;
   if(tiers[0].built){ bilStentBuild(tiers[0].inner.userData.P); pdStentBuild(tiers[0].inner.userData.P); }
   pathChanged(); clearSelection();
 });
+$('#bleed-btn').addEventListener('click',()=>{ const S=state.path; S.bleed=!S.bleed;
+  // the blood is inside the gut: ghost the oesophagus, stomach and duodenum so the stream can be followed
+  if(S.bleed){ let ch=false; for(const k of ['esophagus','stomach','duodenum']) if(state.layers[k]!=='off'&&state.layers[k]!=='ghost'){ state.layers[k]='ghost'; ch=true; }
+    if(state.layers.portal==='off'){ state.layers.portal='on'; ch=true; } if(ch){ applyModes(); if(layerTier===0) refreshLayerChrome(); } }
+  pathChanged(); });
 $('#tips-btn').addEventListener('click',()=>{ state.path.tips=!state.path.tips; pathChanged({inside:state.path.tips?'TIPSS: from the right internal jugular vein the sheath enters the right hepatic vein, a needle crosses the parenchyma into the right portal vein, and the stent is released over the wire.':null}); });
 
 /* labels for pathology features: shown only while the feature is present */
@@ -3973,6 +3988,42 @@ function bileFlowTick(P,L,dt){
   F.update(dt,0.11);
 }
 
+/* v49: the bleed's luminal stream: from the rupture into the oesophageal lumen, down through the cardia, the stomach
+   (widening to fill the lumen), the pylorus and D1 into D2. Eleven of the 28 routes end in the stomach, where the
+   blood pools; the rest reach the duodenum. Every point is kept inside the oesophagus, stomach or duodenum (BVH
+   ray-parity test, pulled towards the lumen centreline). Fresh red blood darkens past the pylorus. */
+function bleedBuild(P,L){
+  const K=P.K, O=CT_ORGANS; if(!O||!O.stomach) return null;
+  const org=[O.esophagus,O.stomach,O.duodenum].filter(Boolean).map(o=>{ const g=o.geometry; if(!g.boundsTree) g.computeBoundsTree({indirect:true,maxLeafTris:8}); return g.boundsTree; });
+  const ray=new THREE.Ray(), up=new THREE.Vector3(0.31,0.83,0.46).normalize();
+  const inside=p=>org.some(bt=>{ ray.set(p,up); return bt.raycast(ray,THREE.DoubleSide).length%2===1; });
+  const oes=new THREE.CatmullRomCurve3(K.OES), q=new THREE.Vector3(); let u0=0.8, bd=1e9;
+  for(let i=0;i<=200;i++){ oes.getPointAt(i/200,q); const d=q.distanceToSquared(P.bleed.rup); if(d<bd){ bd=d; u0=i/200; } }
+  const SP=[[1.1,0.25,0.05],[1.34,0.05,0.22],[1.26,-0.28,0.52],[1.06,-0.58,0.76],[0.8,-0.84,0.92],[0.46,-0.92,0.95],[0.1,-0.85,0.87],[-0.14,-0.72,0.72],[-0.26,-0.6,0.6],[-0.284,-0.652,0.416],[-0.344,-0.803,0.245],[-0.363,-1.017,0.146]].map(a=>V3(...a));
+  const cl=[]; for(let i=0;i<=8;i++) cl.push(oes.getPointAt(u0+(1-u0)*i/8)); cl.push(...SP);
+  const C=new THREE.CatmullRomCurve3(cl,false,'centripetal'), N=200, base=C.getSpacedPoints(N), fr=C.computeFrenetFrames(N,false);
+  const at=p=>{ let b=0,d0=1e9; base.forEach((x,i)=>{ const d=x.distanceToSquared(p); if(d<d0){ d0=d; b=i; } }); return b/N; };
+  const tS=at(SP[0]), tP=at(SP[8]), sm=THREE.MathUtils.smoothstep;
+  const amp=t=>0.028+0.16*sm(t,tS,tS+0.08)*(1-sm(t,tP-0.06,tP))+0.035*sm(t,tP,tP+0.05);
+  const F=new FlowNet(560,0.019,L.viscera), rnd=srng(97), red=new THREE.Color(0xC81E28), dark=new THREE.Color(0x5E0C10);
+  F.bleed=[];
+  for(let j=0;j<28;j++){ const a=rnd()*6.283, b=0.3+0.7*rnd(), pool=j<11, end=pool?tS+0.05+rnd()*(tP-tS-0.15):1, pts=[P.bleed.rup.clone()];
+    for(let i=2;i<=Math.round(N*end);i+=2){ const t=i/N, w=amp(t)*b;
+      let p=base[i].clone().addScaledVector(fr.normals[i],Math.cos(a+t*5)*w).addScaledVector(fr.binormals[i],Math.sin(a+t*5)*w);
+      for(let s=0;s<5&&!inside(p);s++) p.lerp(base[i],0.5); pts.push(p); }
+    if(pool){ const e=pts[pts.length-1].clone().add(V3(0,-0.06,-0.14)); for(let s=0;s<5&&!inside(e);s++) e.lerp(pts[pts.length-1],0.5); pts.push(e); }  // settles to the dependent (posterior) wall
+    const R=F.route('bl'+j,pts,{c0:red,c1:dark}); R.split=Math.min(0.98,tP/Math.max(end,1e-3)); R.w=pool?0.6:1; R.speed=0.75+0.5*rnd(); F.bleed.push(R); }
+  return F;
+}
+function bleedTick(P,L,dt){
+  const B=P.bleed; if(!B) return; const on=!!state.path.bleed;
+  B.k+=((on?1:0)-B.k)*Math.min(1,dt*1.2); if(Math.abs(B.k-(on?1:0))<0.002) B.k=on?1:0;
+  B.mk.visible=B.k>0.02; if(B.mk.visible) B.mk.scale.setScalar(B.k*(1+0.18*Math.sin(performance.now()/170)));   // pulsatile
+  if(!B.F){ if(!on) return; B.F=bleedBuild(P,L); if(!B.F) return; }
+  B.F.mesh.visible=B.k>0.02;
+  if(B.F.mesh.visible){ B.F.scale=B.k; B.F.update(dt,0.34*B.k); }
+}
+
 /* percutaneous transhepatic internal–external drain: skin (right mid-axillary line) → capsule → a peripheral
    segment VI duct → right hepatic duct → CHD → CBD → across the papilla → pigtail coiled in the duodenum */
 function ptcRoute(P){
@@ -4114,6 +4165,8 @@ function pathTargets(){
   const dc=S.tips?0.35:1, O=HEMO.open;
   R.col.lgv.w=(HEMO.hf?0:0.06)*(1-THREE.MathUtils.smoothstep(O.eso,0.05,0.35))*(blockHP?0.3:1);
   R.col.eso.w=0.20*O.eso*dc; R.col.eso2.w=0.16*O.eso*dc; R.col.fun.w=0.13*O.fun*dc; R.col.sr.w=0.20*O.sr*dc; R.col.pu.w=0.13*O.pu*dc;
+  // v49: variceal bleed: the varices are open and much of the portal inflow leaves through the ruptured column
+  if(R.col.vb){ R.col.vb.w=S.bleed?0.9:0; if(S.bleed){ P.cols.eso.target=Math.max(P.cols.eso.target,0.9); R.col.eso.w=Math.max(R.col.eso.w,0.08); } }
   R.hf.forEach(r=>{ r.w=HEMO.hf?0.6:0; r.speed=0.8; });
   const hv=R.hv, hvObs=S.bcs==='hv'||S.bcs==='mixed', ivcObs=S.bcs==='ivc'||S.bcs==='mixed';
   const base={rhv:0.22,mhv:0.18,lhv:0.18,cau:0.04,cau2:0.03,ivc:0.22,lrv:0.10,azy:0};
@@ -4791,7 +4844,7 @@ function pathTick(dt){
   // v49: switching the blood flow animation off removes the particles (as the bile flow does), not just freezes them
   P.pflow.mesh.visible=P.hflow.mesh.visible=state.flow;
   if(state.flow){ P.pflow.update(dt,vv); P.hflow.update(dt,vv*0.9); }
-  bileFlowTick(P,L,dt);
+  bileFlowTick(P,L,dt); bleedTick(P,L,dt);
 }
 /* ════════════ pathology engine: microscopic scales (zonal painting) ════════════ */
 const DOT_NAMES=['','Fat droplets (macrovesicular steatosis)','Haemosiderin (iron) granules','Inflammatory cells',
