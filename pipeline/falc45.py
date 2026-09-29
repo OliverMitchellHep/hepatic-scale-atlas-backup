@@ -20,6 +20,10 @@ v46: thinner and subtler. The band is 4 mm wide (was 10) and a little more raise
 the whole anterior surface to its inferior border (the ray run accepted only surface facing no more than 17° downwards, so it
 stopped ~18 mm above the margin). The superior triangle is smaller (32 mm across its base, was 76; 26 mm long, was 52) and
 fainter, with a narrower, shorter coronary continuation; bake44.py paints the fan at lower opacity.
+
+v48: the whole ligament sits on the umbilical-fissure plane moved 7.4 mm to the patient's left (ct.falc.a, with the segment
+II/III–IV border ct.seg.ua), so its inferior end meets the umbilical notch of the inferior border; the triangle starts higher
+on the superior surface (APEX_NY 0.80) and its sides and base are concave curves (SIDE_POW, BOW) instead of straight edges.
 """
 import json, sys
 from pathlib import Path
@@ -37,7 +41,9 @@ LAYER = 2.0 / MM         # width of each diverging layer (v46; v45 3.5)
 FAN_LEN = 26.0 / MM      # apex → base along the centreline (clipped to the run's end; v46; v45 52)
 COR_W = 2.0 / MM         # coronary band half-width (v46; v45 3.2)
 COR_L = 28.0 / MM        # coronary: how far each band runs beyond the fan's base corners (v46; v45 48)
-APEX_NY = 0.58           # the fan starts where the surface normal turns superior (n.y ≥ this)
+APEX_NY = 0.80           # the fan starts where the surface normal turns superior (n.y ≥ this; v48: higher onto the superior surface, was 0.58)
+BOW = 5.0 / MM           # v48: the fan's base bows towards the apex by this much at the midline (concave base)
+SIDE_POW = 1.9           # v48: the fan widens as f^SIDE_POW (concave sides; 1 = straight)
 
 
 def _liver():
@@ -113,10 +119,12 @@ class Falciform:
         w = W0 * wob + jit; u = np.abs(d) / w
         band = (1 - ss(u, 0.74, 1.16)) * (1 - ss(s, self.sA + 1 / MM, self.sA + 5 / MM)) * ss(s, 0, 1.5 / MM)
         # fan
-        f = np.clip((s - self.sA) / (self.sB - self.sA), 0, 1); wf = W0 + f * (W_B - W0) + jit; inF = (s >= self.sA - 2 / MM) & (s <= self.sB + 0.5 / MM)
+        f = np.clip((s - self.sA) / (self.sB - self.sA), 0, 1); wf = W0 + f ** SIDE_POW * (W_B - W0) + jit; inF = (s >= self.sA - 2 / MM) & (s <= self.sB + 1.5 / MM)
+        sEnd = self.sB - BOW * (1 - np.clip(np.abs(d) / W_B, 0, 1) ** 2)                 # v48: concave (bowed) base edge
         ef = 1 - ss(np.abs(d), wf - 0.7 / MM, wf + 0.8 / MM)                               # inside the fan outline (v45 T10: softer, no sawtooth)
         lay = ef * (1 - ss(np.abs(d), wf - LAYER - 0.8 / MM, wf - LAYER + 0.8 / MM))         # the two diverging layers
         fan = inF * np.maximum(lay, ef * (0.62 + 0.38 * (1 - ss(s, self.sA, self.sA + 12 / MM))))   # membrane thins away from the apex
+        fan = fan * (1 - ss(s, sEnd - 0.7 / MM, sEnd + 0.7 / MM))
         # coronary: a transverse band on the superior surface through the fan's base, running out beyond its corners
         Db = Xn - self.CB; t = Db @ self.TB; lat = np.abs(Db @ self.AB)
         cw = COR_W * (1 - 0.55 * ss(lat, W_B, W_B + COR_L)) + jit * 0.6
