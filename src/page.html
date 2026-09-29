@@ -259,6 +259,43 @@
     <div class="hv-ft"><button class="gobtn clearall" id="hvpg-replay">Restart</button><span></span>
       <button class="gobtn clearall" id="hvpg-prev">&#9664; Previous</button><button class="gobtn hvpg" id="hvpg-next">Next &#9654;</button></div>
   </div>
+  <div id="hvpg-why" hidden role="dialog" aria-label="Why the wedged pressure, and why a gradient">
+    <div class="hv-hd"><b>Stage 3 · What the wedged pressure measures</b><button id="hvpg-why-x" aria-label="Close explanation">×</button></div>
+    <svg class="hw-fig" viewBox="0 0 300 150" role="img" aria-label="Diagram: an inflated balloon stops flow in the hepatic vein, so the static blood column transmits sinusoidal pressure, which equals portal venous pressure, back to the catheter tip">
+      <defs>
+        <marker id="hw-ar" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#B9C3CE"/></marker>
+      </defs>
+      <!-- portal venule (left) -->
+      <rect x="6" y="46" width="62" height="26" rx="13" fill="#7A5CB4"/>
+      <text x="37" y="40" class="hw-t" text-anchor="middle">Portal venule</text>
+      <text x="37" y="63" class="hw-v" text-anchor="middle">flow →</text>
+      <!-- sinusoids (middle) -->
+      <g stroke="#B55A7A" stroke-width="5" fill="none" stroke-linecap="round">
+        <path d="M66,52 C92,44 112,62 136,52"/><path d="M66,59 C92,66 112,50 136,59"/><path d="M66,66 C92,74 112,58 136,66"/>
+      </g>
+      <text x="101" y="92" class="hw-t" text-anchor="middle">Sinusoids</text>
+      <!-- hepatic venule / vein (right) -->
+      <rect x="134" y="46" width="160" height="26" rx="13" fill="#2F5A9E"/>
+      <!-- static column (no flow) between sinusoids and balloon -->
+      <rect x="140" y="50" width="52" height="18" rx="9" fill="#5B7FC0" opacity="0.9"/>
+      <text x="166" y="63" class="hw-v" text-anchor="middle">no flow</text>
+      <!-- balloon + catheter -->
+      <ellipse cx="206" cy="59" rx="15" ry="15" fill="#F2D27A" stroke="#C9A85A"/>
+      <line x1="221" y1="59" x2="294" y2="59" stroke="#E8ECEF" stroke-width="3"/>
+      <circle cx="193" cy="59" r="3" fill="#E8ECEF"/>
+      <text x="252" y="40" class="hw-t" text-anchor="middle">Balloon wedged</text>
+      <text x="294" y="88" class="hw-t" text-anchor="end">catheter to transducer</text>
+      <!-- pressure equalisation arrow -->
+      <path d="M40,112 L186,112" stroke="#B9C3CE" stroke-width="1.5" marker-end="url(#hw-ar)"/>
+      <text x="113" y="106" class="hw-t" text-anchor="middle">pressure transmitted without loss</text>
+      <text x="150" y="134" class="hw-k" text-anchor="middle">WHVP ≈ sinusoidal pressure ≈ portal pressure</text>
+    </svg>
+    <div class="hw-sec"><em>Why the wedge reflects portal pressure</em>
+      <p>Inflating the balloon stops outflow from that segment of the hepatic vein. With no flow there is no pressure drop along the static column of blood, so the catheter tip reads the pressure where that column meets moving blood: the hepatic sinusoids. In cirrhosis the sinusoids are in free continuity with the portal venules (little pre-sinusoidal resistance), so the wedged pressure approximates portal venous pressure.</p></div>
+    <div class="hw-sec"><em>Why a gradient, not the wedge alone</em>
+      <p>The wedged pressure is an absolute value. It also contains everything that raises pressure around and downstream of the liver: intra-abdominal pressure (tense ascites), IVC and right atrial pressure (heart failure, tricuspid regurgitation), and the level at which the transducer was zeroed. The free hepatic venous pressure, measured in the same vein in the same sitting, carries the same offsets, so subtracting it cancels them.</p>
+      <p>HVPG = WHVP − FHVP is what remains: the pressure drop across the sinusoidal bed, set by intrahepatic resistance and portal inflow. That is why the thresholds (≥ 10 mmHg clinically significant; ≥ 12 mmHg bleeding risk) are defined for the gradient. A pre-sinusoidal block (e.g. portal vein thrombosis) raises portal pressure without raising the wedge, so HVPG underestimates it.</p></div>
+  </div>
   <div id="intro" hidden>
     <svg id="intro-svg" aria-hidden="true"><defs><marker id="intro-ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
       <path d="M0,0 L10,5 L0,10 z" fill="#E0A33E"/></marker></defs><g id="intro-paths"></g></svg>

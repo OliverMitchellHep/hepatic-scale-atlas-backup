@@ -3236,6 +3236,7 @@ $('#mash').addEventListener('change',e=>{ state.path.mash=e.target.checked; path
 $('#path-collapse').addEventListener('click',()=>{ document.querySelectorAll('#path-block details.sub').forEach(d=>{ d.open=false; }); });
 $('#hvpg-btn').addEventListener('click',()=>{ HVPG.on?hvpgStop():hvpgStart(); });
 $('#hvpg-x').addEventListener('click',hvpgStop);
+$('#hvpg-why-x').addEventListener('click',()=>{ HVPG.whyX=true; $('#hvpg-why').hidden=true; });
 $('#hvpg-next').addEventListener('click',()=>hvpgGo(1));
 $('#hvpg-prev').addEventListener('click',()=>hvpgGo(-1));
 $('#hvpg-replay').addEventListener('click',()=>{ hvpgStop(); hvpgStart(); });
@@ -4326,7 +4327,7 @@ function hvpgStart(){
   if(!tiers[0].built) return;
   bxStop();
   if(!HVPG.path) hvpgBuild();
-  Object.assign(HVPG,{on:true,t:0,stage:1,F:null,W:null,dispW:null,trace:[],tAcc:0,lastS:-1});
+  Object.assign(HVPG,{on:true,t:0,stage:1,F:null,W:null,dispW:null,trace:[],tAcc:0,lastS:-1,whyX:false});
   HVPG.grp.visible=true; HVPG.bal.visible=false;
   // see the catheter inside the liver and the hepatic veins
   HVPG.prevLayers={parenchyma:state.layers.parenchyma,hepaticVein:state.layers.hepaticVein};
@@ -4341,7 +4342,7 @@ function hvpgStop(){
   HVPG.on=false; if(HVPG.grp) HVPG.grp.visible=false;
   if(HVPG.tube){ HVPG.grp.remove(HVPG.tube); HVPG.tube.geometry.dispose(); HVPG.tube=null; }
   if(HVPG.prevLayers){ Object.assign(state.layers,HVPG.prevLayers); HVPG.prevLayers=null; applyModes(); }
-  $('#hvpg').hidden=true; $('#hvpg-btn').dataset.on='0'; $('#hvpg-btn').textContent='Measure HVPG';
+  $('#hvpg').hidden=true; $('#hvpg-why').hidden=true; $('#hvpg-btn').dataset.on='0'; $('#hvpg-btn').textContent='Measure HVPG';
 }
 function hvpgInterp(h){
   return h<=5?'Normal (≤5 mmHg)' : h<10?'Subclinical portal hypertension (6–9 mmHg)'
@@ -4386,6 +4387,8 @@ function hvpgGo(d){
 function hvpgTick(dt){
   if(!HVPG.on) return;
   $('#hvpg').hidden = shownTier!==0;
+  // stage 3 (wedged): explain why the wedge reads sinusoidal ≈ portal pressure and why only the gradient is used
+  { const w=shownTier!==0 || HVPG.stage!==3 || !!HVPG.blocked || !!HVPG.whyX; if($('#hvpg-why').hidden!==w) $('#hvpg-why').hidden=w; }
   const T=hvpgTargets(), P=HV_T, E=hvpgEnds(), stage=HVPG.stage;
   HVPG.blocked=T.blocked;
   // the clock runs only to the end of the current stage; "Next stage" moves on
@@ -4893,7 +4896,7 @@ function mobApply(){ const on=MOBQ();
   if(on===MOB.on){ if(on) mobSheet(MOB.state); return; }
   MOB.on=on; document.body.classList.toggle('mob',on);
   if(on){ const sc=$('#panel .scroll'), after=$('#mpane-layers').nextSibling;
-    mobMove($('#simbar'),$('#mslot-sim')); mobMove($('#layerbar'),$('#mpane-layers')); mobMove($('#bx'),sc,after); mobMove($('#hvpg'),sc,after);
+    mobMove($('#simbar'),$('#mslot-sim')); mobMove($('#layerbar'),$('#mpane-layers')); mobMove($('#bx'),sc,after); mobMove($('#hvpg'),sc,after); mobMove($('#hvpg-why'),sc,after);
     $('#panel').classList.remove('closed'); $('#app').classList.remove('pclosed'); $('#btn-reset').textContent='Reset';
     mobTab('explore'); requestAnimationFrame(()=>{ mobSheet('peek'); mobCam(); }); }
   else { mobRestore(); window.__mobH=0; document.body.style.removeProperty('--sheetH'); mobTab('explore'); $('#mcard').hidden=true;
@@ -4911,7 +4914,7 @@ function mobApply(){ const on=MOBQ();
   addEventListener('pointermove',move); addEventListener('pointerup',end); addEventListener('pointercancel',end); }
 document.querySelectorAll('#mtabs button').forEach(b=>b.addEventListener('click',()=>{ mobTab(b.dataset.t); if(MOB.state==='peek') mobSheet('half'); }));
 { const mo=new MutationObserver(ms=>{ for(const m of ms){ if(MOB.on&&!m.target.hidden){ $('#mcard').hidden=true; mobRaise(); } } });
-  for(const id of ['#bx','#hvpg']) mo.observe($(id),{attributes:true,attributeFilter:['hidden']}); }
+  for(const id of ['#bx','#hvpg','#hvpg-why']) mo.observe($(id),{attributes:true,attributeFilter:['hidden']}); }
 addEventListener('resize',mobApply); mobApply();
 if(MOB.on){ anno.classList.add('nolabels'); $('#btn-lab').setAttribute('aria-pressed','false'); }
 /* first-run introduction: a card in the centre, dashed arrows to the layer bar, the panel and the fibrosis slider */
