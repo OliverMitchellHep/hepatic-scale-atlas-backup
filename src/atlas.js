@@ -2827,7 +2827,7 @@ const LAYER_SETS={
      {k:'lipid',label:'Lipid droplets',swatch:K.lipid},{k:'glycogen',label:'Glycogen',swatch:K.glyc},
      {k:'transporters',label:'Transporters',swatch:K.canTr},{k:'pathology',label:'Pathology',swatch:0xE36D8E}]
 };
-const state={z:0,zTarget:0,fibrosis:0,pvt:false,flow:!REDUCED,tl:{1:{acinar:false},2:{},3:{},4:{}},
+const state={z:0,zTarget:0,fibrosis:0,pvt:false,flow:!REDUCED,bile:false,tl:{1:{acinar:false},2:{},3:{},4:{}},
   path:{pvt:'none',pvtSMV:false,bcs:'none',tips:false,hepatofugal:false,masld:0,mash:false,zonal:'none',bil:{cause:'none',stent:'none',cc:'none'},pds:'none',panc:{type:'none',svt:false}},
   layers:{parenchyma:'solid',segments:false,portal:'on',artery:'on',viscera:true,
           hepaticVein:'on',biliary:'on',ligaments:true,
@@ -3506,6 +3506,10 @@ function applyModes(){
 }
 
 $('#sl-fib').addEventListener('input',e=>{state.fibrosis=+e.target.value; applySim();});
+$('#tg-bile').addEventListener('click',e=>{
+  state.bile=!state.bile; e.currentTarget.setAttribute('aria-pressed',String(state.bile));
+  e.currentTarget.querySelector('.led').style.background=state.bile?'var(--amber)':'var(--rule)';
+  if(state.bile&&state.layers.biliary==='off'){ state.layers.biliary='on'; applyModes(); } });
 $('#tg-flow').addEventListener('click',e=>{
   state.flow=!state.flow; e.currentTarget.setAttribute('aria-pressed',String(state.flow));
   e.currentTarget.querySelector('.led').style.background=state.flow?'var(--amber)':'var(--rule)';});
@@ -3858,6 +3862,61 @@ function bilStentBuild(P){
     G.add(m); P.bil.stents.push(m); deployMeta(m,0,st==='plastic'?0:0.15);
     P.bil.lines.push({c,r:st==='plastic'?0.021:0.050});
   });
+}
+
+/* v48: bile flow. Particles run from the peripheral segmental ducts down the duct tree (each duct segment starts at its
+   parent's end, so a leaf chains back through the right/left hepatic duct, CHD and CBD to the ampulla), across the papilla
+   and into the duodenal lumen; a share leaves the gallbladder through the cystic duct (postprandial emptying). A main
+   duct obstruction (stone, stricture, tumour, Mirizzi) stops the stream at its upper edge unless a stent drains it; an
+   undrained hilar block stops that side. */
+function bileFlowBuild(P,L){
+  const K=P.K, T=K.bilMeshes.find(b=>b.kind==='tree'); if(!T) return null;
+  const F=new FlowNet(150,0.010,L.biliary), col=new THREE.Color(0xF4E27A);
+  F.radius=vesselRadiusLookup([L.biliary]); F.rk=0.9;
+  const segs=T.segs, end=s=>s.pts[s.pts.length-1];
+  const parent=s=>segs.find(t=>t!==s&&end(t).distanceTo(s.pts[0])<0.008);          // the duct this one drains into
+  // duodenal lumen beside the papilla (as the PTC drain)
+  let dC=K.amp0.clone().add(V3(-0.07,0.03,-0.09));
+  if(CT_ORGANS&&CT_ORGANS.duodenum){ const A=CT_ORGANS.duodenum.geometry.attributes.position, q=new THREE.Vector3(), sm=new THREE.Vector3(); let nn=0;
+    for(let i=0;i<A.count;i++){ q.fromBufferAttribute(A,i); if(q.distanceTo(K.amp0)<0.35){ sm.add(q); nn++; } } if(nn>50) dC=sm.multiplyScalar(1/nn); }
+  const dIn=dC.clone().sub(K.amp0).normalize(), side=V3(0,1,0).cross(dIn).normalize();
+  const duo=i=>[K.amp0.clone().addScaledVector(dIn,0.03),K.amp0.clone().addScaledVector(dIn,0.075).addScaledVector(side,0.02*Math.sin(i*2.4)).add(V3(0,-0.02*Math.cos(i*1.7),0)),
+                K.amp0.clone().addScaledVector(dIn,0.12).addScaledVector(side,0.045*Math.sin(i*2.4)).add(V3(0,-0.05*Math.cos(i*1.7),0))];
+  // leaves: segmental ducts nothing drains into, chained down to the ampulla
+  const leaves=segs.filter(s=>s.name==='Segmental bile duct'&&!segs.some(t=>t.pts[0].distanceTo(end(s))<0.008));
+  const pick=leaves.filter((_,i)=>i%Math.max(1,Math.floor(leaves.length/28))===0);
+  const clean=a=>{ const o=[a[0]]; for(const p of a.slice(1)) if(p.distanceTo(o[o.length-1])>0.012) o.push(p); return o; };
+  F.bile=[];
+  pick.forEach((lf,i)=>{ const pts=[]; let sideR=null;
+    for(let s=lf,g=0;s&&g<40;g++){ for(let k=s.pts.length-1;k>=0;k--) pts.push(s.pts[k].clone());
+      if(s.name==='Right hepatic duct') sideR=true; if(s.name==='Left hepatic duct') sideR=false; s=parent(s); }
+    if(pts[pts.length-1].distanceTo(K.amp0)>0.05) return;           // not connected to the ampulla: skip
+    if(sideR===null){ const e=lf.pts[lf.pts.length-1]; sideR=segAt(e.x,e.y,e.z)>=5; }   // ducts joining at the confluence
+    const R=F.route('bd'+i,clean(pts.concat(duo(i))),{c0:col}); R.side=sideR?'R':'L'; R.w=1; R.speed=1; F.bile.push(R); });
+  // gallbladder emptying: body → neck → cystic duct → CBD → duodenum
+  const cb=K.ducts.cbd.pts;
+  [0,1,2].forEach(j=>{ const gp=K.gbPts.slice(Math.floor(K.gbPts.length*0.45)).map(q=>q.clone().add(V3(0.012*(j-1),0.008*(j-1),0)));
+    const R=F.route('gb'+j,clean(gp.concat(K.cysPts.slice(1),cb.slice(1),duo(j+7))),{c0:col}); R.gb=true; R.w=F.bile.length*0.06; F.bile.push(R); });
+  // main-duct coordinate of each route, to place an obstruction on it
+  const main=K.ducts.chd.pts.concat(cb.slice(1)); F.mainC=new THREE.CatmullRomCurve3(main); F.mainL=F.mainC.getLength();
+  F.blockKey=''; return F;
+}
+function bileFlowTick(P,L,dt){
+  if(!state.bile&&!P.bflow) return;
+  if(!P.bflow){ P.bflow=bileFlowBuild(P,L); if(!P.bflow) return; }
+  const F=P.bflow; F.mesh.visible=state.bile;
+  if(!state.bile){ return; }
+  // obstruction: where the stream stops (arc length along each route)
+  if(!BIL.ready) bilPrepare(P);
+  const O=bilModel(), k=[O.mainBlocked,O.mMin.toFixed(3),O.hilar.R&&!O.drain.R,O.hilar.L&&!O.drain.L,state.path.bil.cause].join('|');
+  if(k!==F.blockKey){ F.blockKey=k;
+    const pAt=m=>F.mainC.getPointAt(THREE.MathUtils.clamp(m/F.mainL,0,1));
+    const firstBelowCys=O.mains.filter(q=>q.m0>BIL.mCys).reduce((a,b)=>Math.min(a,b.m0),9);
+    for(const R of F.bile){ R.block=null;
+      if(R.gb){ if(O.mainBlocked&&firstBelowCys<9) R.block=Math.max(0.02,F.arc(R,pAt(firstBelowCys))-0.02); continue; }
+      if(O.mainBlocked) R.block=Math.max(0.02,F.arc(R,pAt(O.mMin))-0.02);
+      if((R.side==='R'&&O.hilar.R&&!O.drain.R)||(R.side==='L'&&O.hilar.L&&!O.drain.L)) R.block=Math.max(0.02,F.arc(R,P.K.BD_ROOT)-0.04); } }
+  F.update(dt,0.11);
 }
 
 /* percutaneous transhepatic internal–external drain: skin (right mid-axillary line) → capsule → a peripheral
@@ -4659,6 +4718,7 @@ function pathTick(dt){
   const vv=state.flow?0.26*(1-0.35*state.fibrosis):0;
   if(!P.pflow.radius){ const look=vesselRadiusLookup([L.portal,L.hepaticVein]); P.pflow.radius=look; P.hflow.radius=look; }
   P.pflow.scale=u.flowScale||1; P.pflow.update(dt,vv); P.hflow.update(dt,vv*0.9);
+  bileFlowTick(P,L,dt);
 }
 /* ════════════ pathology engine: microscopic scales (zonal painting) ════════════ */
 const DOT_NAMES=['','Fat droplets (macrovesicular steatosis)','Haemosiderin (iron) granules','Inflammatory cells',
