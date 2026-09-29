@@ -69,3 +69,8 @@ Every new or re-exported mesh states its simplification error limit (default 0.1
 - `falc45.py` / `bake44.py`: falciform raised ~2 mm, painted much more transparently.
 - `organs45.py`: tortuous gastric / duodenal arcades, vessels raised in sections and varying in opacity, the v44 subserosal
   network, darker colour patches; lengthwise pale oesophageal vessels; rougher kidneys with paler patches.
+
+## v48 additions
+- `falc45.py`: the ligament follows `ct.falc` / `ct.seg.ua` moved 0.105 units to the patient's left (into the umbilical notch);
+  `APEX_NY` 0.58 → 0.80 (triangle higher on the superior surface), `SIDE_POW` 1.9 (concave sides), `BOW` 5 mm (concave
+  base). Prints the `FALC45` literal for `src/atlas.js`; then `bake44.py liver --stage high,bake,compose`.

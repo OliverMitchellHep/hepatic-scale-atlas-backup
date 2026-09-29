@@ -1,5 +1,14 @@
 # Changelog
 
+## v48 — bile duct colour, falciform, HVPG explainer, micro-tier framing, flow alignment, bile flow (29 Sept 2026)
+- Bile ducts: the gallbladder's colour scheme (wall colour, gloss, patchiness) on the whole biliary tree, choledochal cysts and ampulla.
+- Falciform ligament: moved 7.4 mm to the patient's left so its inferior end sits in the umbilical notch; the segment II/III–IV border (`ct.seg.ua`) moves with it. The superior triangle starts higher on the superior surface (apex 88 mm up the band, was 64 mm) and has concave sides and a concave base. Liver maps re-baked.
+- HVPG measurement: at stage 3 (wedged pressure) a second box explains, with a diagram, why the wedged pressure reflects sinusoidal and so portal pressure, and why only the gradient (WHVP − FHVP) is used. Closable; returns on the next measurement.
+- Lobule, acinus, sinusoid and hepatocyte scales open at their original (v44) size again: v45 moved the camera 2.04× further out, which had shrunk them; the scale bar is correct again.
+- Blood flow: every route is fitted inside the vessel lumens at load (the splenic vein stream ran up to 9 mm outside the vein; SMV, trunk, IVC and renal vein up to 3 mm). Native routes use only the native vessels. Pathology-only collateral routes (fundal varices, splenic vein thrombosis) still stray up to ~8 mm where the short gastric collaterals meet the splenic hilum.
+- Bile flow animation (new toggle): bile from the segmental ducts of both lobes and from the gallbladder (via the cystic duct) runs down the CBD, through the ampulla into the duodenum; it stops at an undrained main-duct or hilar obstruction and passes a stent.
+- Blood flow and bile flow toggles moved to their own "Animate" box at the foot of the layer list; the scale rail moves below the layer list on mid-size windows where they would overlap.
+
 ## v47 — vessels, falciform, gut surfaces, pancreatic head, gallbladder, kidneys (29 Sept 2026)
 Commits are labelled "v46b" (work started as a revision of v46).
 - Vessels: the middle/left hepatic vein trunk starts on the IVC axis and flares from the cava (its rounded end bulged through the caval wall); the inferior ends of the IVC and aorta are square-cut (sphere caps removed, crisp flat caps); varices and portosystemic shunts carry the portal surface-vessel pattern; arterial, portal and venous walls are darker (×0.82–0.84) with their darkness varying along the course.
