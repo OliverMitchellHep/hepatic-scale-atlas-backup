@@ -2383,9 +2383,11 @@ function buildAcinus(){
   inlets.forEach(p=>p.dispose());
 
   // hepatocyte plates: rows+1 plates, the outer two bounding the acinar sheet; tinted by zone
-  const cols=14, rowsP=rows+1, total=cols*rowsP;
-  const PL0=PX+0.38, PL1=CX-0.32, cw=(PL1-PL0)/cols;
-  const plate=new RoundedBoxGeometry(cw*0.93,gap-2*SR-0.035,0.13,2,0.026);
+  /* v49: the cells have the sinusoid scale's hepatocyte shape (length ≈ depth ≈ 1.24 × height, corners rounded to 10% of the
+     height, packed edge to edge): 9 per plate (was 14 thin slabs, 0.13 deep) */
+  const cols=9, rowsP=rows+1, total=cols*rowsP;
+  const PL0=PX+0.38, PL1=CX-0.32, cw=(PL1-PL0)/cols, HH=gap-2*SR-0.035, HDP=HH*1.244;
+  const plate=new RoundedBoxGeometry(cw*0.985,HH,HDP,3,HH*0.1);
   const heps=new THREE.InstancedMesh(plate,mat(0xffffff,{roughness:0.55,clearcoat:0.3}),total);
   const zoneOf=new Uint8Array(total), d=new THREE.Object3D(), col=new THREE.Color();
   const zc=[new THREE.Color(0xB86A4C),new THREE.Color(0x94503C),new THREE.Color(0x6C3530)];
@@ -2406,7 +2408,7 @@ function buildAcinus(){
   heps.userData.pickBy=id=>['Zone 1','Zone 2','Zone 3'][zoneOf[id]];
   lay('plates').add(heps);
   const drops=new THREE.InstancedMesh(new THREE.SphereGeometry(1,14,10),mat(0xffffff,{roughness:0.25,clearcoat:0.9}),total);
-  for(let i=0;i<total;i++){ d.position.set(hb.pos[i*3],hb.pos[i*3+1],0.055); d.rotation.set(0,0,0); d.scale.setScalar(0); d.updateMatrix();
+  for(let i=0;i<total;i++){ d.position.set(hb.pos[i*3],hb.pos[i*3+1],HDP/2-0.01); d.rotation.set(0,0,0); d.scale.setScalar(0); d.updateMatrix();
     drops.setMatrixAt(i,d.matrix); drops.setColorAt(i,new THREE.Color(0xffffff)); }
   drops.visible=false; const dropType=new Uint8Array(total);
   drops.userData.pick='Lesion'; drops.userData.pickBy=id=>DOT_NAMES[dropType[id]]||'Hepatocyte plate';
@@ -2415,7 +2417,7 @@ function buildAcinus(){
   // bile canaliculi: along the front of each plate, draining back to the ductule (canal of Hering)
   const canal=[], canalCurves=[];
   for(let r=0;r<rowsP;r++){
-    const y=-HALF+gap*r, zc0=0.072;
+    const y=-HALF+gap*r, zc0=HDP/2+0.007;
     const cc=new THREE.CatmullRomCurve3([
       new THREE.Vector3(PX-0.20,y*0.96,-0.20), new THREE.Vector3(PX-0.02,y,-0.30),
       new THREE.Vector3(PX+0.26,y,zc0*0.6), new THREE.Vector3(PX+0.40,y,zc0),
@@ -2458,7 +2460,7 @@ function buildAcinus(){
   registerFade(g);
   septa.traverse(o=>{if(o.isMesh) o.material.userData.baseOpacity=0;});
   g.userData={sinusoids,canalCurves,blood,bloodState,bileP,bileState,septa,rows,rowsP,LG:lay.map,
-    pvBlood,cvBlood,venState,PX,CX,heps,hb,drops,dropType,zc,cv,cw,gap,setFib:acSetFib};
+    pvBlood,cvBlood,venState,PX,CX,heps,hb,hdp:HDP,drops,dropType,zc,cv,cw,gap,setFib:acSetFib};
   return g;
 }
 
@@ -4844,7 +4846,7 @@ function microTick(dt){
     const n=C.s.length, hb=ac.hb; let any=false;
     for(let i=0;i<n;i++){ _mo.position.set(hb.pos[i*3],hb.pos[i*3+1],0); _mo.quaternion.identity(); _mo.scale.set(C.s[i],Math.min(1.08,C.s[i]),C.s[i]); _mo.updateMatrix();
       ac.heps.setMatrixAt(i,_mo.matrix); _mc.setRGB(C.c[i*3],C.c[i*3+1],C.c[i*3+2]); ac.heps.setColorAt(i,_mc);
-      _mo.position.set(hb.pos[i*3]+(i%3-1)*0.03,hb.pos[i*3+1]+((i*7)%3-1)*0.02,0.06); _mo.scale.setScalar(C.ds[i]); _mo.updateMatrix();
+      _mo.position.set(hb.pos[i*3]+(i%3-1)*0.03,hb.pos[i*3+1]+((i*7)%3-1)*0.02,ac.hdp/2-0.005); _mo.scale.setScalar(C.ds[i]); _mo.updateMatrix();
       ac.drops.setMatrixAt(i,_mo.matrix); _mc.setRGB(C.dc[i*3],C.dc[i*3+1],C.dc[i*3+2]); ac.drops.setColorAt(i,_mc); if(C.ds[i]>0.001) any=true; }
     ac.heps.instanceMatrix.needsUpdate=true; ac.heps.instanceColor.needsUpdate=true;
     ac.drops.instanceMatrix.needsUpdate=true; ac.drops.instanceColor.needsUpdate=true; ac.drops.visible=any;
