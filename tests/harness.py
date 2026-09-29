@@ -45,7 +45,7 @@ class Atlas:
         self.page.on('pageerror', lambda e: self.errors.append(f'pageerror: {e}'))
         # web fonts are the page's only external requests; stub them so a proxy or offline runner cannot fail the load check
         await self.page.route(lambda u: 'fonts.googleapis' in u or 'fonts.gstatic' in u, lambda r: r.fulfill(status=200, body='', content_type='text/css'))
-        await self.page.add_init_script("try{localStorage.setItem('hsa-intro-seen','1')}catch(e){}; window.__camLock=true;")
+        await self.page.add_init_script("try{localStorage.setItem('hsa-intro-seen','1');localStorage.setItem('hsa-intro-seen-v50','1')}catch(e){}; window.__camLock=true;")
         await self.page.goto(f'http://127.0.0.1:{self.port}/index.html')
         await self.page.wait_for_function("document.getElementById('boot')&&document.getElementById('boot').classList.contains('gone')",
                                           timeout=300000)

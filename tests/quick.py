@@ -26,10 +26,10 @@ async def run(w, h, name):
     bad = []
     async with Atlas(ROOT / 'dist', width=w, height=h, settle_ms=1200) as a:
         p = a.page
-        for t in ('explore', 'layers', 'clinical', 'learn'):
+        for t in ('layers', 'clinical', 'learn'):
             await p.evaluate(TABS, t); await p.wait_for_timeout(400)
             await p.screenshot(path=str(OUT / f'quick_{name}_{t}.png'))
-        await p.evaluate(TABS, 'explore')
+        await p.evaluate(TABS, 'layers')
         bad += [e for e in a.errors if not any(k in e for k in IGNORE)]
     return bad
 

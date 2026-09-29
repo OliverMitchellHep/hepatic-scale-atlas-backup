@@ -15,14 +15,13 @@
   <div id="hover"></div>
 
   <header id="topbar">
-    <div class="brand"><b>Hepatic Scale Atlas</b><span>Macroscopic &rarr; subcellular</span></div>
+    <div class="brand"><b>Rex Hepatis</b><span>An interactive 3D model of the hepatobiliary system, from the whole organ down to the individual hepatocyte</span></div>
     <div class="tb-gap"></div>
+    <div class="find" id="find-wrap"><input id="find" type="search" autocomplete="off" spellcheck="false" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="find-list" aria-label="Find a structure" placeholder="Find a structure"><ul id="find-list" role="listbox" hidden></ul></div>
     <button class="tbtn" id="btn-lab" aria-pressed="true">Labels</button>
-    <button class="tbtn" id="btn-seg" aria-pressed="false" title="Couinaud segments overlay">Segments</button>
     <button class="tbtn" id="btn-reset">Reset view</button>
     <button class="tbtn" id="btn-q" title="Rendering quality (desktop): High uses more ambient-occlusion samples">Quality: High</button>
     <button class="tbtn" id="btn-intro" title="Show the introduction">Guide</button>
-    <button class="tbtn" id="btn-panel" aria-pressed="true" title="Show or hide the panel">Panel</button>
   </header>
 
   <nav id="rail" aria-label="Scale"></nav>
@@ -46,6 +45,7 @@
     <div id="orient">view &mdash;</div>
   </div>
 
+  <button id="dock-show" hidden aria-label="Show the panel" title="Show the panel"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3 5 8l5 5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
   <div id="dockwrap">
   <div id="cols"></div>
   <aside id="panel" aria-label="Panel">
@@ -53,27 +53,22 @@
     <div id="mhead"><div id="mslot-sim"></div><div id="mslot-tabs"></div></div>
     <div id="dock-head">
       <div id="dock-scale">
-        <div class="eyebrow" id="p-eyebrow">Scale 01</div>
         <h1 id="p-title">&mdash;</h1>
-        <div id="p-sub">&mdash;</div>
-        <p id="p-lede">&mdash;</p>
+        <button id="dock-hide" aria-label="Hide the panel" title="Hide the panel"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3l5 5-5 5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
       </div>
-      <div id="tabs" role="tablist" aria-label="Panel"><div class="tab" data-t="explore"><button class="tab-b" role="tab" id="tab-explore" aria-controls="pane-explore" aria-selected="false">Explore</button><button class="pinb" data-t="explore" aria-pressed="false" aria-label="Pin Explore" title="Pin Explore beside the panel"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M6 1.5h4l-.6 4.2 2.6 2.3v1.2H8.6V15h-1.2V9.2H4V8l2.6-2.3z" fill="currentColor"/></svg></button></div><div class="tab" data-t="layers"><button class="tab-b" role="tab" id="tab-layers" aria-controls="pane-layers" aria-selected="false">Layers</button><button class="pinb" data-t="layers" aria-pressed="false" aria-label="Pin Layers" title="Pin Layers beside the panel"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M6 1.5h4l-.6 4.2 2.6 2.3v1.2H8.6V15h-1.2V9.2H4V8l2.6-2.3z" fill="currentColor"/></svg></button></div><div class="tab" data-t="clinical"><button class="tab-b" role="tab" id="tab-clinical" aria-controls="pane-clinical" aria-selected="false">Clinical<span class="badge" id="clin-count" hidden></span></button><button class="pinb" data-t="clinical" aria-pressed="false" aria-label="Pin Clinical" title="Pin Clinical beside the panel"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M6 1.5h4l-.6 4.2 2.6 2.3v1.2H8.6V15h-1.2V9.2H4V8l2.6-2.3z" fill="currentColor"/></svg></button></div><div class="tab" data-t="learn"><button class="tab-b" role="tab" id="tab-learn" aria-controls="pane-learn" aria-selected="false">Learn</button><button class="pinb" data-t="learn" aria-pressed="false" aria-label="Pin Learn" title="Pin Learn beside the panel"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M6 1.5h4l-.6 4.2 2.6 2.3v1.2H8.6V15h-1.2V9.2H4V8l2.6-2.3z" fill="currentColor"/></svg></button></div></div>
+      <div id="tabs" role="tablist" aria-label="Panel"><div class="tab" data-t="layers"><button class="tab-b" role="tab" id="tab-layers" aria-controls="pane-layers" aria-selected="false">Layers</button><button class="pinb" data-t="layers" aria-pressed="false" aria-label="Pin Layers" title="Pin Layers beside the panel"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M6 1.5h4l-.6 4.2 2.6 2.3v1.2H8.6V15h-1.2V9.2H4V8l2.6-2.3z" fill="currentColor"/></svg></button></div><div class="tab" data-t="clinical"><button class="tab-b" role="tab" id="tab-clinical" aria-controls="pane-clinical" aria-selected="false">Clinical<span class="badge" id="clin-count" hidden></span></button><button class="pinb" data-t="clinical" aria-pressed="false" aria-label="Pin Clinical" title="Pin Clinical beside the panel"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M6 1.5h4l-.6 4.2 2.6 2.3v1.2H8.6V15h-1.2V9.2H4V8l2.6-2.3z" fill="currentColor"/></svg></button></div><div class="tab" data-t="learn"><button class="tab-b" role="tab" id="tab-learn" aria-controls="pane-learn" aria-selected="false">Learn</button><button class="pinb" data-t="learn" aria-pressed="false" aria-label="Pin Learn" title="Pin Learn beside the panel"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M6 1.5h4l-.6 4.2 2.6 2.3v1.2H8.6V15h-1.2V9.2H4V8l2.6-2.3z" fill="currentColor"/></svg></button></div></div>
       <div id="dock-msg" role="status" hidden></div>
     </div>
     <div class="scroll" id="dock-body">
       <div id="mcard" hidden></div>
-      <section class="pane" id="pane-explore" role="tabpanel" aria-labelledby="tab-explore" data-t="explore">
-        <div class="find"><input id="find" type="search" autocomplete="off" spellcheck="false" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="find-list" placeholder="Find a structure"><ul id="find-list" role="listbox" hidden></ul></div>
-        <details class="ksec" id="keys-sec" open><summary>Key concepts</summary><div id="keys"></div></details>
+      <section class="pane" id="pane-layers" role="tabpanel" aria-labelledby="tab-layers" data-t="layers">
         <div id="selbox" hidden>
           <div class="lsec-k">Selected</div>
           <div class="sb-card"><div class="sb-h"><i class="lt-sw" id="sb-sw"></i><b id="sb-name"></b></div><div class="sb-path" id="sb-path"></div><p id="sb-txt"></p>
           <div class="sb-act"><button class="sbtn" id="sb-iso">Isolate</button><button class="sbtn" id="sb-ghost">Ghost others</button><button class="tlink" id="sb-teach">Teaching card ›</button></div></div>
         </div>
-      </section>
-      <section class="pane" id="pane-layers" role="tabpanel" aria-labelledby="tab-layers" data-t="layers" hidden>
-        <div id="views-row"><div class="lsec-k">Views</div><div class="presets" id="presets"></div></div>
+        <div id="views-row"><div class="lsec-k">Views</div><div class="presets" id="presets"></div>
+          <div class="presets" id="overlays"><button class="pill tog" id="btn-seg" aria-pressed="false" title="Couinaud segments overlay"><i class="led"></i>Couinaud segments</button></div></div>
         <div id="seg-block" hidden>
           <div class="lsec-k">Couinaud segments</div>
           <div class="seglegend" id="seg-legend"></div>
@@ -153,7 +148,7 @@
             <ul class="hcclist act" data-act="bil"></ul>
             <div class="drow">Drainage: <b class="dval" data-key="bils"></b><button class="tlink" data-jump="bils">Change ›</button></div>
             <div class="readout bilro" id="bil-read"></div>
-            <div class="manage"><span class="plab">Manage</span><button class="pbtn" data-jump="ercp">ERCP ›</button><button class="pbtn" data-jump="bils">Drainage ›</button></div>
+            <div class="manage"><span class="plab">Manage</span><button class="pbtn" data-jump="bils">ERCP and drainage ›</button></div>
           </div>
         </details>
         <details class="sub citem" data-tiers="0" data-item="pc">
@@ -259,29 +254,32 @@
           </div>
         </details>
         </details>
-        <details class="cgrp" data-g="ther" open><summary><b>Therapeutic</b><span class="gn">6</span><span class="gact" hidden></span></summary>
-        <details class="sub citem proc" data-tiers="0" data-item="ercp">
-          <summary><i class="sw ercp"></i><span class="cname">ERCP</span><span class="ccnt" hidden></span><button class="learn" data-learn="ercp">Learn ›</button></summary>
-          <div class="psim">
-            <div class="plab">Therapy at the final stage</div>
-            <div class="segctl" data-key="ercpT"><button data-v="trawl">Balloon trawl</button><button data-v="plastic">Plastic stent</button><button data-v="sems" title="Self-expanding metal stent">Metal stent</button></div>
-            <div class="prow"><button class="gobtn ercp" id="ercp-go">Start ERCP</button></div>
-            <div class="pnote">A stepped simulation: intubation, cannulation and cholangiogram, sphincterotomy, then the chosen therapy. Set a cause first (CBD stone, Mirizzi, cholangiocarcinoma or pancreatic head cancer) to see its effect.</div>
-          </div>
-        </details>
+        <details class="cgrp" data-g="hpb" open><summary><b>HPB therapeutics</b><span class="gn">2</span><span class="gact" hidden></span></summary>
         <details class="sub citem proc" data-tiers="0" data-item="bils">
           <summary><i class="sw bil"></i><span class="cname">Biliary drainage</span><span class="ccnt" hidden></span><button class="learn" data-learn="bils">Learn ›</button></summary>
           <div class="psim">
-            <div class="segctl" data-key="bils"><button data-v="none">None</button><button data-v="plastic">Plastic</button><button data-v="sems" title="Self-expanding metal stent">Metal</button><button data-v="bilateral" title="Bilateral hilar metal stents">Bilateral</button><button data-v="ptc" title="Percutaneous transhepatic internal–external drain">PTC</button></div>
+            <div class="prow"><button class="gobtn ercp" id="ercp-go" data-duct="bil">Start ERCP</button></div>
+            <div class="plab">ERCP therapy</div>
+            <div class="segctl wrap" data-key="ercpT"><button data-v="trawl">Balloon trawl</button><button data-v="plastic">Plastic stent</button><button data-v="sems" title="Self-expanding metal stent">Metal stent</button><button data-v="bilateral" title="Bilateral hilar self-expanding metal stents">Bilateral stents</button></div>
+            <div class="plab">Percutaneous</div>
+            <div class="prow"><button class="gobtn bil" id="ptc-go" title="Percutaneous transhepatic internal–external drain, when ERCP fails or cannot reach">PTC drain</button></div>
+            <ul class="hcclist act" data-act="bils"></ul>
             <div class="readout bilro"></div>
+            <div class="pnote">A stepped ERCP: intubation, cannulation and cholangiogram, sphincterotomy, then the therapy chosen above, which stays in place afterwards. Set a cause first (CBD stone, Mirizzi, cholangiocarcinoma or pancreatic head cancer) to see its effect. PTC is for when ERCP fails or cannot reach the obstruction.</div>
           </div>
         </details>
         <details class="sub citem proc" data-tiers="0" data-item="pds">
           <summary><i class="sw pc"></i><span class="cname">Pancreatic duct drainage</span><span class="ccnt" hidden></span><button class="learn" data-learn="pds">Learn ›</button></summary>
           <div class="psim">
-            <div class="segctl" data-key="pds"><button data-v="none">None</button><button data-v="plastic" title="5–7 Fr plastic pancreatic stent">Plastic</button><button data-v="sems" title="Fully covered self-expanding metal stent">Metal</button></div>
+            <div class="prow"><button class="gobtn ercp" id="ercp-pd-go" data-duct="pd">Start ERCP</button></div>
+            <div class="plab">ERCP therapy</div>
+            <div class="segctl" data-key="ercpP"><button data-v="plastic" title="5–7 Fr plastic pancreatic stent">Plastic stent</button><button data-v="sems" title="Fully covered self-expanding metal stent">Metal stent</button></div>
+            <ul class="hcclist act" data-act="pds"></ul>
+            <div class="pnote">The same ERCP, with the cannula and contrast in the main pancreatic duct (pancreatogram) and the stent placed across the obstruction into the dilated duct.</div>
           </div>
         </details>
+        </details>
+        <details class="cgrp" data-g="ther" open><summary><b>Liver &amp; portal therapeutics</b><span class="gn">3</span><span class="gact" hidden></span></summary>
         <details class="sub citem proc" data-tiers="0" data-item="tips">
           <summary><i class="sw tips"></i><span class="cname">TIPSS</span><span class="ccnt" hidden></span><button class="learn" data-learn="tips">Learn ›</button></summary>
           <div class="psim">
@@ -307,6 +305,8 @@
       </div>
       </section>
       <section class="pane" id="pane-learn" role="tabpanel" aria-labelledby="tab-learn" data-t="learn" hidden>
+        <div class="lsec-k" id="keys-h">Key concepts</div>
+        <div id="keys"></div>
         <div class="lsec-k">Modules</div>
         <div id="learn-list"></div>
         <div class="lsec-k">Share this view</div>
@@ -393,19 +393,19 @@
   <div id="intro" hidden>
     <svg id="intro-svg" aria-hidden="true"><defs><marker id="intro-ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
       <path d="M0,0 L10,5 L0,10 z" fill="#6FA8EC"/></marker></defs><g id="intro-paths"></g></svg>
-    <div class="intro-tag" data-k="top"><b>Header</b>Labels, Couinaud segments, Reset view, render quality and this Guide.<button class="intro-tx" aria-label="Close this pointer">&times;</button></div>
-    <div class="intro-tag" data-k="right"><b>Dock</b>Explore, Layers, Clinical and Learn. The pin on a tab keeps it open as its own column beside the others.<button class="intro-tx" aria-label="Close this pointer">&times;</button></div>
+    <div class="intro-tag" data-k="top"><b>Header</b>Find a structure, Labels, Reset view and this Guide.<button class="intro-tx" aria-label="Close this pointer">&times;</button></div>
+    <div class="intro-tag" data-k="right"><b>Dock</b>Layers, Clinical and Learn. The arrow hides it; the pin on a tab keeps that tab open as its own column.<button class="intro-tx" aria-label="Close this pointer">&times;</button></div>
     <div class="intro-tag" data-k="bottom"><b>Patient state</b>Drag fibrosis from a normal liver to cirrhosis; pressures and running pathology show here.<button class="intro-tx" aria-label="Close this pointer">&times;</button></div>
     <div class="intro-tag" data-k="left"><b>Teaching drawer</b>Learn more, teaching cards, procedure steps and modules open on the left, with Back through your history.<button class="intro-tx" aria-label="Close this pointer">&times;</button></div>
     <div class="intro-card" role="dialog" aria-label="Introduction">
       <button id="intro-x" aria-label="Close introduction">&times;</button>
       <div class="eyebrow">Welcome</div>
-      <h2>Hepatic Scale Atlas</h2>
+      <h2>Rex Hepatis</h2>
       <p>This is a 3D render of the gastrointestinal and hepatobiliary systems of an example patient, built from a real CT.</p>
       <ul>
         <li><b>Click</b> any structure to identify it and learn about it.</li>
         <li><b>Drag</b> to rotate. <b>Scroll</b> or pinch to zoom from the whole organ down to the lobule, sinusoid and hepatocyte.</li>
-        <li class="mob-only"><b>Bottom sheet</b>: drag it up for the Explore, Layers, Clinical and Learn tabs; teaching cards and procedure steps open inside it.</li>
+        <li class="mob-only"><b>Bottom sheet</b>: drag it up for the Layers, Clinical and Learn tabs and the search; teaching cards and procedure steps open inside it.</li>
         <li class="mob-only"><b>Patient state</b>: the fibrosis slider is always in the top bar of the sheet.</li>
       </ul>
       <button class="gobtn" id="intro-go">Start exploring</button>

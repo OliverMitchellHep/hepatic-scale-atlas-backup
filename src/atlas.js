@@ -154,7 +154,7 @@ const TIERS = [
       {p:[0,0,0],l:'Erythrocyte',layer:'blood',chip:1}
     ]},
   { id:'cell', name:'Hepatocyte', mag:'×12 000', sub:'≈ 14 µm · polarised',
-    title:'The polarised hepatocyte',
+    title:'The Hepatocyte',
     lede:'A cuboidal epithelial cell with two distinct membrane domains. Uptake happens on the sinusoidal face; excretion happens on the canalicular face. Cholestasis is, mechanically, a transporter problem.',
     keys:[
       ['01','What you are looking at','One hepatocyte opened up: nucleus, mitochondria, rough and smooth ER, glycogen and lipid. It has three membrane domains: the basolateral (sinusoidal) face, whose microvilli project into the space of Disse; the lateral faces, sealed by tight junctions; and the apical canalicular groove it shares with its neighbour, which forms the bile canaliculus. Transporters are shown as generic uptake and export sites on the two faces.'],
@@ -3243,7 +3243,6 @@ function ccaForm(){
 }
 $('#cca-type').addEventListener('change',ccaForm); ccaForm();
 document.querySelectorAll('.pnote').forEach(n=>{ n.innerHTML=n.innerHTML.replace('a ~20 cm transverse liver',`this liver’s ${LIVER_CM.toFixed(1)} cm transverse extent`); });
-document.querySelector('.brand span').innerHTML='Macroscopic &rarr; subcellular &middot; CT anatomy';
 $('#hcc-go').addEventListener('click',addHCC);
 $('#hcc-size').addEventListener('keydown',e=>{ if(e.key==='Enter') addHCC(); });
 $('#cca-go').addEventListener('click',addCCA);
@@ -3261,7 +3260,7 @@ const ZON_NOTE={none:'Painted across the lobule, acinus and sinusoid by acinar z
   aih:'Autoimmune hepatitis: a lymphoplasmacytic infiltrate breaches the limiting plate from the portal tract — interface hepatitis.',
   yf:'Yellow fever: midzonal (zone 2) necrosis with Councilman bodies, sparing periportal and pericentral cells.'};
 function refreshPathUI(){
-  const S=state.path, val={bcc:S.bil.cc||'none',panc:S.panc?S.panc.type:'none',pvt:S.pvt,bcs:S.bcs,bilc:S.bil.cause,bils:S.bil.stent,masld:String(S.masld),zonal:S.zonal,pds:S.pds,ercpT:ERCP_T||'trawl'};
+  const S=state.path, val={bcc:S.bil.cc||'none',panc:S.panc?S.panc.type:'none',pvt:S.pvt,bcs:S.bcs,bilc:S.bil.cause,bils:S.bil.stent,masld:String(S.masld),zonal:S.zonal,pds:S.pds,ercpT:ERCP_T||'trawl',ercpP:ERCP_P||'plastic'};
   document.querySelectorAll('.segctl').forEach(sc=>sc.querySelectorAll('button').forEach(b=>b.dataset.on=(b.dataset.v===val[sc.dataset.key])?'1':'0'));
   $('#pvt-smv').checked=S.pvtSMV; $('#pvt-smv').disabled=S.pvt==='none'; $('#pvt-smv').parentElement.classList.toggle('dis',S.pvt==='none');
   $('#mash').checked=S.mash;
@@ -3270,6 +3269,7 @@ function refreshPathUI(){
       (pn.type==='acute' ? `<span>Gland</span><b data-s="warn">oedematous, inflamed</b><span>Collections</span><b>peripancreatic fluid, fat stranding</b>`
                          : `<span>Gland</span><b data-s="warn">atrophic, calcified</b><span>Main duct</span><b data-s="warn">dilated, irregular</b><span>Collections</span><b>pseudocysts</b>`)+
       (pn.svt ? `<span>Splenic vein</span><b data-s="crit">thrombosed · sinistral portal hypertension</b><button id="svt-view" type="button">View thrombus</button>` : ''); }
+  $('#ptc-go').textContent=S.bil.stent==='ptc'?'Remove PTC drain':'PTC drain'; $('#ptc-go').dataset.on=S.bil.stent==='ptc'?'1':'0';
   $('#tips-btn').textContent=S.tips?'Remove TIPSS':'Insert TIPSS'; $('#tips-btn').dataset.on=S.tips?'1':'0';
   $('#bleed-btn').textContent=S.bleed?'Stop variceal bleed':'Oesophageal variceal bleed'; $('#bleed-btn').dataset.on=S.bleed?'1':'0';
   $('#zon-note').textContent=ZON_NOTE[S.zonal]||ZON_NOTE.none;
@@ -3300,6 +3300,7 @@ document.querySelectorAll('.segctl').forEach(sc=>sc.addEventListener('click',e=>
   if(k==='bcs'){ S.bcs=v; pathChanged({inside:v!=='none'?'Hepatic vein thrombi and the spider-web collaterals are inside the liver.':null}); }
   if(k==='pds'){ S.pds=v; if(tiers[0].built) pdStentBuild(tiers[0].inner.userData.P); pathChanged(); }
   if(k==='ercpT'){ ERCP_T=v; refreshPathUI(); }
+  if(k==='ercpP'){ ERCP_P=v; refreshPathUI(); }
   if(k==='panc'){ S.panc.type=v; if(v==='none') S.panc.svt=false; pathChanged({inside:v!=='none'?'The pancreas lies behind the stomach.':null,layer:'stomach'}); }
   if(k==='bcc'){ S.bil.cc=v; pathChanged({inside:v==='V'||v==='IVa'?'The intrahepatic cysts lie within the liver.':null}); todaniCard(v); }
   if(k==='bilc'){ S.bil.cause=v; S.bil.cleared=false; if(tiers[0].built) bilStentBuild(tiers[0].inner.userData.P); pathChanged({inside:v==='psc'?'The beaded intrahepatic ducts are inside the liver.':null}); }
@@ -3307,6 +3308,11 @@ document.querySelectorAll('.segctl').forEach(sc=>sc.addEventListener('click',e=>
   if(k==='masld'){ S.masld=+v; pathChanged(); }
   if(k==='zonal'){ S.zonal=v; pathChanged(); }
 }));
+/* v51: biliary drainage without the segmented control: ERCP places plastic, metal or bilateral stents (or clears a stone);
+   PTC is a separate percutaneous button; what is in place is listed with × to remove */
+function setBils(v){ const S=state.path; S.bil.stent=v; if(tiers[0].built) bilStentBuild(tiers[0].inner.userData.P); pathChanged({inside:v==='ptc'?'The drain crosses the liver from the right flank to reach the ducts.':null}); }
+function setPds(v){ state.path.pds=v; if(tiers[0].built) pdStentBuild(tiers[0].inner.userData.P); pathChanged(); }
+$('#ptc-go').addEventListener('click',()=>setBils(state.path.bil.stent==='ptc'?'none':'ptc'));
 document.addEventListener('click',e=>{ if(e.target&&e.target.id==='svt-view') svtView(true); });
 /* v40: camera preset for splenic vein thrombosis: from in front, below and to the left, with the liver and stomach ghosted
    (the pancreas is already translucent while the thrombus is shown) */
@@ -3320,7 +3326,12 @@ function svtView(){
 $('#panc-svt').addEventListener('change',e=>{ state.path.panc.svt=e.target.checked; pathChanged({inside:e.target.checked?'The thrombus lies in the splenic vein behind the pancreas.':null,layer:'pancreas,stomach'}); });
 $('#pvt-smv').addEventListener('change',e=>{ state.path.pvtSMV=e.target.checked; pathChanged(); });
 $('#mash').addEventListener('change',e=>{ state.path.mash=e.target.checked; pathChanged(); });
-$('#path-collapse').addEventListener('click',()=>{ document.querySelectorAll('#path-block details.sub').forEach(d=>{ d.open=false; }); });
+/* v51: Collapse all closes every group and item; pressed again (Expand all) it reopens the groups, items stay closed */
+function collapseLabel(){ const any=[...document.querySelectorAll('#path-block details')].some(d=>d.open); $('#path-collapse').textContent=any?'Collapse all':'Expand all'; }
+$('#path-collapse').addEventListener('click',()=>{ const any=[...document.querySelectorAll('#path-block details')].some(d=>d.open);
+  if(any) document.querySelectorAll('#path-block details').forEach(d=>{ d.open=false; }); else document.querySelectorAll('#path-block details.cgrp').forEach(d=>{ d.open=true; });
+  collapseLabel(); });
+document.querySelectorAll('#path-block details').forEach(d=>d.addEventListener('toggle',collapseLabel));
 /* ── v50 Clinical tab: one template per item (configure · primary action · active instances · readouts · manage) ── */
 const TIER_NAMES=['Macroscopic','Lobule','Acinus','Sinusoid','Hepatocyte'];
 const BILS_NAMES={none:'None',plastic:'Plastic stent',sems:'Metal stent',bilateral:'Bilateral metal stents',ptc:'PTC drain'};
@@ -3342,9 +3353,11 @@ function clinActive(){ const S=state.path, A={};
   A.masld=S.masld>0?[{n:'Steatosis S'+S.masld,rm:()=>segClick('masld','0')}]:[];
   A.mash=S.mash?[{n:'Steatohepatitis',rm:()=>chkOff('mash')}]:[];
   A.zonal=S.zonal!=='none'?[{n:ZON_NAMES[S.zonal]||S.zonal,rm:()=>segClick('zonal','none')}]:[];
+  A.bils=S.bil.stent!=='none'?[{n:BILS_NAMES[S.bil.stent],d:'in place',rm:()=>setBils('none')}]:[];
+  A.pds=S.pds!=='none'?[{n:PDS_NAMES[S.pds],d:'in place',rm:()=>setPds('none')}]:[];
   return A; }
 function clinRunning(){ const r={}; if(typeof HVPG!=='undefined'&&HVPG.on) r.hvpg=1;
-  if(typeof BX!=='undefined'&&BX.on){ r[BX.mode==='tj'||BX.mode==='pc'?'bx':BX.mode]=1; } return r; }
+  if(typeof BX!=='undefined'&&BX.on){ r[BX.mode==='tj'||BX.mode==='pc'?'bx':BX.mode==='ercp'?(ERCP_D==='pd'?'pds':'bils'):BX.mode]=1; } return r; }
 const CHIP_NAMES={hcc:'HCC',cca:'Cholangiocarcinoma',bll:'Benign lesion',pc:'Pancreatic cancer',bil:'Biliary obstruction',panc:'Pancreatitis',ph:'Portal hypertension',
   pvt:'PVT',bcs:'Budd–Chiari',masld:'MASLD',mash:'MASH',zonal:'Zonal injury',bx:'Biopsy',hvpg:'HVPG',ercp:'ERCP',bils:'Biliary drain',pds:'PD stent',tips:'TIPSS',tace:'TACE',resect:'Resection'};
 function clinRefresh(){ const S=state.path, A=clinActive(), run=clinRunning();
@@ -3375,10 +3388,10 @@ function clinRefresh(){ const S=state.path, A=clinActive(), run=clinRunning();
   $('#tips-why').textContent='Needs clinically significant portal hypertension: raise the fibrosis slider (gradient ≥10 mmHg).';
   // patient state strip: what is active
   const sc=$('#strip-chips'); if(sc){ sc.innerHTML=''; for(const c of chips){ const b=document.createElement('button'); b.className='schip'+(c.run?' run':c.dev?' dev':'');
-      b.textContent=CHIP_NAMES[c.k]+(c.run?' · running':c.n>1?` ×${c.n}`:''); b.addEventListener('click',()=>clinJump(c.k)); sc.appendChild(b); }
+      b.textContent=(c.run&&(c.k==='bils'||c.k==='pds')?'ERCP':CHIP_NAMES[c.k])+(c.run?' · running':c.n>1?` ×${c.n}`:''); b.addEventListener('click',()=>clinJump(c.k)); sc.appendChild(b); }
     sc.hidden=!chips.length; }
 }
-function clinJump(k){ const d=document.querySelector(`#path-block .citem[data-item="${k}"]`); if(!d) return;
+function clinJump(k){ if(k==='ercp') k=ERCP_D==='pd'?'pds':'bils'; const d=document.querySelector(`#path-block .citem[data-item="${k}"]`); if(!d) return;
   if(document.body.classList.contains('mob')&&MOB.state==='peek') mobSheet('half');
   const pane=$('#pane-clinical'); if(pane.parentElement===$('#dock-body')) setTab('clinical');
   const g=d.closest('.cgrp'); if(g) g.open=true; if(!d.classList.contains('locked')) d.open=true;
@@ -3482,22 +3495,21 @@ function formLabel(id){ const seg=v=>SEG[+v]||'V';   // the segment selects hold
     return `${k} 0 · segment ${seg($('#bll-seg').value)} · ${(+$('#bll-size').value||4).toFixed(1)} cm`; } }
 const ITEM_TEACH={
   hcc:()=>({texts:[info(formLabel('hcc'))],crit:'#hcc-crit',critH:'These lesions against criteria',actions:[jumpAct('TACE ›','tace'),jumpAct('Resection ›','resect')]}),
-  cca:()=>({texts:[info(formLabel('cca')),...pnoteOf('cca')],actions:[jumpAct('Drainage ›','bils'),jumpAct('ERCP ›','ercp')]}),
+  cca:()=>({texts:[info(formLabel('cca')),...pnoteOf('cca')],actions:[jumpAct('ERCP and drainage ›','bils')]}),
   bll:()=>({texts:[info(formLabel('bll')),...pnoteOf('bll')]}),
-  pc:()=>({texts:[info(formLabel('pc')),...pnoteOf('pc')],actions:[jumpAct('Drainage ›','bils'),jumpAct('PD drainage ›','pds')]}),
+  pc:()=>({texts:[info(formLabel('pc')),...pnoteOf('pc')],actions:[jumpAct('Biliary drainage ›','bils'),jumpAct('Pancreatic drainage ›','pds')]}),
   panc:()=>({texts:[...pnoteOf('panc'),...infoOf(['Peripancreatic inflammation (fluid, fat stranding)','Pancreatic pseudocyst','Splenic vein thrombosis'])],names:['Splenic vein thrombosis','Pancreatic pseudocyst'],crit:'#panc-read',critH:'This patient'}),
   ph:()=>({texts:[...infoOf(['Oesophageal varices','Gastric varices (GOV1)','Gastric fundal varices']),...pnoteOf('ph')],names:['Oesophageal varices','Gastric varices (GOV1)','Bleeding oesophageal varix (rupture point)'],crit:'#ph-read',critH:'This patient',actions:[jumpAct('HVPG ›','hvpg'),jumpAct('TIPSS ›','tips')]}),
   pvt:()=>({texts:infoOf(['Portal vein thrombus (acute, occlusive)','Portal vein thrombus (partial, non-occlusive)','Portal cavernoma','SMV thrombus']),names:['Portal vein thrombus (acute, occlusive)','Portal cavernoma']}),
   bcs:()=>({texts:infoOf(['Hepatic vein thrombosis','IVC web','Intrahepatic venovenous collaterals']),names:['Hepatic vein thrombosis','IVC web']}),
-  bil:()=>({texts:infoOf(['Common bile duct stone','Impacted stone (Mirizzi syndrome)','Choledochal cyst']),names:['Common bile duct stone','Choledochal cyst'],crit:'#bil-read',critH:'This patient',actions:[jumpAct('ERCP ›','ercp'),jumpAct('Drainage ›','bils')]}),
+  bil:()=>({texts:infoOf(['Common bile duct stone','Impacted stone (Mirizzi syndrome)','Choledochal cyst']),names:['Common bile duct stone','Choledochal cyst'],crit:'#bil-read',critH:'This patient',actions:[jumpAct('ERCP and drainage ›','bils')]}),
   masld:()=>({texts:[...pnoteOf('masld'),...infoOf(['Fat droplets (macrovesicular steatosis)'])],names:['Fat droplets (macrovesicular steatosis)'],crit:'#masld-read',critH:'Fibrosis assessment (illustrative)'}),
   mash:()=>({texts:infoOf(['Mallory–Denk bodies','Inflammatory cells','Councilman (acidophil) body']),names:['Mallory–Denk bodies']}),
   zonal:()=>({texts:[$('#zon-note').textContent,...infoOf(['Zone 1','Zone 3'])],names:['Zone 3']}),
   bx:()=>({texts:[...BX_TXT.tj.when,...BX_TXT.pc.when,...pnoteOf('bx'),...infoOf(['Percutaneous biopsy needle (16G)'])],names:['Percutaneous biopsy needle (16G)']}),
   hvpg:()=>({texts:[...[...$('#hvpg').querySelectorAll('.hst span')].map(n=>n.textContent),...[...$('#hvpg-why').querySelectorAll('.hw-sec p')].map(n=>n.textContent)]}),
-  ercp:()=>({texts:[...BX_TXT.ercp.when,...pnoteOf('ercp')]}),
-  bils:()=>({texts:infoOf(['Plastic biliary stent','Metal biliary stent (SEMS)','PTC drain (internal–external)']),names:['Metal biliary stent (SEMS)'],crit:'.citem[data-item=bils] .bilro',critH:'This patient'}),
-  pds:()=>({texts:infoOf(['Plastic pancreatic stent','Metal pancreatic stent (fully covered)']),names:['Plastic pancreatic stent']}),
+  bils:()=>({texts:[...BX_TXT.ercp.when,...infoOf(['Plastic biliary stent','Metal biliary stent (SEMS)','PTC drain (internal–external)'])],names:['Metal biliary stent (SEMS)'],crit:'.citem[data-item=bils] .bilro',critH:'This patient'}),
+  pds:()=>({texts:[...BX_TXT.ercpPD.when,...infoOf(['Plastic pancreatic stent','Metal pancreatic stent (fully covered)'])],names:['Plastic pancreatic stent']}),
   tips:()=>({texts:infoOf(['TIPSS stent','TIPSS stent (ePTFE-covered segment)']),names:['TIPSS stent'],crit:'#ph-read',critH:'This patient'}),
   tace:()=>({texts:[...BX_TXT.tace.when,BX_TXT.tace.note||'',...infoOf(['TACE catheter and microcatheter'])],names:['TACE catheter and microcatheter']}),
   resect:()=>({texts:[...BX_TXT.resect.when,BX_TXT.resect.note||'',...infoOf(['Planned resection'])],names:['Planned resection']})};
@@ -3780,7 +3792,7 @@ function clearSelection(){
   refreshLayerChrome();
 }
 
-/* ── v50 Explore tab: find a structure · key concepts (with Show me) · selected ── */
+/* ── find a structure (v51: in the header) · key concepts with Show me (v51: in Learn) · selected (v51: in Layers) ── */
 /* Show me: what each key concept changes. Existing views and layers only; keys with no fitting view have none.
    cam is in the model frame (as the harness views): target t, direction dir, distance d (tier 0 only). */
 const KEY_SHOW={
@@ -3878,10 +3890,8 @@ let shownTier=-1;
 function paintPanel(i){
   if(i===shownTier) return;
   shownTier=i; const t=tiers[i];
-  $('#p-eyebrow').textContent=`Scale 0${i+1} · ${t.mag}`;
   $('#p-title').textContent=t.title;
-  $('#p-sub').textContent=t.sub;
-  $('#p-lede').textContent=t.lede; $('#p-lede').title=t.lede;
+  $('#keys-h').textContent=`Key concepts · ${TIER_NAMES[i]}`;
   keysRender(i); findReset(i);
   renderLayerButtons(i);
   $('#seg-block').hidden = !(i===0 && state.layers.segments);
@@ -3898,11 +3908,11 @@ SEG.forEach((s,i)=>{
   legend.appendChild(dv);
 });
 
-/* ── v50 dock: four tabs (Explore | Layers | Clinical | Learn) under a shared scale header; the dock and any pinned
+/* ── v50 dock (v51: three tabs, Layers | Clinical | Learn) under a shared scale header; the dock and any pinned
    columns sit full height on the right. The stage is what is left; the camera's view offset centres the model in it ── */
-const TABS=['explore','layers','clinical','learn'];
-const DOCK={tab:'explore'};
-function setTab(t){ if(!TABS.includes(t)) t='explore'; DOCK.tab=t;
+const TABS=['layers','clinical','learn'];
+const DOCK={tab:'layers'};
+function setTab(t){ if(!TABS.includes(t)) t='layers'; DOCK.tab=t;
   for(const k of TABS){ const pane=$('#pane-'+k), b=$('#tab-'+k); if(!pane||!b) continue;
     if(pane.parentElement===$('#dock-body')) pane.hidden=(k!==t);
     b.setAttribute('aria-selected',String(k===t)); b.tabIndex=k===t?0:-1; } }
@@ -3911,7 +3921,7 @@ document.querySelectorAll('#tabs .tab-b').forEach(b=>b.addEventListener('click',
 $('#tabs').addEventListener('keydown',e=>{ if(e.key!=='ArrowRight'&&e.key!=='ArrowLeft') return;
   const vis=TABS.filter(k=>$('#tab-'+k).offsetParent), i=vis.indexOf(DOCK.tab); if(i<0) return;
   const n=vis[(i+(e.key==='ArrowRight'?1:vis.length-1))%vis.length]; setTab(n); $('#tab-'+n).focus(); e.preventDefault(); });
-setTab('explore');
+setTab('layers');
 function layoutDock(){ const app=$('#app'), mob=document.body.classList.contains('mob');
   const w=mob?0:($('#dockwrap').classList.contains('closed')?0:$('#dockwrap').offsetWidth);
   app.style.setProperty('--dockW',w+'px');
@@ -3921,8 +3931,9 @@ function layoutDock(){ const app=$('#app'), mob=document.body.classList.contains
   { const sb=$('#simbar'); if(sb) sb.classList.toggle('narrow',!mob&&innerWidth-w-(dOpen?dr.offsetWidth+32:264)-16<640); }
   resize(); }
 const togglePanel=()=>{ if(document.body.classList.contains('mob')){ if(performance.now()-MOB.justDragged<400) return; mobSheet(MOB.state==='peek'?'half':'peek'); return; }
-  const c=$('#dockwrap').classList.toggle('closed'); $('#btn-panel').setAttribute('aria-pressed',String(!c)); layoutDock(); };
-$('#btn-panel').addEventListener('click',togglePanel);
+  const c=$('#dockwrap').classList.toggle('closed'); $('#dock-show').hidden=!c; layoutDock(); if(c) $('#dock-show').focus(); else $('#dock-hide').focus(); };
+$('#dock-hide').addEventListener('click',togglePanel);
+$('#dock-show').addEventListener('click',togglePanel);
 $('#grip').addEventListener('click',togglePanel);
 $('#btn-reset').addEventListener('click',()=>{camera.position.copy(HOME); controls.target.set(0,-0.45,0); if(document.body.classList.contains('mob')) mobCam();});
 $('#btn-lab').addEventListener('click',e=>{
@@ -3984,7 +3995,7 @@ function refreshLayerChrome(){
   keysRefresh();
   const sel=selection&&selection.tier===i?selection.label:null;
   document.querySelectorAll('#layers .lt-list button').forEach(b=>{ const on=b.dataset.l===sel; b.classList.toggle('sel',on); b.querySelector('.lt-tag').hidden=!on; });
-  { const b=$('#btn-seg'); if(b){ b.setAttribute('aria-pressed',String(!!state.layers.segments)); b.disabled=shownTier!==0; b.title=shownTier===0?'Couinaud segments overlay':'Segments are shown at the macroscopic scale'; } }
+  { const b=$('#btn-seg'); b.setAttribute('aria-pressed',String(!!state.layers.segments)); $('#overlays').hidden=i!==0; }
 }
 function renderLayerButtons(i){
   layerTier=i; layerBox.innerHTML=''; layerEls={};
@@ -3992,7 +4003,8 @@ function renderLayerButtons(i){
   const pr=$('#presets'); pr.innerHTML=''; $('#views-row').hidden=!(PRESETS[i]&&PRESETS[i].length);
   (PRESETS[i]||[]).forEach(p=>{ const b=document.createElement('button'); b.className='pill'; b.dataset.p=p.id; b.textContent=p.label;
     b.addEventListener('click',()=>applyLayerMap(p.map,{tier:i})); pr.appendChild(b); });
-  const head=document.createElement('div'); head.className='lt-head'; head.innerHTML='<span></span><span>On</span><span>Ghost</span><span>Off</span>'; layerBox.appendChild(head);
+  layerBox.classList.toggle('flat',i!==0);   // v51: the micro scales are one flat On | Off list (no groups, no structure sub-lists)
+  const head=document.createElement('div'); head.className='lt-head'; head.innerHTML=i===0?'<span></span><span>On</span><span>Ghost</span><span>Off</span>':'<span></span><span>On</span><span>Off</span>'; layerBox.appendChild(head);
   const row=(Ld)=>{ const wrap=document.createElement('div'); wrap.className='lt-item';
     const list=annosOn(i,Ld.k), r=document.createElement('div'); r.className='lt-row'; r.dataset.k=Ld.k;
     r.innerHTML=`<button class="lt-chev" aria-expanded="false" aria-label="Show structures in ${Ld.label}"${list.length?'':' hidden'}></button>${sw(Ld.swatch)}<span class="lt-name">${Ld.label}</span><span class="lt-n">${list.length||''}</span>`;
@@ -4015,7 +4027,9 @@ function renderLayerButtons(i){
       for(const k of G.members) kids.appendChild(row(LAYERS.find(L=>L.k===k)));
       const ch=h.querySelector('.lt-chev'); ch.addEventListener('click',()=>{ kids.hidden=!kids.hidden; ch.setAttribute('aria-expanded',String(!kids.hidden)); });
       g.appendChild(h); g.appendChild(kids); layerBox.appendChild(g); layerEls[G.k]=h; }
-  } else (LAYER_SETS[i]||[]).forEach(Ld=>layerBox.appendChild(row(Ld)));
+  } else (LAYER_SETS[i]||[]).forEach(Ld=>{ const wrap=document.createElement('div'), r=document.createElement('div'); wrap.className='lt-item'; r.className='lt-row'; r.dataset.k=Ld.k;
+    r.innerHTML=`${sw(Ld.swatch)}<span class="lt-name">${Ld.label}</span>`; r.appendChild(triCtl(Ld.label,v=>{ applyLayerMap({[Ld.k]:v},{tier:i}); },true));
+    wrap.appendChild(r); layerEls[Ld.k]=r; layerBox.appendChild(wrap); });
   flowUI(); refreshLayerChrome();
 }
 /* eased camera move (the zoom's exponential chase): to a model-frame target and direction at distance d (tier 0) */
@@ -4717,7 +4731,7 @@ function hvpgTargets(){
 /* ——— liver biopsy: transjugular (catheter via the IVC into the right hepatic vein, needle fired anteriorly into the
    parenchyma without crossing the capsule) and percutaneous (right intercostal, mid-axillary line, 16G core) ——— */
 const BX={on:false,mode:null,stage:1,t:0,grp:null,n:3};
-var ERCP_T;
+var ERCP_T, ERCP_P, ERCP_D='bil';   // v51: therapy for the bile duct, therapy for the pancreatic duct, and which duct the ERCP is for
 /* duodenoscope route: lumen centreline of this CT stomach and duodenum (distance-weighted shortest path, smoothed) from
    the gastro-oesophageal junction through body, antrum, pylorus and D1 to D2 opposite the papilla */
 const SCOPE_PATH=[[1.1,0.25,0.05],[1.34,0.05,0.22],[1.26,-0.28,0.52],[1.06,-0.58,0.76],[0.8,-0.84,0.92],[0.46,-0.92,0.95],[0.1,-0.85,0.87],[-0.14,-0.72,0.72],[-0.26,-0.6,0.6],[-0.284,-0.652,0.416],[-0.344,-0.803,0.245],[-0.363,-1.017,0.146]];
@@ -4753,6 +4767,16 @@ const BX_TXT={
       ['3 · Sphincterotomy','Diathermy cuts the roof of the papilla along the 11–12 o’clock axis to open the biliary orifice.'],
       ['4 · Therapy','Balloon trawl: an extraction balloon is inflated above the stone and drawn down through the sphincterotomy. Stent: a plastic or self-expanding metal stent is placed across the stone or stricture.']],
     note:'Complications: post-ERCP pancreatitis (about 3.5–9.7%), post-sphincterotomy bleeding, perforation and cholangitis. ESGE recommends 100 mg rectal diclofenac or indomethacin for all patients without contraindication, and a prophylactic pancreatic stent when the risk is high.'},
+  ercpPD:{title:'ERCP · pancreatic duct',
+    when:['Main pancreatic duct obstruction with upstream dilatation: a stricture or stone in chronic pancreatitis causing pain (ESGE 2019: endotherapy with a plastic stent, or stone clearance after ESWL).',
+      'Pancreatic head cancer with a dilated duct and obstructive pain, as part of palliation.',
+      'Pancreatic duct disruption or leak: a transpapillary stent bridging the leak.',
+      'Prophylaxis: a short pancreatic stent lowers the risk of post-ERCP pancreatitis in high-risk patients (ESGE).'],
+    steps:[['1 · Intubation','The side-viewing duodenoscope passes the oesophagus, stomach and pylorus into the second part of the duodenum and is shortened to face the major papilla.'],
+      ['2 · Cannulation and pancreatogram','The cannula is directed perpendicular to the duodenal wall (1–2 o’clock axis) into the main pancreatic duct. Contrast outlines the duct: strictures, stones and upstream dilatation.'],
+      ['3 · Pancreatic sphincterotomy','A short cut of the pancreatic sphincter opens the orifice for stent placement.'],
+      ['4 · Stenting','A 5–10 Fr plastic stent (or, in selected cases, a fully covered metal stent) is passed over the wire across the stricture into the dilated duct.']],
+    note:'Complications: post-ERCP pancreatitis (higher after pancreatic duct instrumentation), stent occlusion and migration, and ductal changes under the stent. Plastic stents are exchanged within a year (ESGE 2019).'},
   tj:{title:'Transjugular liver biopsy',
     when:['INR &gt;1.4 or platelets &lt;50 ×10⁹/L: BSG/RCR/RCPath 2020 recommend a transvenous route for non-lesional biopsy.',
       'Ascites, where a percutaneous route is less attractive.',
@@ -4836,7 +4860,9 @@ function bxBuild(mode){
     const c=new THREE.CatmullRomCurve3(sp,false,'centripetal');
     O.scope=metaMesh(sweep(c,0,1,()=>0.058,280,16),mat(0x1E2226,{roughness:0.35,clearcoat:0.9}),'Duodenoscope (side-viewing)'); g.add(O.scope); deployMeta(O.scope,0,0);
     const tip=c.getPointAt(1), cb=K.ducts.cbd.pts, upB=cb.slice(0,-1).reverse();      // CBD from the ampulla upwards
-    const cc=new THREE.CatmullRomCurve3([tip.clone(),tip.clone().lerp(K.amp0,0.55),K.amp0.clone(),...upB.slice(0,4)]);
+    O.pd=ERCP_D==='pd';   // v51: pancreatic duct ERCP: the cannula turns into the main pancreatic duct instead
+    const upP=(()=>{ const m=new THREE.CatmullRomCurve3(K.MPD), q=[]; for(let i=1;i<=5;i++) q.push(m.getPointAt(1-0.05*i)); return q; })();
+    const cc=new THREE.CatmullRomCurve3([tip.clone(),tip.clone().lerp(K.amp0,0.55),K.amp0.clone(),...(O.pd?upP:upB.slice(0,4))]);
     O.cann=metaMesh(sweep(cc,0,1,()=>0.011,110,10),mat(0xF2F4F6,{roughness:0.3,clearcoat:0.8}),'Sphincterotome / cannula'); g.add(O.cann); deployMeta(O.cann,0,0);
     const dUp=upB[0].clone().sub(K.amp0).normalize();
     O.cut=tag(new THREE.Mesh(new THREE.CapsuleGeometry(0.013,0.05,4,10),mat(0xE0452C,{roughness:0.4,emissive:new THREE.Color(0xE0452C).multiplyScalar(0.6)})),'Biliary sphincterotomy');
@@ -4845,10 +4871,10 @@ function bxBuild(mode){
     O.bal.visible=false; g.add(O.bal);
     O.trawl=new THREE.CatmullRomCurve3([...upB.slice(0,4).reverse(),K.amp0.clone(),K.amp0.clone().lerp(tip,0.7)]);
     const stones=tiers[0].inner.userData.P.bil.cbdStones;
-    if(state.path.bil.cause==='cbd'&&!state.path.bil.cleared&&stones.children.length){ const sc=new THREE.Vector3(); stones.children.forEach(s=>sc.add(s.position)); sc.multiplyScalar(1/stones.children.length);
+    if(!O.pd&&state.path.bil.cause==='cbd'&&!state.path.bil.cleared&&stones.children.length){ const sc=new THREE.Vector3(); stones.children.forEach(s=>sc.add(s.position)); sc.multiplyScalar(1/stones.children.length);
       let bs=0,bd=1e9; for(let i=0;i<=200;i++){ const dd=O.trawl.getPointAt(i/200).distanceToSquared(sc); if(dd<bd){ bd=dd; bs=i/200; } } O.stones=stones; O.sStone=bs; }
-    O.therapy=ERCP_T||'trawl'; O.applied=false;
-    O.dmats=BIL.items.filter(I=>I.it.kind!=='pd').map(I=>({m:I.it.m.material,c:I.it.m.material.color.clone(),e:I.it.m.material.emissive.clone()}));
+    O.therapy=O.pd?(ERCP_P||'plastic'):(ERCP_T||'trawl'); O.applied=false;
+    O.dmats=BIL.items.filter(I=>(I.it.kind==='pd')===O.pd).map(I=>({m:I.it.m.material,c:I.it.m.material.color.clone(),e:I.it.m.material.emissive.clone()}));
     tiers[0].inner.add(g); registerFade(g); return O;
   }
   if(mode==='tj'){
@@ -4902,13 +4928,13 @@ function bxStart(mode){
            : mode==='tj' ? {parenchyma:'ghost',hepaticVein:'ghost'} : {parenchyma:'ghost',ribcage:'ghost'};
   BX.prevLayers={}; { const m={}; for(const k in LY){ BX.prevLayers[k]=state.layers[k]; if(state.layers[k]==='solid'||state.layers[k]==='on'||(k==='ribcage'&&state.layers[k]==='off')) m[k]=LY[k]; }
     applyLayerMap(m,{tier:0}); }
-  const T=BX_TXT[mode];
+  const T=mode==='ercp'&&ERCP_D==='pd'?BX_TXT.ercpPD:BX_TXT[mode];
   $('#bx-title').textContent=T.title;
   $('#bx-when').innerHTML=T.when.map(s=>`<li>${s}</li>`).join('');
   $('#bx-steps').innerHTML=T.steps.map(([h,s])=>`<li class="hst"><em>${h}</em><span>${s}</span></li>`).join('');
   $('#bx-note').textContent=T.note;
-  $('#bx').hidden=false; document.querySelectorAll('#bx-tj,#bx-pc,#ercp-go,#tace-go,#resect-go').forEach(b=>b.dataset.on=(b.id==='bx-'+mode||b.id===mode+'-go')?'1':'0');
-  $('#ercp-go').textContent=mode==='ercp'?'End ERCP':'Start ERCP'; clinRefresh();
+  $('#bx').hidden=false; document.querySelectorAll('#bx-tj,#bx-pc,#tace-go,#resect-go').forEach(b=>b.dataset.on=(b.id==='bx-'+mode||b.id===mode+'-go')?'1':'0');
+  ercpBtns(); clinRefresh();
   bxPanel();
   if(mode==='pc') pcView();
 }
@@ -4944,7 +4970,7 @@ function bxStop(){
   if(BX.O&&BX.mode==='tace'&&!BX.O.done){ const m=BX.O.les.mesh.material; m.color.copy(BX.O.m0.c); m.emissive.copy(BX.O.m0.e); BX.O.les.mesh.scale.setScalar(BX.O.s0); }
   if(BX.O){ const g=BX.O.g; g.parent&&g.parent.remove(g); g.traverse(o=>{ if(o.geometry) o.geometry.dispose(); }); BX.O=null; }
   if(BX.prevLayers){ applyLayerMap(BX.prevLayers,{tier:0}); BX.prevLayers=null; }
-  $('#bx').hidden=true; document.querySelectorAll('#bx-tj,#bx-pc,#ercp-go,#tace-go,#resect-go').forEach(b=>b.dataset.on='0'); $('#ercp-go').textContent='Start ERCP'; clinRefresh();
+  $('#bx').hidden=true; document.querySelectorAll('#bx-tj,#bx-pc,#tace-go,#resect-go').forEach(b=>b.dataset.on='0'); ercpBtns(); clinRefresh();
 }
 const TACE_LIP=new THREE.Color(0xF2E7B8), TACE_LIPG=new THREE.Color(0x6A5A20), TACE_NEC=new THREE.Color(0x6E645C), TACE_BLUSH=new THREE.Color(0xB0201A);
 const ERCP_WHITE=new THREE.Color(0xF0F2F4), ERCP_GLOW=new THREE.Color(0x7A8088);
@@ -4984,11 +5010,12 @@ function bxTick(dt){
     const ct=sm(t,0.38,0.49); const tr=sm(t,0.70,0.76);   // at the therapy stage the contrast-filled ducts turn see-through, like fluoroscopy
     for(const q of O.dmats){ q.m.color.copy(q.c).lerp(ERCP_WHITE,0.8*ct); q.m.emissive.copy(q.e).lerp(ERCP_GLOW,ct); q.m.userData.baseOpacity=1-0.6*tr; }
     const cs=sm(t,0.55,0.70); O.cut.visible=cs>0.01; O.cut.scale.setScalar(Math.max(0.01,cs));
-    if(O.therapy==='trawl'){
+    if(O.pd){ if(t>0.76&&!O.applied){ O.applied=true; setPds(O.therapy); } }
+    else if(O.therapy==='trawl'){
       const s=sm(t,0.79,0.97); O.bal.visible=t>0.76&&t<0.995; O.bal.scale.setScalar(Math.max(0.01,sm(t,0.76,0.79))); O.trawl.getPointAt(s,O.bal.position);
       if(O.stones){ const k=s-O.sStone; if(k>0){ O.stones.position.copy(O.trawl.getPointAt(Math.min(1,O.sStone+k))).sub(O.trawl.getPointAt(O.sStone)); } else O.stones.position.set(0,0,0); }
       if(t>0.985&&!O.applied){ O.applied=true; if(state.path.bil.cause==='cbd'){ state.path.bil.cleared=true; pathChanged(); } }
-    } else if(t>0.76&&!O.applied){ O.applied=true; state.path.bil.stent=O.therapy; bilStentBuild(tiers[0].inner.userData.P); pathChanged(); }
+    } else if(t>0.76&&!O.applied){ O.applied=true; setBils(O.therapy); }
   } else if(BX.mode==='tj'){
     const a=sm(t,0,1/3)*O.uIVC+sm(t,1/3,2/3)*(1-O.uIVC);
     deployMeta(O.cath,a*1.06,0,1); deployMeta(O.needle,sm(t,0.70,0.90)*1.08,0,1); deployMeta(O.core,sm(t,0.88,0.99)*1.1,0,1);
@@ -4999,7 +5026,11 @@ function bxTick(dt){
   if((BX.t>=tgt-1e-6)!==was || frameNo%15===0) bxPanel();
 }
 function bxGo(d){ BX.stage=THREE.MathUtils.clamp(BX.stage+d,1,BX.n||3); bxPanel(); }
-$('#ercp-go').addEventListener('click',()=>{ BX.on&&BX.mode==='ercp'?bxStop():bxStart('ercp'); });
+/* v51: one ERCP, started from Biliary drainage (bile duct) or Pancreatic duct drainage (pancreatic duct) */
+function ercpBtns(){ document.querySelectorAll('#ercp-go,#ercp-pd-go').forEach(b=>{ const on=BX.on&&BX.mode==='ercp'&&ERCP_D===b.dataset.duct;
+  b.dataset.on=on?'1':'0'; b.textContent=on?'End ERCP':'Start ERCP'; }); }
+document.querySelectorAll('#ercp-go,#ercp-pd-go').forEach(b=>b.addEventListener('click',()=>{ const d=b.dataset.duct;
+  if(BX.on&&BX.mode==='ercp'&&ERCP_D===d){ bxStop(); return; } ERCP_D=d; bxStart('ercp'); }));
 $('#tace-go').addEventListener('click',()=>{ BX.on&&BX.mode==='tace'?bxStop():bxStart('tace'); });
 $('#resect-go').addEventListener('click',()=>{ BX.on&&BX.mode==='resect'?bxStop():bxStart('resect'); });
 $('#bx-tj').addEventListener('click',()=>{ BX.on&&BX.mode==='tj'?bxStop():bxStart('tj'); });
@@ -5630,7 +5661,7 @@ function mobSetH(h){ MOB.h=h; window.__mobH=h; document.body.style.setProperty('
 function mobSheet(st){ if(!MOB.on) return; MOB.state=st; const H=innerHeight;
   mobSetH(st==='peek'?mobPeekH():st==='half'?Math.round(H*0.5):Math.round(Math.max(H*0.86,H-$('#topbar').offsetHeight))); resize(); if(typeof coachLayout==='function') coachLayout(); }
 function mobTab(t){ setTab(t); }
-function mobRaise(){ if(!MOB.on) return; mobTab('explore'); if(MOB.state==='peek') mobSheet('half'); const sc=$('#panel .scroll'); if(sc) sc.scrollTop=0; }
+function mobRaise(){ if(!MOB.on) return; mobTab('layers'); if(MOB.state==='peek') mobSheet('half'); const sc=$('#panel .scroll'); if(sc) sc.scrollTop=0; }
 function mobCard(label,txt){ const c=$('#mcard'); if(!MOB.on||!c) return;
   c.innerHTML=`<div class="mc-h"><b></b><button aria-label="Close">×</button></div><p></p>`;
   c.querySelector('b').textContent=label; c.querySelector('p').textContent=txt; c.hidden=false;
@@ -5645,9 +5676,10 @@ function mobApply(){ const on=MOBQ();
   if(on){ const sc=$('#panel .scroll'), after=$('#mcard').nextSibling;
     mobMove($('#simbar'),$('#mslot-sim')); mobMove($('#tabs'),$('#mslot-tabs')); mobMove($('#dock-scale'),sc,sc.firstChild);
     mobMove($('#drawer'),sc,after);
+    mobMove($('#find-wrap'),sc,$('#dock-scale').nextSibling); $('#find-wrap').classList.add('inmob');   // v51: the header search moves into the sheet
     $('#dockwrap').classList.remove('closed'); $('#btn-reset').textContent='Reset';
-    mobTab('explore'); requestAnimationFrame(()=>{ mobSheet('peek'); mobCam(); }); }
-  else { mobRestore(); window.__mobH=0; document.body.style.removeProperty('--sheetH'); mobTab('explore'); $('#mcard').hidden=true;
+    mobTab('layers'); requestAnimationFrame(()=>{ mobSheet('peek'); mobCam(); }); }
+  else { mobRestore(); $('#find-wrap').classList.remove('inmob'); window.__mobH=0; document.body.style.removeProperty('--sheetH'); mobTab('layers'); $('#mcard').hidden=true;
     $('#btn-reset').textContent='Reset view'; camera.position.copy(HOME); controls.target.set(0,-0.45,0); controls.update(); layoutDock(); }
 }
 { let d=null;
