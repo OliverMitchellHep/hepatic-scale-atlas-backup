@@ -3458,8 +3458,29 @@ SEG.forEach((s,i)=>{
   legend.appendChild(dv);
 });
 
+/* ── v50 dock: four tabs (Explore | Layers | Clinical | Learn) under a shared scale header; the dock and any pinned
+   columns sit full height on the right. The stage is what is left; the camera's view offset centres the model in it ── */
+const TABS=['explore','layers','clinical','learn'];
+const DOCK={tab:'explore'};
+function setTab(t){ if(!TABS.includes(t)) t='explore'; DOCK.tab=t;
+  for(const k of TABS){ const pane=$('#pane-'+k), b=$('#tab-'+k); if(!pane||!b) continue;
+    if(pane.parentElement===$('#dock-body')) pane.hidden=(k!==t);
+    b.setAttribute('aria-selected',String(k===t)); b.tabIndex=k===t?0:-1; } }
+document.querySelectorAll('#tabs .tab-b').forEach(b=>b.addEventListener('click',()=>{ setTab(b.id.slice(4));
+  if(document.body.classList.contains('mob')&&MOB.state==='peek') mobSheet('half'); }));
+$('#tabs').addEventListener('keydown',e=>{ if(e.key!=='ArrowRight'&&e.key!=='ArrowLeft') return;
+  const vis=TABS.filter(k=>$('#tab-'+k).offsetParent), i=vis.indexOf(DOCK.tab); if(i<0) return;
+  const n=vis[(i+(e.key==='ArrowRight'?1:vis.length-1))%vis.length]; setTab(n); $('#tab-'+n).focus(); e.preventDefault(); });
+setTab('explore');
+function layoutDock(){ const app=$('#app'), mob=document.body.classList.contains('mob');
+  const w=mob?0:($('#dockwrap').classList.contains('closed')?0:$('#dockwrap').offsetWidth);
+  app.style.setProperty('--dockW',w+'px');
+  const dr=document.getElementById('drawer'), dOpen=!mob&&dr&&!dr.hidden;
+  app.style.setProperty('--stageL',(dOpen?dr.offsetWidth+32:0)+'px');
+  app.style.setProperty('--stripL',(dOpen?dr.offsetWidth+32:264)+'px');
+  resize(); }
 const togglePanel=()=>{ if(document.body.classList.contains('mob')){ if(performance.now()-MOB.justDragged<400) return; mobSheet(MOB.state==='peek'?'half':'peek'); return; }
-  $('#app').classList.toggle('pclosed',$('#panel').classList.toggle('closed')); resize(); };
+  const c=$('#dockwrap').classList.toggle('closed'); $('#btn-panel').setAttribute('aria-pressed',String(!c)); layoutDock(); };
 $('#btn-panel').addEventListener('click',togglePanel);
 $('#grip').addEventListener('click',togglePanel);
 $('#btn-reset').addEventListener('click',()=>{camera.position.copy(HOME); controls.target.set(0,-0.45,0); if(document.body.classList.contains('mob')) mobCam();});
@@ -3486,12 +3507,6 @@ function refreshLayerChrome(){
     else el.querySelector('i').style.opacity = on?1:0.3;
   });
 }
-/* v48: on mid-size windows the wrapped layer list (with the Animate box) can reach the scale rail; move the rail below it */
-function railPlace(){ const r=$('#rail'); r.style.top='';
-  if(innerWidth<=860||document.body.classList.contains('mob')) return;
-  const lb=layerBox.getBoundingClientRect().bottom, h=r.offsetHeight;
-  if(innerHeight/2-h/2<lb+12) r.style.top=Math.round(lb+12+h/2)+'px'; }
-addEventListener('resize',()=>railPlace());
 function renderLayerButtons(i){
   layerTier=i; layerBox.innerHTML=''; layerEls={};
   layerBox.classList.toggle('grouped',i===0);
@@ -3512,7 +3527,7 @@ function renderLayerButtons(i){
           applyModes(); refreshLayerChrome(); }); }
       layerBox.appendChild(row);
     }
-    layerBox.appendChild(animBox); refreshLayerChrome(); railPlace(); return;
+    layerBox.appendChild(animBox); refreshLayerChrome(); return;
   }
   (LAYER_SETS[i]||[]).forEach(Ld=>{
     const b=document.createElement('button');
@@ -3530,7 +3545,7 @@ function renderLayerButtons(i){
     });
     layerBox.appendChild(b); layerEls[Ld.k]=b;
   });
-  layerBox.appendChild(animBox); refreshLayerChrome(); railPlace();
+  layerBox.appendChild(animBox); refreshLayerChrome();
 }
 
 function applyModes(){
@@ -5103,13 +5118,17 @@ function resize(){
   camera.aspect=innerWidth/innerHeight;
   if(document.body.classList.contains('mob')){ const sh=Math.min(window.__mobH||0,innerHeight*0.6);
     camera.setViewOffset(innerWidth,innerHeight,0,sh/2,innerWidth,innerHeight); camera.updateProjectionMatrix(); return; }
-  const panel = (innerWidth>860 && !document.getElementById('panel').classList.contains('closed')) ? 352 : 0;
-  const dy = innerWidth>860 ? 26 : 0;          // lift the scene clear of the bottom simulation bar
-  if(panel||dy) camera.setViewOffset(innerWidth,innerHeight,panel/2,dy,innerWidth,innerHeight);
+  // v50: the visible stage runs from the drawer (or the left edge) to the dock, and from under the header bar to the
+  // top of the patient state strip; the camera target is placed at its centre
+  const cs=getComputedStyle(document.getElementById('app')), px=v=>parseFloat(cs.getPropertyValue(v))||0;
+  const x0=px('--stageL'), x1=innerWidth-px('--dockW'), y0=document.getElementById('topbar').offsetHeight;
+  const sb=document.getElementById('simbar'), y1=sb&&sb.offsetParent&&!document.body.classList.contains('mob')?sb.getBoundingClientRect().top-8:innerHeight;
+  const ox=innerWidth/2-(x0+x1)/2, oy=innerHeight/2-(y0+y1)/2;
+  if(Math.abs(ox)>0.5||Math.abs(oy)>0.5) camera.setViewOffset(innerWidth,innerHeight,ox,oy,innerWidth,innerHeight);
   else camera.clearViewOffset();
   camera.updateProjectionMatrix();
 }
-addEventListener('resize',resize); resize();
+addEventListener('resize',()=>layoutDock()); layoutDock();
 /* ── phone layout (v34): one bottom sheet (drag between peek, half and full) holds the fibrosis slider, the panel,
    the layers and every text card and procedure card, so nothing floats over the model ── */
 const MOBQ=()=>innerWidth<=860||(innerHeight<=520&&matchMedia('(pointer:coarse)').matches);
@@ -5120,7 +5139,7 @@ function mobPeekH(){ return $('#grip').offsetHeight+$('#mhead').offsetHeight+4; 
 function mobSetH(h){ MOB.h=h; window.__mobH=h; document.body.style.setProperty('--sheetH',Math.round(h)+'px'); }
 function mobSheet(st){ if(!MOB.on) return; MOB.state=st; const H=innerHeight;
   mobSetH(st==='peek'?mobPeekH():st==='half'?Math.round(H*0.5):Math.round(H*0.86)); resize(); if(typeof coachLayout==='function') coachLayout(); }
-function mobTab(t){ $('#panel').classList.toggle('tab-layers',t==='layers'); document.querySelectorAll('#mtabs button').forEach(b=>b.dataset.on=b.dataset.t===t?'1':'0'); }
+function mobTab(t){ setTab(t); }
 function mobRaise(){ if(!MOB.on) return; mobTab('explore'); if(MOB.state==='peek') mobSheet('half'); const sc=$('#panel .scroll'); if(sc) sc.scrollTop=0; }
 function mobCard(label,txt){ const c=$('#mcard'); if(!MOB.on||!c) return;
   c.innerHTML=`<div class="mc-h"><b></b><button aria-label="Close">×</button></div><p></p>`;
@@ -5133,12 +5152,13 @@ function mobCam(){ if(!MOB.on) return; const T=new THREE.Vector3(0,-0.45,0), a=i
 function mobApply(){ const on=MOBQ();
   if(on===MOB.on){ if(on) mobSheet(MOB.state); return; }
   MOB.on=on; document.body.classList.toggle('mob',on);
-  if(on){ const sc=$('#panel .scroll'), after=$('#mpane-layers').nextSibling;
-    mobMove($('#simbar'),$('#mslot-sim')); mobMove($('#layerbar'),$('#mpane-layers')); mobMove($('#bx'),sc,after); mobMove($('#hvpg'),sc,after); mobMove($('#hvpg-why'),sc,after);
-    $('#panel').classList.remove('closed'); $('#app').classList.remove('pclosed'); $('#btn-reset').textContent='Reset';
+  if(on){ const sc=$('#panel .scroll'), after=$('#mcard').nextSibling;
+    mobMove($('#simbar'),$('#mslot-sim')); mobMove($('#tabs'),$('#mslot-tabs')); mobMove($('#dock-scale'),sc,sc.firstChild);
+    mobMove($('#bx'),sc,after); mobMove($('#hvpg'),sc,after); mobMove($('#hvpg-why'),sc,after);
+    $('#dockwrap').classList.remove('closed'); $('#btn-reset').textContent='Reset';
     mobTab('explore'); requestAnimationFrame(()=>{ mobSheet('peek'); mobCam(); }); }
   else { mobRestore(); window.__mobH=0; document.body.style.removeProperty('--sheetH'); mobTab('explore'); $('#mcard').hidden=true;
-    $('#btn-reset').textContent='Reset view'; camera.position.copy(HOME); controls.target.set(0,-0.45,0); controls.update(); resize(); }
+    $('#btn-reset').textContent='Reset view'; camera.position.copy(HOME); controls.target.set(0,-0.45,0); controls.update(); layoutDock(); }
 }
 { let d=null;
   const start=e=>{ if(!MOB.on||e.target.closest('input,button,select,label,a')) return; d={y:e.clientY,h:MOB.h,moved:false}; };
@@ -5150,7 +5170,6 @@ function mobApply(){ const on=MOBQ();
     d=null; };
   $('#grip').addEventListener('pointerdown',start); $('#mhead').addEventListener('pointerdown',start);
   addEventListener('pointermove',move); addEventListener('pointerup',end); addEventListener('pointercancel',end); }
-document.querySelectorAll('#mtabs button').forEach(b=>b.addEventListener('click',()=>{ mobTab(b.dataset.t); if(MOB.state==='peek') mobSheet('half'); }));
 { const mo=new MutationObserver(ms=>{ for(const m of ms){ if(MOB.on&&!m.target.hidden){ $('#mcard').hidden=true; mobRaise(); } } });
   for(const id of ['#bx','#hvpg','#hvpg-why']) mo.observe($(id),{attributes:true,attributeFilter:['hidden']}); }
 addEventListener('resize',mobApply); mobApply();
@@ -5161,8 +5180,8 @@ function introLayout(){
   const W=innerWidth, H=innerHeight, mob=MOBQ(), card=$('.intro-card');
   el.classList.toggle('mob',mob);
   if(mob){ card.style.left=''; card.style.top=''; $('#intro-paths').innerHTML=''; return; }
-  const R=s=>$(s).getBoundingClientRect(), lb=R('#layers'), pn=R('#panel'), sb=R('#simbar');
-  const sceneR=$('#panel').classList.contains('closed')?W:pn.left;
+  const R=s=>$(s).getBoundingClientRect(), lb=R('#topbar'), pn=R('#dockwrap'), sb=R('#simbar');
+  const sceneR=$('#dockwrap').classList.contains('closed')?W:pn.left;
   const cw=card.offsetWidth, ch=card.offsetHeight;
   const cx=Math.round(sceneR/2), cy=Math.round((lb.bottom+sb.top)/2);
   card.style.left=(cx-cw/2)+'px'; card.style.top=Math.max(lb.bottom+12,cy-ch/2)+'px';
@@ -5235,7 +5254,7 @@ function coachLayout(){
     p.setAttribute('d',`M${x1},${y1} Q${qx},${qy} ${x2},${y2}`); p.setAttribute('marker-end','url(#coach-ah)'); g.appendChild(p); };
   const place=(el,x,y)=>{ el.style.left=Math.round(Math.max(8,Math.min(W-el.offsetWidth-8,x)))+'px';
     el.style.top=Math.round(Math.max(8,Math.min(H-el.offsetHeight-8,y)))+'px'; return el.getBoundingClientRect(); };
-  const panelOpen=!$('#panel').classList.contains('closed'), mob=W<=860;
+  const panelOpen=!$('#dockwrap').classList.contains('closed'), mob=W<=860;
   if(document.body.classList.contains('mob')){ let y=$('#topbar').getBoundingClientRect().bottom+6;
     for(const {el} of coach.tags){ el.style.display=''; el.style.left='10px'; el.style.top=y+'px'; y+=el.offsetHeight+6; } return; }
   for(const {k,el} of coach.tags){
@@ -5244,13 +5263,13 @@ function coachLayout(){
       const tx=r.left+r.width*Math.max(0.04,state.fibrosis), ty=r.top+2;
       const T=place(el, sb.left, sb.top-el.offsetHeight-44);
       const sx=Math.min(T.right-20,Math.max(T.left+20,tx)); arrow(sx,T.bottom, sx,(T.bottom+ty)/2, tx,ty-4); }
-    else if(k==='path'){ const s=$('#path-block > summary').getBoundingClientRect(), pn=$('#panel').getBoundingClientRect();
+    else if(k==='path'){ const s=$('#tab-clinical').getBoundingClientRect(), pn=$('#panel').getBoundingClientRect();
       if(!panelOpen||s.height===0||s.bottom<pn.top||s.top>H){ el.style.display='none'; continue; }
       const tx=mob?s.left+60:s.left-6, ty=mob?s.top-4:s.top+s.height/2;
       const T=mob? place(el, W-el.offsetWidth-12, pn.top-el.offsetHeight-60) : place(el, pn.left-el.offsetWidth-46, ty-el.offsetHeight-40);
       if(mob) arrow(T.left+T.width*0.6,T.bottom, tx,T.bottom+20, tx,ty); else arrow(T.right,T.top+T.height*0.5, tx-30,T.top+T.height*0.5, tx,ty); }
     else if(k==='acinar'||k==='transp'){ const b=document.querySelector(`#layers .lay[data-k=${k==='acinar'?'acinar':'transporters'}]`); if(!b){ el.style.display='none'; continue; }
-      const r=b.getBoundingClientRect(), tx=r.left+r.width/2, ty=r.bottom+4;
+      const r=b.getBoundingClientRect(); if(!r.width){ el.style.display='none'; continue; } const tx=r.left+r.width/2, ty=r.bottom+4;
       const T=place(el, r.left-30, r.bottom+56); const sx=Math.min(T.right-20,Math.max(T.left+20,tx));
       arrow(sx,T.top, sx,(T.top+ty)/2, tx,ty); }
   }
@@ -5589,9 +5608,9 @@ function frame(){
         const sx=(tmp.x*0.5+0.5)*innerWidth, sy=(-tmp.y*0.5+0.5)*innerHeight;
         selEl.style.left=sx+'px'; selEl.style.top=sy+'px';
         { const bx=selEl.querySelector('.box'), h=bx.offsetHeight, w=bx.offsetWidth;
-          const topLim=$('#layerbar').getBoundingClientRect().bottom+8, below=sy-h-14<topLim;
+          const topLim=$('#topbar').getBoundingClientRect().bottom+8, below=sy-h-14<topLim;
           selEl.classList.toggle('below',below);
-          const right=innerWidth-((innerWidth>860&&!$('#panel').classList.contains('closed'))?352:0)-10;
+          const right=innerWidth-(parseFloat(getComputedStyle($('#app')).getPropertyValue('--dockW'))||0)-10;
           const dx=Math.min(0,right-(sx+w/2))+Math.max(0,10-(sx-w/2));
           bx.style.transform=dx?`translateX(${dx}px)`:''; }
       }

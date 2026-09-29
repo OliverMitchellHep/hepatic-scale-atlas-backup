@@ -14,21 +14,19 @@
   <div id="anno"><div id="sel"><div class="box"><b></b><span></span></div><div class="stem"></div></div></div>
   <div id="hover"></div>
 
-  <div id="topbar">
+  <header id="topbar">
     <div class="brand"><b>Hepatic Scale Atlas</b><span>Macroscopic &rarr; subcellular</span></div>
+    <div class="tb-gap"></div>
     <button class="tbtn" id="btn-lab" aria-pressed="true">Labels</button>
     <button class="tbtn" id="btn-reset">Reset view</button>
-    <button class="tbtn" id="btn-panel">Panel</button>
     <button class="tbtn" id="btn-q" title="Rendering quality (desktop): High uses more ambient-occlusion samples">Quality: High</button>
     <button class="tbtn" id="btn-intro" title="Show the introduction">Guide</button>
-  </div>
+    <button class="tbtn" id="btn-panel" aria-pressed="true" title="Show or hide the panel">Panel</button>
+  </header>
 
   <nav id="rail" aria-label="Scale"></nav>
 
-  <div id="layerbar" aria-label="Layers"><span class="bar-k">Layers</span><div class="layers" id="layers"></div></div>
-  <div id="animbox" role="group" aria-label="Animation"><span class="ab-k">Animate</span><button class="toggle neutral" id="tg-flow" aria-pressed="true" title="Blood in the portal and hepatic veins (and, at the microscopic scales, blood and bile in the lobule)."><span class="led"></span><span>Blood flow</span></button><button class="toggle neutral" id="tg-bile" aria-pressed="false" title="Bile from the intrahepatic ducts and gallbladder down the common bile duct, through the ampulla into the duodenum. Ghost the duodenum to see it enter."><span class="led"></span><span>Bile flow</span></button></div>
-
-  <div id="simbar" aria-label="Cirrhosis simulation">
+  <div id="simbar" class="strip" aria-label="Patient state">
     <div class="sim-fib">
       <div class="row"><label for="sl-fib" title="Macroscopic: capsular roughening, regenerative nodules, pale septa and shrinkage. Microscopic: bridging septa, collagen in Disse, loss of fenestrae.">Fibrosis &rarr; cirrhosis</label><span class="v" id="v-fib">F0 &middot; normal</span></div>
       <input type="range" id="sl-fib" min="0" max="1" step="0.01" value="0">
@@ -46,21 +44,44 @@
     <div id="orient">view &mdash;</div>
   </div>
 
-  <aside id="panel">
+  <div id="dockwrap">
+  <div id="cols"></div>
+  <aside id="panel" aria-label="Panel">
     <div class="grip" id="grip"></div>
-    <div id="mhead"><div id="mslot-sim"></div>
-      <div id="mtabs"><button data-t="explore" data-on="1">Explore</button><button data-t="layers" data-on="0">Layers</button></div></div>
-    <div class="scroll">
+    <div id="mhead"><div id="mslot-sim"></div><div id="mslot-tabs"></div></div>
+    <div id="dock-head">
+      <div id="dock-scale">
+        <div class="eyebrow" id="p-eyebrow">Scale 01</div>
+        <h1 id="p-title">&mdash;</h1>
+        <div id="p-sub">&mdash;</div>
+        <p id="p-lede">&mdash;</p>
+      </div>
+      <div id="tabs" role="tablist" aria-label="Panel"><div class="tab" data-t="explore"><button class="tab-b" role="tab" id="tab-explore" aria-controls="pane-explore" aria-selected="false">Explore</button></div><div class="tab" data-t="layers"><button class="tab-b" role="tab" id="tab-layers" aria-controls="pane-layers" aria-selected="false">Layers</button></div><div class="tab" data-t="clinical"><button class="tab-b" role="tab" id="tab-clinical" aria-controls="pane-clinical" aria-selected="false">Clinical<span class="badge" id="clin-count" hidden></span></button></div><div class="tab" data-t="learn"><button class="tab-b" role="tab" id="tab-learn" aria-controls="pane-learn" aria-selected="false">Learn</button></div></div>
+      <div id="dock-msg" role="status" hidden></div>
+    </div>
+    <div class="scroll" id="dock-body">
       <div id="mcard" hidden></div>
-      <div id="mpane-layers"></div>
-      <div class="eyebrow" id="p-eyebrow">Scale 01</div>
-      <h1 id="p-title">&mdash;</h1>
-      <div id="p-sub">&mdash;</div>
-      <p id="p-lede">&mdash;</p>
+      <section class="pane" id="pane-explore" role="tabpanel" aria-labelledby="tab-explore" data-t="explore">
       <div id="detail" hidden></div>
-
-      <details class="sec" id="path-block">
-        <summary>Pathology</summary>
+      <details class="sec">
+        <summary>Structures &mdash; click anything in the scene</summary>
+        <div class="struct" id="p-struct"></div>
+      </details>
+      <details class="sec" id="seg-block" hidden>
+        <summary>Couinaud segments</summary>
+        <div class="seglegend" id="seg-legend"></div>
+      </details>
+      <details class="sec">
+        <summary>Teaching points</summary>
+        <ul class="klist" id="p-keys"></ul>
+      </details>
+      </section>
+      <section class="pane" id="pane-layers" role="tabpanel" aria-labelledby="tab-layers" data-t="layers" hidden>
+        <div class="layers" id="layers"></div>
+        <div id="animbox" role="group" aria-label="Animation"><span class="ab-k">Animate</span><button class="toggle neutral" id="tg-flow" aria-pressed="true" title="Blood in the portal and hepatic veins (and, at the microscopic scales, blood and bile in the lobule)."><span class="led"></span><span>Blood flow</span></button><button class="toggle neutral" id="tg-bile" aria-pressed="false" title="Bile from the intrahepatic ducts and gallbladder down the common bile duct, through the ampulla into the duodenum. Ghost the duodenum to see it enter."><span class="led"></span><span>Bile flow</span></button></div>
+      </section>
+      <section class="pane" id="pane-clinical" role="tabpanel" aria-labelledby="tab-clinical" data-t="clinical" hidden>
+      <div id="path-block">
         <div class="prow" style="margin:0 0 10px"><button class="gobtn clearall" id="path-clear">Remove all pathology</button><button class="gobtn clearall" id="path-collapse">Collapse all</button></div>
         <details class="sub" data-tiers="0">
           <summary><i class="sw hcc"></i>Hepatocellular carcinoma</summary>
@@ -214,26 +235,15 @@
             <div class="pnote" id="zon-note">Painted across the lobule, acinus and sinusoid by acinar zone.</div>
           </div>
         </details>
-      </details>
-
-      <details class="sec">
-        <summary>Structures &mdash; click anything in the scene</summary>
-        <div class="struct" id="p-struct"></div>
-      </details>
-
-      <details class="sec" id="seg-block" hidden>
-        <summary>Couinaud segments</summary>
-        <div class="seglegend" id="seg-legend"></div>
-      </details>
-
-
-      <details class="sec">
-        <summary>Teaching points</summary>
-        <ul class="klist" id="p-keys"></ul>
-      </details>
-
+      </div>
+      </section>
+      <section class="pane" id="pane-learn" role="tabpanel" aria-labelledby="tab-learn" data-t="learn" hidden>
+        <div class="eyebrow">Modules</div>
+        <p class="pnote-in">Guided modules arrive in a later phase.</p>
+      </section>
     </div>
   </aside>
+  </div>
 
   <div id="bx" hidden role="dialog" aria-label="Liver biopsy">
     <div class="hv-hd"><b id="bx-title">Liver biopsy</b><button id="bx-x" aria-label="End biopsy simulation">×</button></div>
