@@ -1201,8 +1201,10 @@ class FlowNet{
     this.o=new THREE.Object3D(); this.c=new THREE.Color(); this.scale=1; this.init=false;
   }
   route(key,pts,opt={}){
-    const curve=new THREE.CatmullRomCurve3(pts,false,'centripetal'), len=curve.getLength();
-    const R=Object.assign({key,curve,len,w:0,wc:0,speed:1,c0:new THREE.Color(0xC2AEF2),c1:null,split:1,block:null,size:1},opt);
+    let curve=new THREE.CatmullRomCurve3(pts,false,'centripetal');
+    const lk=opt.lum||this.lumen; if(lk) curve=lumenFit(curve,lk);
+    const len=curve.getLength();
+    const R=Object.assign({key,curve,len,w:0,wc:0,speed:1,c0:new THREE.Color(0xC2AEF2),c1:null,split:1,block:null,size:1},opt); delete R.lum;
     this.routes.push(R); return R;
   }
   arc(R,pt){ let best=0,bd=1e9; const q=new THREE.Vector3();
@@ -1242,6 +1244,35 @@ class FlowNet{
     M.instanceMatrix.needsUpdate=true; if(M.instanceColor) M.instanceColor.needsUpdate=true; this.off.needsUpdate=true;
   }
 }
+/* v48: keep flow routes inside the vessels. The routes were drawn through hand-placed anchors (v43 frame) and several
+   no longer lie in the lumen of the remodelled vessels (splenic vein up to 9 mm off, collaterals and renal vein 2-16 mm).
+   lumenLookup: the nearest vessel lumen (centreline point and radius, by distance to the wall) over the given tubes plus
+   extra [point, radius] pairs. lumenFit: resample the route every 1 cm/7, pull every sample that is not well inside a lumen
+   to 55% of that lumen's radius, smooth (re-pulling after each pass) and rebuild the curve. */
+function lumenLookup(meshes,extra=[]){ const cell=0.1, G=new Map(), seen=new Set(), key=(i,j,k)=>(i+512)*1048576+(j+512)*1024+(k+512);
+  const add=(x,y,z,r)=>{ const h=Math.round(x*4e3)+','+Math.round(y*4e3)+','+Math.round(z*4e3); if(seen.has(h)) return; seen.add(h);
+    const kk=key(Math.floor(x/cell),Math.floor(y/cell),Math.floor(z/cell)); let a=G.get(kk); if(!a) G.set(kk,a=[]); a.push(x,y,z,r); };
+  for(const o of meshes){ const C=o.geometry.attributes.ctr.array, P=o.userData.mo?o.userData.mo.P0:o.geometry.attributes.position.array;
+    for(let v=0;v<C.length;v+=3){ const r=Math.hypot(P[v]-C[v],P[v+1]-C[v+1],P[v+2]-C[v+2]); if(r>1e-4) add(C[v],C[v+1],C[v+2],r); } }
+  for(const [p,r] of extra) add(p.x,p.y,p.z,r);
+  return (q,out)=>{ let bd=1e9; const i0=Math.floor(q.x/cell), j0=Math.floor(q.y/cell), k0=Math.floor(q.z/cell);
+    for(let i=-2;i<=2;i++) for(let j=-2;j<=2;j++) for(let k=-2;k<=2;k++){ const a=G.get(key(i0+i,j0+j,k0+k)); if(!a) continue;
+      for(let s=0;s<a.length;s+=4){ const d=Math.hypot(a[s]-q.x,a[s+1]-q.y,a[s+2]-q.z)-a[s+3]; if(d<bd){ bd=d; out.c.set(a[s],a[s+1],a[s+2]); out.r=a[s+3]; } } }
+    out.d=bd; return bd<1e8; }; }
+function lumenFit(curve,look){
+  const n=Math.max(8,Math.ceil(curve.getLength()/0.01)), P=curve.getSpacedPoints(n), h={c:new THREE.Vector3(),r:0,d:0}, t=new THREE.Vector3();
+  const pull=p=>{ if(!look(p,h) || h.d<-0.45*h.r) return false; t.copy(p).sub(h.c); const L=t.length(), m=0.55*h.r;
+    if(L>m) p.copy(h.c).addScaledVector(t,m/L); return true; };
+  // only the stretches that had to be pulled (and 4 samples either side) are smoothed: samples already inside a lumen,
+  // e.g. along the thin tortuous collateral strands, stay exactly where they are
+  const moved=P.map(pull), sm=moved.map((_,i)=>moved.slice(Math.max(0,i-4),i+5).some(Boolean));
+  const Q=P.map(p=>p.clone());
+  for(let it=0;it<4;it++){ for(let i=1;i<P.length-1;i++) if(sm[i]) Q[i].copy(P[i]).multiplyScalar(0.5).addScaledVector(P[i-1],0.25).addScaledVector(P[i+1],0.25);
+    for(let i=1;i<P.length-1;i++) if(sm[i]){ P[i].copy(Q[i]); pull(P[i]); } }
+  const out=[P[0]]; for(const p of P.slice(1)) if(p.distanceTo(out[out.length-1])>0.015) out.push(p);
+  if(out.length<2) out.push(P[P.length-1]);
+  const c=new THREE.CatmullRomCurve3(out,false,'centripetal'); c.arcLengthDivisions=Math.max(200,out.length*4); return c; }
+
 /* nearest-centreline radius lookup over every tube (ctr attribute) under the given groups */
 function vesselRadiusLookup(groups){ const cell=0.05, G=new Map(), ck=(x,y,z)=>(Math.floor(x/cell)+512)*1048576+(Math.floor(y/cell)+512)*1024+(Math.floor(z/cell)+512);
   for(const grp of groups) grp.traverse(o=>{ if(!o.isMesh||o.isInstancedMesh) return; const g=o.geometry, C=g.attributes.ctr; if(!C) return;
@@ -1438,18 +1469,26 @@ function buildPatho(g,L,K){
   /* — flow: portal (violet → blue once systemic) and hepatic venous / systemic (blue) — */
   const pf=new FlowNet(230,0.013,L.portal), hf=new FlowNet(130,0.013,L.hepaticVein);
   P.pflow=pf; P.hflow=hf;
+  // every venous lumen a particle may travel in (thrombi excluded); native routes use only the native vessels, so a
+  // misplaced anchor is never pulled into a hidden collateral (splenorenal shunt, left gastric varices) lying alongside
+  const tubes=[], colM=new Set(), tipsLum=tipsC.getSpacedPoints(80).map(p=>[p,0.048]);
+  for(const k of ['eso','fun','sr','pu','caput','cav','web','caud']) if(P.cols[k]) for(const m of P.cols[k].meshes) colM.add(m);
+  for(const grp of [L.portal,L.hepaticVein]) grp.traverse(o=>{ if(o.isMesh&&!o.isInstancedMesh&&o.geometry.attributes.ctr&&!/thromb|cord/i.test(o.userData.pick||o.name||'')) tubes.push(o); });
+  const lumAll=lumenLookup(tubes,tipsLum), lumNat=lumenLookup(tubes.filter(o=>!colM.has(o)),tipsLum);
+  pf.lumen=hf.lumen=lumAll;
+  const fitNat=a=>lumenFit(new THREE.CatmullRomCurve3(a,false,'centripetal'),lumNat).points;
   const lil=new THREE.Color(0xC2AEF2), blu=new THREE.Color(0x9DBBF2);
-  const SRC_S=[K.SMV0,PT(0.18,-1.80,-0.30),K.CONF];
-  const SRC_P=[K.SPL0,V3(1.564,-0.071,-0.550),V3(1.470,-0.175,-0.461),V3(1.412,-0.232,-0.381),V3(1.348,-0.291,-0.336),V3(1.268,-0.333,-0.314),V3(1.192,-0.367,-0.307),V3(1.126,-0.389,-0.299),V3(1.077,-0.397,-0.281),V3(1.021,-0.397,-0.262),V3(0.968,-0.366,-0.211),V3(0.904,-0.341,-0.140),V3(0.801,-0.305,0.046),V3(0.696,-0.299,0.240),PT(0.55,-1.42,-0.55),K.CONF];
-  const TRUNK=[PT(0.08,-1.12,-0.32),K.PT_MID,K.PT_UP,TRUNK_UP,HILUM_IN];
+  const SRC_S=fitNat([K.SMV0,PT(0.18,-1.80,-0.30),K.CONF]);
+  const SRC_P0=[K.SPL0,V3(1.564,-0.071,-0.550),V3(1.470,-0.175,-0.461),V3(1.412,-0.232,-0.381),V3(1.348,-0.291,-0.336),V3(1.268,-0.333,-0.314),V3(1.192,-0.367,-0.307),V3(1.126,-0.389,-0.299),V3(1.077,-0.397,-0.281),V3(1.021,-0.397,-0.262),V3(0.968,-0.366,-0.211),V3(0.904,-0.341,-0.140),V3(0.801,-0.305,0.046),V3(0.696,-0.299,0.240),PT(0.55,-1.42,-0.55),K.CONF], SRC_P=fitNat(SRC_P0);
+  const TRUNK=fitNat([PT(0.08,-1.12,-0.32),K.PT_MID,K.PT_UP,TRUNK_UP,HILUM_IN]);
   const IVC_UP=[PT(-0.33,0.97,0.00),PT(-0.33,1.30,0.06)];
   P.routes={hp:[],cav:[],tips:[],col:{},hf:[],hv:{}};
   K.tails.forEach((tl,i)=>{ const src=i%3===2?SRC_P:SRC_S;
-    P.routes.hp.push(pf.route('hp'+i,src.concat(TRUNK,tl),{c0:lil}));
+    P.routes.hp.push(pf.route('hp'+i,src.concat(TRUNK,tl),{c0:lil,lum:lumNat}));
     P.routes.cav.push(pf.route('cav'+i,src.concat(P.cavPts[i%8].filter((_,k)=>k%3===0),[HILUM_IN],tl),{c0:lil})); });
   const tipsPts=tipsC.getPoints(40);
   [SRC_S,SRC_P].forEach((src,i)=>{ const pts=src.concat(TRUNK,[PT(-0.40,0.06,-0.02)],tipsPts,IVC_UP.slice(1));
-    const R=pf.route('tips'+i,pts,{c0:lil,c1:blu}); R.split=pf.arc(R,TIPS[TIPS.length-2])/R.len; P.routes.tips.push(R); });
+    const R=pf.route('tips'+i,pts,{c0:lil,c1:blu,lum:lumNat}); R.split=pf.arc(R,TIPS[TIPS.length-2])/R.len; P.routes.tips.push(R); });
   const rt=P.routes.col;
   { const pts=SRC_S.concat(lgvT.filter((_,k)=>k%2===0),P.esoCols[0].filter((_,k)=>k%2===0),perf[1],AZY.slice(2));
     rt.eso=pf.route('eso',pts,{c0:lil,c1:blu}); rt.eso.split=pf.arc(rt.eso,perf[1][perf[1].length-1])/rt.eso.len;
@@ -1465,23 +1504,24 @@ function buildPatho(g,L,K){
   // hepatofugal: blood leaves the liver down the trunk into the collaterals
   const rev=a=>a.slice().reverse();
   P.routes.hf.push(pf.route('hf0',rev(K.tails[0]).concat(rev(TRUNK).slice(1),[K.CONF],lgvT.filter((_,k)=>k%2===0),P.esoCols[1].filter((_,k)=>k%2===0),perf[1],AZY.slice(2)),{c0:lil,c1:blu}));
-  P.routes.hf.push(pf.route('hf1',rev(K.tails[4]).concat(rev(TRUNK).slice(1),[K.CONF],rev(SRC_P).slice(1,3),[PT(1.50,-1.22,-0.74)],srPts,K.LRV_PTS.slice(1),[PT(-0.26,-1.60,-0.52),PT(-0.31,-0.10,-0.60),PT(-0.33,0.55,-0.40)],IVC_UP),{c0:lil,c1:blu}));
+  P.routes.hf.push(pf.route('hf1',rev(K.tails[4]).concat(rev(TRUNK).slice(1),[K.CONF],rev(SRC_P0).slice(1,3),[PT(1.50,-1.22,-0.74)],srPts,K.LRV_PTS.slice(1),[PT(-0.26,-1.60,-0.52),PT(-0.31,-0.10,-0.60),PT(-0.33,0.55,-0.40)],IVC_UP),{c0:lil,c1:blu}));
   P.routes.hf.forEach(R=>{ R.split=0.62; });
   // hepatic venous outflow and systemic return
-  const IVC_FROM=y=>{ const all=[PT(-0.24,-2.20,-0.48),PT(-0.25,-1.80,-0.50),PT(-0.27,-1.40,-0.52),PT(-0.29,-0.70,-0.60),PT(-0.31,-0.10,-0.60),PT(-0.33,0.55,-0.40),PT(-0.33,0.97,0.00),PT(-0.33,1.30,0.06)];
-    return all.filter(p=>p.y>y); };
+  const IVC_ALL=fitNat([PT(-0.24,-2.20,-0.48),PT(-0.25,-1.80,-0.50),PT(-0.27,-1.40,-0.52),PT(-0.29,-0.70,-0.60),PT(-0.31,-0.10,-0.60),PT(-0.33,0.55,-0.40),PT(-0.33,0.97,0.00),PT(-0.33,1.30,0.06)]);
+  const IVC_FROM=y=>IVC_ALL.filter(p=>p.y>y);
   const hv=P.routes.hv;
-  hv.rhv=hf.route('rhv',rev(K.rhv).concat(IVC_UP),{c0:blu});
-  hv.mhv=hf.route('mhv',rev(K.mhv).concat([K.OSTM],IVC_UP),{c0:blu});
-  hv.lhv=hf.route('lhv',rev(K.lhv).concat([K.OSTM],IVC_UP),{c0:blu});
+  hv.rhv=hf.route('rhv',rev(K.rhv).concat(IVC_UP),{c0:blu,lum:lumNat});
+  hv.mhv=hf.route('mhv',rev(K.mhv).concat([K.OSTM],IVC_UP),{c0:blu,lum:lumNat});
+  hv.lhv=hf.route('lhv',rev(K.lhv).concat([K.OSTM],IVC_UP),{c0:blu,lum:lumNat});
   hv.cau=hf.route('cau',caudVeins[0].concat(IVC_FROM(caudVeins[0][2].y+0.01)),{c0:blu});
   hv.cau2=hf.route('cau2',caudVeins[1].concat(IVC_FROM(caudVeins[1][2].y+0.01)),{c0:blu});
-  hv.ivc=hf.route('ivc',IVC_FROM(-3),{c0:blu});
-  hv.lrv=hf.route('lrv',K.LRV_PTS.slice(0,3).concat(IVC_FROM(K.LRV_PTS[3].y)),{c0:blu});
-  hv.azy=hf.route('azy',AZY,{c0:blu});
+  hv.ivc=hf.route('ivc',IVC_FROM(-3),{c0:blu,lum:lumNat});
+  hv.lrv=hf.route('lrv',K.LRV_PTS.slice(0,3).concat(IVC_FROM(K.LRV_PTS[3].y)),{c0:blu,lum:lumNat});
+  hv.azy=hf.route('azy',AZY,{c0:blu,lum:lumNat});
   P.webArc={}; for(const k in hv) P.webArc[k]=hf.arc(hv[k],webP);
   P.ostArc={rhv:hf.arc(hv.rhv,K.OST)-0.06,mhv:hf.arc(hv.mhv,K.CT)-0.06,lhv:hf.arc(hv.lhv,K.CT)-0.06};
   P.clotArc=P.routes.hp.map(R=>pf.arc(R,trunkC.getPointAt(0.10)));
+  pf.lumen=hf.lumen=null;
   P.cavUp=HILUM_IN;
   // morph state (current values chase targets in pathTick)
   P.m={caud:0,cong:0,fat:0,iron:0,spl:0,vasc:0,bil:0};
