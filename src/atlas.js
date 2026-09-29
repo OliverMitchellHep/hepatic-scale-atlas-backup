@@ -172,6 +172,7 @@ const TIERS = [
 ];
 
 const INFO = @@REGISTRY@@;
+const REGMETA = @@REGMETA@@;   // v50: name → [id, layers, tiers, cites] (build.py)
 
 function info(l){
   if(INFO[l]) return INFO[l];
@@ -3226,14 +3227,14 @@ function renderLesions(){
     });
   }
   const H=lesions.filter(L=>L.kind==='hcc'), n=H.length, cr=$('#hcc-crit');
-  $('#tace-go').disabled=!n; $('#resect-go').disabled=!n;
+  $('#tace-go').disabled=!n; $('#resect-go').disabled=!n; if(typeof clinRefresh==='function') clinRefresh();
   if(!n){ cr.innerHTML=''; return; }
   const mx=Math.max(...H.map(h=>h.cm)), all3=H.every(h=>h.cm<=3);
   const milan=(n===1&&mx<=5)||(n<=3&&all3);
   const uk=(n===1&&mx<=5)||(n<=5&&all3), ukCond=!uk&&n===1&&mx>5&&mx<=7;
   cr.innerHTML=`<span>Lesions · largest</span><b>${n} · ${mx.toFixed(1)} cm</b>`+
-    `<span>Milan criteria</span><b data-s="${milan?'':'crit'}">${milan?'within':'outside'}</b>`+
-    `<span>UK (NHSBT) criteria</span><b data-s="${uk?'':(ukCond?'warn':'crit')}">${uk?'within':(ukCond?'if stable ≥6 months':'outside')}</b>`;
+    `<span>Milan criteria</span><b data-s="${milan?'ok':'crit'}">${milan?'within':'outside'}</b>`+
+    `<span>UK (NHSBT) criteria</span><b data-s="${uk?'ok':(ukCond?'warn':'crit')}">${uk?'within':(ukCond?'if stable ≥6 months':'outside')}</b>`;
 }
 function ccaForm(){
   const t=$('#cca-type').value;
@@ -3290,7 +3291,7 @@ function refreshPathUI(){
     document.querySelectorAll('.bilro').forEach(e=>{ e.innerHTML=bilH; }); }
 }
 function pathChanged(opts={}){
-  pathTargets(); refreshPathUI(); applySim();
+  pathTargets(); refreshPathUI(); applySim(); clinRefresh();
   if(opts.inside) ghostIfSolid((opts.layer||'parenchyma').split(','));   // v50: replaces the "Ghost …" toast
 }
 document.querySelectorAll('.segctl').forEach(sc=>sc.addEventListener('click',e=>{
@@ -3320,6 +3321,78 @@ $('#panc-svt').addEventListener('change',e=>{ state.path.panc.svt=e.target.check
 $('#pvt-smv').addEventListener('change',e=>{ state.path.pvtSMV=e.target.checked; pathChanged(); });
 $('#mash').addEventListener('change',e=>{ state.path.mash=e.target.checked; pathChanged(); });
 $('#path-collapse').addEventListener('click',()=>{ document.querySelectorAll('#path-block details.sub').forEach(d=>{ d.open=false; }); });
+/* ── v50 Clinical tab: one template per item (configure · primary action · active instances · readouts · manage) ── */
+const TIER_NAMES=['Macroscopic','Lobule','Acinus','Sinusoid','Hepatocyte'];
+const BILS_NAMES={none:'None',plastic:'Plastic stent',sems:'Metal stent',bilateral:'Bilateral metal stents',ptc:'PTC drain'};
+const PDS_NAMES={none:'None',plastic:'Plastic stent',sems:'Metal stent'};
+const BILC_NAMES={cbd:'CBD stone',mirizzi:'Mirizzi syndrome',stricture:'Benign CBD stricture',psc:'Primary sclerosing cholangitis'};
+const PVT_NAMES={partial:'Partial (non-occlusive)',acute:'Acute occlusive',chronic:'Chronic, cavernous transformation'};
+const BCS_NAMES={hv:'Hepatic veins',ivc:'IVC web',mixed:'Hepatic veins and IVC'};
+const ZON_NAMES={apap:'Paracetamol (zone 3)',ischaemic:'Ischaemic (zone 3)',congestive:'Congestive (zone 3)',iron:'Iron, HH (zone 1)',aih:'Interface hepatitis (AIH)',yf:'Yellow fever (zone 2)'};
+const segClick=(k,v)=>{ const b=document.querySelector(`.segctl[data-key=${k}] button[data-v="${v}"]`); if(b) b.click(); };
+const chkOff=id=>{ const c=$('#'+id); if(c&&c.checked){ c.checked=false; c.dispatchEvent(new Event('change')); } };
+function clinActive(){ const S=state.path, A={};
+  A.bil=[]; if(S.bil.cause!=='none') A.bil.push({n:BILC_NAMES[S.bil.cause],rm:()=>segClick('bilc','none')});
+    if(S.bil.cc&&S.bil.cc!=='none') A.bil.push({n:'Choledochal cyst',d:'Todani '+S.bil.cc,rm:()=>segClick('bcc','none')});
+  A.panc=S.panc&&S.panc.type!=='none'?[{n:S.panc.type==='acute'?'Acute pancreatitis':'Chronic pancreatitis',d:S.panc.svt?'with splenic vein thrombosis':'',rm:()=>segClick('panc','none')}]:[];
+  A.ph=[]; if(HEMO.ppg>=10) A.ph.push({n:'Clinically significant',d:Math.round(HEMO.ppg)+' mmHg gradient'});
+    if(S.bleed) A.ph.push({n:'Variceal bleed',d:'oesophageal',rm:()=>$('#bleed-btn').click()});
+  A.pvt=S.pvt!=='none'?[{n:PVT_NAMES[S.pvt],d:S.pvtSMV?'extends into the SMV':'',rm:()=>segClick('pvt','none')}]:[];
+  A.bcs=S.bcs!=='none'?[{n:BCS_NAMES[S.bcs],rm:()=>segClick('bcs','none')}]:[];
+  A.masld=S.masld>0?[{n:'Steatosis S'+S.masld,rm:()=>segClick('masld','0')}]:[];
+  A.mash=S.mash?[{n:'Steatohepatitis',rm:()=>chkOff('mash')}]:[];
+  A.zonal=S.zonal!=='none'?[{n:ZON_NAMES[S.zonal]||S.zonal,rm:()=>segClick('zonal','none')}]:[];
+  return A; }
+function clinRunning(){ const r={}; if(typeof HVPG!=='undefined'&&HVPG.on) r.hvpg=1;
+  if(typeof BX!=='undefined'&&BX.on){ r[BX.mode==='tj'||BX.mode==='pc'?'bx':BX.mode]=1; } return r; }
+const CHIP_NAMES={hcc:'HCC',cca:'Cholangiocarcinoma',bll:'Benign lesion',pc:'Pancreatic cancer',bil:'Biliary obstruction',panc:'Pancreatitis',ph:'Portal hypertension',
+  pvt:'PVT',bcs:'Budd–Chiari',masld:'MASLD',mash:'MASH',zonal:'Zonal injury',bx:'Biopsy',hvpg:'HVPG',ercp:'ERCP',bils:'Biliary drain',pds:'PD stent',tips:'TIPSS',tace:'TACE',resect:'Resection'};
+function clinRefresh(){ const S=state.path, A=clinActive(), run=clinRunning();
+  const lesN=k=>lesions.filter(L=>(k==='bll'?['abs','cyst','bfl']:[k]).includes(L.kind)).length;
+  const cnt={hcc:lesN('hcc'),cca:lesN('cca'),bll:lesN('bll'),pc:lesN('pc'),bils:S.bil.stent!=='none'?1:0,pds:S.pds!=='none'?1:0,tips:S.tips?1:0};
+  for(const k in A) cnt[k]=A[k].filter(x=>x.rm).length;
+  let pathTot=0, runTot=0; const chips=[];
+  document.querySelectorAll('#path-block .citem').forEach(d=>{ const k=d.dataset.item, n=cnt[k]||0, r=!!run[k], c=d.querySelector('.ccnt');
+    c.hidden=!(n||r); c.textContent=r?'running':String(n); c.classList.toggle('run',r); d.classList.toggle('active',!!(n||r));
+    if(d.classList.contains('proc')){ if(r){ runTot++; chips.push({k,run:1}); } else if(n) chips.push({k,dev:1}); }
+    else if(n){ pathTot+=n; chips.push({k,n}); } });
+  document.querySelectorAll('#path-block .cgrp').forEach(g=>{ let n=0, r=0; g.querySelectorAll('.citem').forEach(d=>{ const k=d.dataset.item; n+=(cnt[k]||0); r+=run[k]?1:0; });
+    const b=g.querySelector('.gact'); b.hidden=!(n||r); b.textContent=r?(n?`${n} active · running`:'running'):`${n} active`; b.classList.toggle('run',!!r); });
+  const tb=$('#clin-count'); tb.hidden=!(pathTot+runTot); tb.textContent=String(pathTot+runTot); tb.title=`${pathTot} active pathology · ${runTot} running procedure${runTot===1?'':'s'}`;
+  // active instance rows for the state-driven items
+  document.querySelectorAll('#path-block .hcclist.act').forEach(ul=>{ const k=ul.dataset.act; ul.innerHTML='';
+    for(const x of (A[k]||[])){ const li=document.createElement('li'); li.className='st';
+      li.innerHTML=`<i></i><span></span>${x.rm?`<button title="Remove" aria-label="Remove">×</button>`:''}`;
+      li.querySelector('span').innerHTML=`${x.n}${x.d?` <small>${x.d}</small>`:''}`; li.querySelector('i').className='sw '+(ul.closest('.citem').querySelector('summary .sw').className.split(' ')[1]||'');
+      if(x.rm) li.querySelector('button').addEventListener('click',e=>{ e.stopPropagation(); x.rm(); });
+      ul.appendChild(li); } });
+  document.querySelectorAll('#path-block .dval').forEach(b=>{ b.textContent=b.dataset.key==='pds'?PDS_NAMES[S.pds]:BILS_NAMES[S.bil.stent]; });
+  // running badges on the manage buttons
+  document.querySelectorAll('#path-block .pbtn').forEach(b=>b.classList.toggle('run',!!run[b.dataset.jump]));
+  // procedures that need a target
+  const nH=cnt.hcc; $('#tace-why').hidden=$('#resect-why').hidden=!!nH;
+  const phOK=HEMO.ppg>=10||S.tips||S.bleed; $('#tips-btn').disabled=!phOK; $('#tips-why').hidden=phOK;
+  $('#tips-why').textContent='Needs clinically significant portal hypertension: raise the fibrosis slider (gradient ≥10 mmHg).';
+  // patient state strip: what is active
+  const sc=$('#strip-chips'); if(sc){ sc.innerHTML=''; for(const c of chips){ const b=document.createElement('button'); b.className='schip'+(c.run?' run':c.dev?' dev':'');
+      b.textContent=CHIP_NAMES[c.k]+(c.run?' · running':c.n>1?` ×${c.n}`:''); b.addEventListener('click',()=>clinJump(c.k)); sc.appendChild(b); }
+    sc.hidden=!chips.length; }
+}
+function clinJump(k){ const d=document.querySelector(`#path-block .citem[data-item="${k}"]`); if(!d) return;
+  if(document.body.classList.contains('mob')&&MOB.state==='peek') mobSheet('half');
+  const pane=$('#pane-clinical'); if(pane.parentElement===$('#dock-body')) setTab('clinical');
+  const g=d.closest('.cgrp'); if(g) g.open=true; if(!d.classList.contains('locked')) d.open=true;
+  requestAnimationFrame(()=>{ d.scrollIntoView({block:'start',behavior:'smooth'}); d.classList.remove('flash'); void d.offsetWidth; d.classList.add('flash'); }); }
+document.querySelectorAll('#path-block [data-jump]').forEach(b=>b.addEventListener('click',e=>{ e.preventDefault(); clinJump(b.dataset.jump); }));
+document.querySelectorAll('#path-block .learn').forEach(b=>b.addEventListener('click',e=>{ e.preventDefault(); e.stopPropagation(); if(typeof learnOpen==='function') learnOpen(b.dataset.learn); }));
+/* tier gating: an item that is not available at this scale stays listed, disabled, with a link to the scale where it is */
+function clinGate(i){ document.querySelectorAll('#path-block .citem').forEach(d=>{ const ts=(d.dataset.tiers||'0').split(',').map(Number), ok=ts.includes(i);
+  d.classList.toggle('locked',!ok); let a=d.querySelector('summary .avail');
+  if(!ok){ if(!a){ a=document.createElement('button'); a.className='avail'; d.querySelector('summary').insertBefore(a,d.querySelector('summary .learn'));
+      a.addEventListener('click',e=>{ e.preventDefault(); e.stopPropagation(); const t=+a.dataset.t; if(t>state.zTarget) centreFocus(); state.zTarget=t; }); }
+    const t=ts.reduce((b,x)=>Math.abs(x-i)<Math.abs(b-i)?x:b,ts[0]); a.dataset.t=t; a.textContent=`Available at ${TIER_NAMES[t]} ›`; a.hidden=false; d.open=false; }
+  else if(a) a.hidden=true; }); }
+document.querySelectorAll('#path-block .citem > summary').forEach(sm=>sm.addEventListener('click',e=>{ if(sm.parentElement.classList.contains('locked')) e.preventDefault(); }));
 $('#hvpg-btn').addEventListener('click',()=>{ HVPG.on?hvpgStop():hvpgStart(); });
 $('#hvpg-x').addEventListener('click',hvpgStop);
 $('#hvpg-why-x').addEventListener('click',()=>{ HVPG.whyX=true; $('#hvpg-why').hidden=true; });
@@ -3393,25 +3466,115 @@ function isPathLabel(label){
 function setSelection(ti,local,label,dock=false){
   selection={tier:ti,local:local.clone(),label,dock};
   selEl.classList.toggle('dock',!!dock);
-  const d=$('#detail');
-  d.hidden=true;   // the callout carries the text; no panel block
   if(!dock&&isPathLabel(label)){ dock=true; selection.dock=true; selEl.classList.add('dock'); }
-  d.innerHTML=`<b>${label}</b>${info(label)}`;
   selEl.querySelector('b').textContent=label;
   const txt=info(label);
   selEl.querySelector('span').textContent=txt; selEl.classList.toggle('long',txt.length>260);
   selEl.style.display='block';
-  document.querySelectorAll('#p-struct .chip').forEach(c=>c.dataset.sel=(c.textContent===label)?'1':'0');
   pins[ti].forEach(p=>p.el.dataset.sel=(p.a.l===label)?'1':'0');
+  selboxShow(ti,label,txt);
   refreshLayerChrome();
   if(document.body.classList.contains('mob')) mobCard(label,txt);
 }
 function clearSelection(){
-  selection=null; selEl.style.display='none'; $('#detail').hidden=true; { const c=document.getElementById('mcard'); if(c) c.hidden=true; }
-  document.querySelectorAll('#p-struct .chip').forEach(c=>c.dataset.sel='0');
+  selection=null; selEl.style.display='none'; $('#selbox').hidden=true; { const c=document.getElementById('mcard'); if(c) c.hidden=true; }
   pins.forEach(ps=>ps.forEach(p=>p.el.dataset.sel='0'));
   refreshLayerChrome();
 }
+
+/* ── v50 Explore tab: find a structure · key concepts (with Show me) · selected ── */
+/* Show me: what each key concept changes. Existing views and layers only; keys with no fitting view have none.
+   cam is in the model frame (as the harness views): target t, direction dir, distance d (tier 0 only). */
+const KEY_SHOW={
+  0:{'01':{overlay:'segments',layers:{parenchyma:'on'},cam:{t:[-0.2,0.05,0.2],dir:[0,0.05,1],d:4.6},select:'Falciform ligament',hint:'segments on · anterior'},
+     '02':{layers:{parenchyma:'ghost',portal:'on',hepaticVein:'on',artery:'off',biliary:'off',stomach:'off',esophagus:'off',duodenum:'off',pancreas:'off',spleen:'off',kidneys:'off'},cam:{t:[-0.2,0.2,0.1],dir:[0,0.6,1],d:4.6},hint:'parenchyma ghost · portal and hepatic veins · from above'},
+     '03':{layers:{parenchyma:'ghost',artery:'on',biliary:'on',portal:'off',hepaticVein:'off',stomach:'off',esophagus:'off',duodenum:'ghost',pancreas:'ghost',spleen:'off',kidneys:'off'},cam:{t:[-0.25,-0.4,0.35],dir:[0.1,0.05,1],d:2.8},select:'Proper hepatic artery',hint:'arteries and bile ducts · hilum'}},
+  1:{'01':{layers:{plates:'on'},select:'Zone 1',hint:'plates on · zone 1'},'02':{layers:{plates:'on'},select:'Zone 3',hint:'plates on · zone 3'},
+     '03':{layers:{portal:'on',central:'on',flow:'on',bile:'on'},hint:'blood flow and bile ductules on'},'04':{layers:{acinar:'on'},select:'Acinus (Rappaport)',hint:'acinar layer on'}},
+  2:{'01':{layers:{disse:'on',portal:'on',artery:'on',bile:'on',central:'on',sinusoids:'on',plates:'on',flow:'on'},hint:'all layers on'},
+     '02':{layers:{portal:'on',artery:'on'},select:'Zone 1',hint:'portal and arterial inflow · zone 1'},'03':{preset:'blood',hint:'blood path'},
+     '04':{preset:'bile',bile:true,hint:'bile path · bile flow on'},'06':{layers:{portal:'on',sinusoids:'on'},select:'Inlet venule',hint:'an inlet venule'}},
+  3:{'01':{layers:{endothelium:'on',disse:'on',hepatocytes:'on',bile:'on',cells:'on',blood:'on'},hint:'all layers on'},
+     '02':{layers:{endothelium:'on'},select:'Fenestrated endothelium',hint:'the endothelium'},'03':{layers:{disse:'on'},select:'Space of Disse',hint:'the space of Disse'},
+     '04':{layers:{cells:'on'},select:'Kupffer cell',hint:'Kupffer and stellate cells'}},
+  4:{'01':{layers:{membrane:'on',nucleus:'on',mitochondria:'on',er:'on',lipid:'on',glycogen:'on',transporters:'on'},hint:'all layers on'},
+     '02':{layers:{transporters:'on',membrane:'on'},select:'Sinusoidal membrane',hint:'transporters · sinusoidal face'},
+     '03':{layers:{transporters:'on'},select:'Canalicular membrane',hint:'transporters · canalicular face'},
+     '04':{layers:{transporters:'on'},select:'Canalicular membrane',hint:'canalicular transporters'},
+     '05':{layers:{transporters:'on',membrane:'on'},select:'Sinusoidal membrane',hint:'basolateral efflux'},
+     '06':{layers:{er:'on'},select:'Endoplasmic reticulum',hint:'the ER'}}};
+const KACT={i:-1,k:null,snap:''};
+const layerSnap=i=>i===0?JSON.stringify(state.layers):JSON.stringify(state.tl[i]);
+function annoAt(i,label){ return (tiers[i].annos||[]).find(a=>a.l===label); }
+function annoPos(a){ return a._v||new THREE.Vector3(...a.p); }
+function showApply(i,spec){
+  if(spec.preset){ const p=(PRESETS[i]||[]).find(q=>q.id===spec.preset); if(p) applyLayerMap(p.map,{tier:i}); }
+  if(spec.layers||spec.overlay){ const m=Object.assign({},spec.layers||{}); if(spec.overlay==='segments') m.segments=true; applyLayerMap(m,{tier:i}); }
+  if(spec.bile){ if(i===0) state.bile=true; else state.bileMicro=true; flowUI(); }
+  if(spec.cam&&i===0&&tiers[0].built){ const inn=tiers[0].inner; inn.updateMatrixWorld(true); const sc=new THREE.Vector3(); inn.getWorldScale(sc);
+    const t=inn.localToWorld(new THREE.Vector3(...spec.cam.t)), d=new THREE.Vector3(...spec.cam.dir).normalize().transformDirection(inn.matrixWorld);
+    camFly(t,t.clone().addScaledVector(d,spec.cam.d*sc.x)); }
+  if(spec.select){ const a=annoAt(i,spec.select); if(a) setSelection(i,annoPos(a),a.l); } }
+function keysRender(i){ const box=$('#keys'); box.innerHTML=''; const t=tiers[i];
+  t.keys.forEach(([n,h,b])=>{ const spec=(KEY_SHOW[i]||{})[n], c=document.createElement('div'); c.className='kcard'; c.dataset.k=n;
+    c.innerHTML=`<div class="kh"><i>${n}</i><b></b></div><p></p>`+(spec?`<div class="kf"><button class="sbtn kshow">Show me</button><span class="khint"></span></div>`:'');
+    c.querySelector('b').textContent=h; c.querySelector('p').textContent=b;
+    if(spec){ c.querySelector('.khint').textContent=spec.hint||'';
+      c.querySelector('.kshow').addEventListener('click',()=>{ showApply(i,spec); KACT.i=i; KACT.k=n; KACT.snap=layerSnap(i); keysRefresh(); }); }
+    box.appendChild(c); });
+  keysRefresh(); }
+function keysRefresh(){ if(KACT.k&&(KACT.i!==shownTier||KACT.snap!==layerSnap(KACT.i))){ KACT.k=null; }
+  document.querySelectorAll('#keys .kcard').forEach(c=>c.classList.toggle('on',KACT.k===c.dataset.k&&KACT.i===shownTier)); }
+/* Selected: name, path, short text, and the layer actions */
+function selLayer(i,label){ const a=annoAt(i,label); let k=a&&a.layer; if(!k&&REGMETA[label]) k=(REGMETA[label][1]||[])[0];
+  if(k==='ligaments'||k==='viscera') k=k==='ligaments'?'parenchyma':null;
+  return k&&(LAYER_SETS[i]||[]).some(L=>L.k===k)?k:null; }
+function selPath(i,k){ if(!k) return TIER_NAMES[i]; const Ld=(LAYER_SETS[i]||[]).find(L=>L.k===k);
+  if(i===0){ const G=TREE_GROUPS.find(G=>G.members.includes(k)); return (G?G.label+' › ':'')+(Ld?Ld.label:k); }
+  return TIER_NAMES[i]+' › '+(Ld?Ld.label:k); }
+function shortText(t){ const m=t.match(/^(.{40,}?[.!?])(\s|$)/); let s=m?m[1]:t; if(s.length<140){ const m2=t.slice(s.length).match(/^\s*(.+?[.!?])(\s|$)/); if(m2&&(s.length+m2[1].length)<260) s+=' '+m2[1]; }
+  return s.length>300?s.slice(0,297)+'…':s; }
+function selboxShow(i,label,txt){ const k=selLayer(i,label), Ld=k&&(LAYER_SETS[i]||[]).find(L=>L.k===k);
+  $('#selbox').hidden=false; $('#sb-name').textContent=label; $('#sb-path').textContent=selPath(i,k); $('#sb-txt').textContent=shortText(txt);
+  const swc=$('#sb-sw'); swc.style.background=Ld&&Ld.swatch!=null?'#'+Ld.swatch.toString(16).padStart(6,'0'):'var(--line-2)';
+  $('#sb-iso').disabled=!k; $('#sb-ghost').disabled=!k||i!==0; $('#sb-ghost').title=i!==0?'Ghost is not available at this scale':'';
+  $('#sb-teach').hidden=typeof learnOpen!=='function'; $('#selbox').dataset.k=k||''; }
+$('#sb-iso').addEventListener('click',()=>{ if(!selection) return; const i=selection.tier, k=$('#selbox').dataset.k; if(!k) return; const m={};
+  if(i===0){ for(const G of TREE_GROUPS) for(const x of G.members) m[x]=x===k?'on':'off'; } else for(const L of LAYER_SETS[i]) m[L.k]=L.k===k?'on':'off';
+  applyLayerMap(m,{tier:i}); });
+$('#sb-ghost').addEventListener('click',()=>{ if(!selection||selection.tier!==0) return; const k=$('#selbox').dataset.k; if(!k) return; const m={};
+  for(const G of TREE_GROUPS) for(const x of G.members) m[x]=x===k?'on':(LV(state.layers[x])==='off'?'off':'ghost');
+  applyLayerMap(m,{tier:0}); });
+$('#sb-teach').addEventListener('click',()=>{ if(selection&&typeof learnOpen==='function') learnOpen({label:selection.label,tier:selection.tier}); });
+/* Find a structure: the scale's annotations plus any registry structure present (by pick label) in its scene */
+const FIND={i:-1,items:[],hi:0};
+function pickIndex(i){ const tr=tiers[i]; if(!tr.built) return new Map(); if(tr._pick) return tr._pick; const M=new Map(), bb=new THREE.Box3(), c=new THREE.Vector3();
+  tr.group.updateMatrixWorld(true);
+  const shown=o=>{ for(let q=o;q&&q!==tr.inner;q=q.parent) if(!q.visible) return false; return true; };
+  tr.inner.traverse(o=>{ const l=o.userData&&o.userData.pick; if(!o.isMesh||!l||M.has(l)||!INFO[l]||o.isInstancedMesh) return;
+    if(i===0&&!shown(o)&&isPathLabel(l)) return;   // pathology features only while present
+    o.geometry.computeBoundingBox(); bb.copy(o.geometry.boundingBox).applyMatrix4(o.matrixWorld); bb.getCenter(c); M.set(l,tr.group.worldToLocal(c.clone())); });
+  return M; }
+function findReset(i){ FIND.i=i; const t=tiers[i], M=pickIndex(i), seen=new Set(), items=[];
+  for(const a of t.annos){ if(a.l==='About this anatomy'||seen.has(a.l)) continue; seen.add(a.l); items.push({l:a.l,v:annoPos(a)}); }
+  for(const [l,v] of M){ if(seen.has(l)) continue; const meta=REGMETA[l]; if(meta&&meta[2].length&&!meta[2].includes(i)) continue; seen.add(l); items.push({l,v}); }
+  FIND.items=items.sort((a,b)=>a.l.localeCompare(b.l)); const f=$('#find'); f.value=''; f.placeholder=`Find a structure — ${items.length} at this scale`; findList(''); }
+function findList(q){ const ul=$('#find-list'), f=$('#find'); q=q.trim().toLowerCase(); ul.innerHTML='';
+  const hits=q?FIND.items.filter(x=>x.l.toLowerCase().includes(q)).sort((a,b)=>a.l.toLowerCase().indexOf(q)-b.l.toLowerCase().indexOf(q)).slice(0,12):[];
+  FIND.hits=hits; FIND.hi=0; ul.hidden=!hits.length; f.setAttribute('aria-expanded',String(!!hits.length));
+  hits.forEach((x,j)=>{ const li=document.createElement('li'); li.setAttribute('role','option'); li.id='find-o'+j; li.textContent=x.l; li.setAttribute('aria-selected',String(j===0));
+    li.addEventListener('mousedown',e=>{ e.preventDefault(); findPick(x); }); ul.appendChild(li); });
+  if(hits.length) f.setAttribute('aria-activedescendant','find-o0'); else f.removeAttribute('aria-activedescendant'); }
+function findPick(x){ const i=FIND.i, k=selLayer(i,x.l); if(k&&layerVal(i,k)==='off') applyLayerMap({[k]:'on'},{tier:i});
+  setSelection(i,x.v,x.l); frameStructure(i,x.v); const f=$('#find'); f.value=''; findList(''); f.blur(); }
+$('#find').addEventListener('input',e=>{ if(FIND.i!==shownTier) findReset(shownTier); findList(e.target.value); });
+$('#find').addEventListener('focus',()=>findReset(Math.max(0,shownTier)));
+$('#find').addEventListener('keydown',e=>{ const h=FIND.hits||[]; if(!h.length) return;
+  if(e.key==='ArrowDown'||e.key==='ArrowUp'){ FIND.hi=(FIND.hi+(e.key==='ArrowDown'?1:h.length-1))%h.length; e.preventDefault();
+    document.querySelectorAll('#find-list li').forEach((li,j)=>li.setAttribute('aria-selected',String(j===FIND.hi))); $('#find').setAttribute('aria-activedescendant','find-o'+FIND.hi); }
+  else if(e.key==='Enter'){ findPick(h[FIND.hi]); e.preventDefault(); }
+  else if(e.key==='Escape'){ findList(''); } });
+$('#find').addEventListener('blur',()=>setTimeout(()=>findList(''),120));
 
 let shownTier=-1;
 function paintPanel(i){
@@ -3420,21 +3583,11 @@ function paintPanel(i){
   $('#p-eyebrow').textContent=`Scale 0${i+1} · ${t.mag}`;
   $('#p-title').textContent=t.title;
   $('#p-sub').textContent=t.sub;
-  $('#p-lede').textContent=t.lede;
-  const ks=$('#p-keys'); ks.innerHTML='';
-  t.keys.forEach(([n,h,b])=>{
-    const li=document.createElement('li');
-    li.innerHTML=`<i>${n}</i><span><b>${h}</b> — ${b}</span>`; ks.appendChild(li);
-  });
-  const st=$('#p-struct'); st.innerHTML='';
-  t.annos.forEach(a=>{
-    const c=document.createElement('button'); c.className='chip'; c.textContent=a.l;
-    c.addEventListener('click',()=>setSelection(i, a._v || new THREE.Vector3(...a.p), a.l));
-    st.appendChild(c);
-  });
+  $('#p-lede').textContent=t.lede; $('#p-lede').title=t.lede;
+  keysRender(i); findReset(i);
   renderLayerButtons(i);
   $('#seg-block').hidden = !(i===0 && state.layers.segments);
-  document.querySelectorAll('#path-block .sub').forEach(d=>{ d.hidden=!(d.dataset.tiers||'0').split(',').includes(String(i)); });
+  clinGate(i);
   clearSelection();
   coachFor(i);
 }
@@ -3529,6 +3682,7 @@ function refreshLayerChrome(){
     setTri(el.querySelector('.tri'),v==='mixed'?'':v); el.classList.toggle('mixed',v==='mixed'); }
   (LAYER_SETS[i]||[]).forEach(Ld=>{ const el=layerEls[Ld.k]; if(!el) return; setTri(el.querySelector('.tri'),layerVal(i,Ld.k));
     el.classList.toggle('off',layerVal(i,Ld.k)==='off'); });
+  keysRefresh();
   const sel=selection&&selection.tier===i?selection.label:null;
   document.querySelectorAll('#layers .lt-list button').forEach(b=>{ const on=b.dataset.l===sel; b.classList.toggle('sel',on); b.querySelector('.lt-tag').hidden=!on; });
   { const b=$('#btn-seg'); if(b){ b.setAttribute('aria-pressed',String(!!state.layers.segments)); b.disabled=shownTier!==0; b.title=shownTier===0?'Couinaud segments overlay':'Segments are shown at the macroscopic scale'; } }
@@ -3573,7 +3727,7 @@ function camFlyTick(dt){ if(!CAMF.on) return; const k=1-Math.exp(-dt*4.2);
   controls.target.lerp(CAMF.t,k); camera.position.lerp(CAMF.p,k); controls.update();
   if(camera.position.distanceTo(CAMF.p)<1e-3&&controls.target.distanceTo(CAMF.t)<1e-3) CAMF.on=false; }
 function frameStructure(i,local){ if(i!==0||!tiers[0].built) return;   // micro scales: selection only (their views are fixed)
-  const inn=tiers[0].inner; inn.updateMatrixWorld(true); const w=inn.localToWorld(local.clone());
+  const grp=tiers[0].group; grp.updateMatrixWorld(true); const w=grp.localToWorld(local.clone());
   const dir=camera.position.clone().sub(controls.target).normalize(), d=camera.position.distanceTo(controls.target);
   const T=controls.target.clone().lerp(w,0.35); camFly(T,T.clone().addScaledVector(dir,d)); }
 function applyModes(){
@@ -3617,7 +3771,7 @@ function applyModes(){
   if(u.surfVeins) u.surfVeins.material.userData.baseOpacity = (ghost ? 0.25 : 0.85)*(u.surfVeins.userData.cirrFade??1);
 }
 
-$('#sl-fib').addEventListener('input',e=>{state.fibrosis=+e.target.value; applySim();});
+$('#sl-fib').addEventListener('input',e=>{state.fibrosis=+e.target.value; applySim(); clinRefresh();});
 /* Flow (Layers tab): Blood flow drives every blood-particle system; Bile flow drives the macroscopic biliary FlowNet
    (state.bile, off by default) and the canalicular bile particles of the acinus and sinusoid (state.bileMicro, on by
    default, as before). The lobule and hepatocyte scales have no bile particles, so the toggle is disabled there. */
@@ -4455,7 +4609,7 @@ function bxStart(mode){
   $('#bx-steps').innerHTML=T.steps.map(([h,s])=>`<li class="hst"><em>${h}</em><span>${s}</span></li>`).join('');
   $('#bx-note').textContent=T.note;
   $('#bx').hidden=false; document.querySelectorAll('#bx-tj,#bx-pc,#ercp-go,#tace-go,#resect-go').forEach(b=>b.dataset.on=(b.id==='bx-'+mode||b.id===mode+'-go')?'1':'0');
-  $('#ercp-go').textContent=mode==='ercp'?'End ERCP':'Start ERCP';
+  $('#ercp-go').textContent=mode==='ercp'?'End ERCP':'Start ERCP'; clinRefresh();
   bxPanel();
   if(mode==='pc') pcView();
 }
@@ -4491,7 +4645,7 @@ function bxStop(){
   if(BX.O&&BX.mode==='tace'&&!BX.O.done){ const m=BX.O.les.mesh.material; m.color.copy(BX.O.m0.c); m.emissive.copy(BX.O.m0.e); BX.O.les.mesh.scale.setScalar(BX.O.s0); }
   if(BX.O){ const g=BX.O.g; g.parent&&g.parent.remove(g); g.traverse(o=>{ if(o.geometry) o.geometry.dispose(); }); BX.O=null; }
   if(BX.prevLayers){ applyLayerMap(BX.prevLayers,{tier:0}); BX.prevLayers=null; }
-  $('#bx').hidden=true; document.querySelectorAll('#bx-tj,#bx-pc,#ercp-go,#tace-go,#resect-go').forEach(b=>b.dataset.on='0'); $('#ercp-go').textContent='Start ERCP';
+  $('#bx').hidden=true; document.querySelectorAll('#bx-tj,#bx-pc,#ercp-go,#tace-go,#resect-go').forEach(b=>b.dataset.on='0'); $('#ercp-go').textContent='Start ERCP'; clinRefresh();
 }
 const TACE_LIP=new THREE.Color(0xF2E7B8), TACE_LIPG=new THREE.Color(0x6A5A20), TACE_NEC=new THREE.Color(0x6E645C), TACE_BLUSH=new THREE.Color(0xB0201A);
 const ERCP_WHITE=new THREE.Color(0xF0F2F4), ERCP_GLOW=new THREE.Color(0x7A8088);
@@ -4600,7 +4754,7 @@ function hvpgStart(){
   // see the catheter inside the liver and the hepatic veins
   HVPG.prevLayers={parenchyma:state.layers.parenchyma,hepaticVein:state.layers.hepaticVein};
   ghostIfSolid(['parenchyma','hepaticVein']);
-  $('#hvpg').hidden=false; $('#hvpg-btn').dataset.on='1'; $('#hvpg-btn').textContent='End HVPG measurement';
+  $('#hvpg').hidden=false; $('#hvpg-btn').dataset.on='1'; $('#hvpg-btn').textContent='End HVPG measurement'; clinRefresh();
   hvpgPanel();
 }
 function hvpgStop(){
@@ -4608,7 +4762,7 @@ function hvpgStop(){
   HVPG.on=false; if(HVPG.grp) HVPG.grp.visible=false;
   if(HVPG.tube){ HVPG.grp.remove(HVPG.tube); HVPG.tube.geometry.dispose(); HVPG.tube=null; }
   if(HVPG.prevLayers){ applyLayerMap(HVPG.prevLayers,{tier:0}); HVPG.prevLayers=null; }
-  $('#hvpg').hidden=true; $('#hvpg-why').hidden=true; $('#hvpg-btn').dataset.on='0'; $('#hvpg-btn').textContent='Measure HVPG';
+  $('#hvpg').hidden=true; $('#hvpg-why').hidden=true; $('#hvpg-btn').dataset.on='0'; $('#hvpg-btn').textContent='Measure HVPG'; clinRefresh();
 }
 function hvpgInterp(h){
   return h<=5?'Normal (≤5 mmHg)' : h<10?'Subclinical portal hypertension (6–9 mmHg)'
@@ -5186,7 +5340,7 @@ function mobCam(){ if(!MOB.on) return; const T=new THREE.Vector3(0,-0.45,0), a=i
   camera.position.copy(HOME).sub(T).multiplyScalar(k).add(T); controls.target.copy(T); controls.update(); }
 function mobApply(){ const on=MOBQ();
   if(on===MOB.on){ if(on) mobSheet(MOB.state); return; }
-  MOB.on=on; document.body.classList.toggle('mob',on);
+  MOB.on=on; document.body.classList.toggle('mob',on); layoutDock();
   if(on){ const sc=$('#panel .scroll'), after=$('#mcard').nextSibling;
     mobMove($('#simbar'),$('#mslot-sim')); mobMove($('#tabs'),$('#mslot-tabs')); mobMove($('#dock-scale'),sc,sc.firstChild);
     mobMove($('#bx'),sc,after); mobMove($('#hvpg'),sc,after); mobMove($('#hvpg-why'),sc,after);
@@ -5666,7 +5820,7 @@ function frame(){
 }
 
 
-applySim(); applyModes(); paintPanel(0); pathTargets(); refreshPathUI(); frame();
+applySim(); applyModes(); paintPanel(0); pathTargets(); refreshPathUI(); clinRefresh(); frame();
 
 // exposed for the headless build check
 

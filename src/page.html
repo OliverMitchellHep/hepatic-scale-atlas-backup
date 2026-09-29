@@ -32,6 +32,7 @@
       <div class="row"><label for="sl-fib" title="Macroscopic: capsular roughening, regenerative nodules, pale septa and shrinkage. Microscopic: bridging septa, collagen in Disse, loss of fenestrae.">Fibrosis &rarr; cirrhosis</label><span class="v" id="v-fib">F0 &middot; normal</span></div>
       <input type="range" id="sl-fib" min="0" max="1" step="0.01" value="0">
     </div>
+    <div class="schips" id="strip-chips" hidden></div>
     <div class="readout">
       <span title="Wedged minus free hepatic venous pressure: the sinusoidal gradient. Illustrative teaching coupling.">HVPG</span><b id="r-hvpg">3 mmHg</b>
       <span title="Illustrative vibration-controlled transient elastography for this fibrosis stage. Baveno rule of five: 10 / 15 / 20 / 25 kPa.">Liver stiffness (est.)</span><b id="r-lsm">5 kPa</b>
@@ -63,15 +64,13 @@
     <div class="scroll" id="dock-body">
       <div id="mcard" hidden></div>
       <section class="pane" id="pane-explore" role="tabpanel" aria-labelledby="tab-explore" data-t="explore">
-      <div id="detail" hidden></div>
-      <details class="sec">
-        <summary>Structures &mdash; click anything in the scene</summary>
-        <div class="struct" id="p-struct"></div>
-      </details>
-      <details class="sec">
-        <summary>Teaching points</summary>
-        <ul class="klist" id="p-keys"></ul>
-      </details>
+        <div class="find"><input id="find" type="search" autocomplete="off" spellcheck="false" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="find-list" placeholder="Find a structure"><ul id="find-list" role="listbox" hidden></ul></div>
+        <details class="ksec" id="keys-sec" open><summary>Key concepts</summary><div id="keys"></div></details>
+        <div id="selbox" hidden>
+          <div class="lsec-k">Selected</div>
+          <div class="sb-card"><div class="sb-h"><i class="lt-sw" id="sb-sw"></i><b id="sb-name"></b></div><div class="sb-path" id="sb-path"></div><p id="sb-txt"></p>
+          <div class="sb-act"><button class="sbtn" id="sb-iso">Isolate</button><button class="sbtn" id="sb-ghost">Ghost others</button><button class="tlink" id="sb-teach">Teaching card ›</button></div></div>
+        </div>
       </section>
       <section class="pane" id="pane-layers" role="tabpanel" aria-labelledby="tab-layers" data-t="layers" hidden>
         <div id="views-row"><div class="lsec-k">Views</div><div class="presets" id="presets"></div></div>
@@ -86,23 +85,24 @@
       </section>
       <section class="pane" id="pane-clinical" role="tabpanel" aria-labelledby="tab-clinical" data-t="clinical" hidden>
       <div id="path-block">
-        <div class="prow" style="margin:0 0 10px"><button class="gobtn clearall" id="path-clear">Remove all pathology</button><button class="gobtn clearall" id="path-collapse">Collapse all</button></div>
-        <details class="sub" data-tiers="0">
-          <summary><i class="sw hcc"></i>Hepatocellular carcinoma</summary>
+        <div class="clin-hd"><span class="eyebrow">Pathology</span><span class="tlinks"><button class="tlink" id="path-collapse">Collapse all</button><button class="tlink" id="path-clear">Clear all</button></span></div>
+
+        <details class="cgrp" data-g="focal" open><summary><b>Focal lesions</b><span class="gn">3</span><span class="gact" hidden></span></summary>
+        <details class="sub citem" data-tiers="0" data-item="hcc">
+          <summary><i class="sw hcc"></i><span class="cname">Hepatocellular carcinoma</span><span class="ccnt" hidden></span><button class="learn" data-learn="hcc">Learn ›</button></summary>
           <div class="psim">
             <div class="pform">
               <label>Size <input id="hcc-size" type="number" min="0.5" max="20" step="0.1" value="3"><span>cm</span></label>
               <label>Segment <select id="hcc-seg"></select></label>
-              <button class="gobtn" id="hcc-go">Go</button>
+              <button class="gobtn" id="hcc-go">Add lesion</button>
             </div>
             <ul class="hcclist" id="hcc-list"></ul>
             <div class="readout" id="hcc-crit"></div>
-            <div class="plab">Treatment of the latest HCC</div>
-            <div class="prow"><button class="gobtn hcc" id="tace-go" disabled>TACE</button><button class="gobtn hcc" id="resect-go" disabled>Resection</button></div>
+            <div class="manage"><span class="plab">Manage</span><button class="pbtn" data-jump="tace">TACE ›</button><button class="pbtn" data-jump="resect">Resection ›</button></div>
           </div>
         </details>
-        <details class="sub" data-tiers="0">
-          <summary><i class="sw cca"></i>Cholangiocarcinoma</summary>
+        <details class="sub citem" data-tiers="0" data-item="cca">
+          <summary><i class="sw cca"></i><span class="cname">Cholangiocarcinoma</span><span class="ccnt" hidden></span><button class="learn" data-learn="cca">Learn ›</button></summary>
           <div class="psim">
             <div class="pform">
               <label>Site <select id="cca-type">
@@ -116,17 +116,16 @@
               <label id="cca-bis-wrap" hidden>Bismuth&ndash;Corlette <select id="cca-bis">
                 <option value="I">I</option><option value="II" selected>II</option><option value="IIIa">IIIa</option>
                 <option value="IIIb">IIIb</option><option value="IV">IV</option></select></label>
-              <button class="gobtn cca" id="cca-go">Go</button>
+              <button class="gobtn" id="cca-go">Add lesion</button>
             </div>
             <ul class="hcclist" id="cca-list"></ul>
-            <div class="plab">Biliary drainage</div>
-            <div class="segctl" data-key="bils"><button data-v="none">None</button><button data-v="plastic">Plastic</button><button data-v="sems" title="Self-expanding metal stent">Metal</button><button data-v="bilateral" title="Bilateral hilar metal stents">Bilateral</button><button data-v="ptc" title="Percutaneous transhepatic internal–external drain">PTC</button></div>
+            <div class="drow">Drainage: <b class="dval" data-key="bils"></b><button class="tlink" data-jump="bils">Change ›</button></div>
             <div class="readout bilro"></div>
             <div class="pnote" id="cca-note">Mass-forming iCCA: size is maximum diameter. Extrahepatic tumours are drawn as periductal-infiltrating strictures; size is the length of duct involved.</div>
           </div>
         </details>
-        <details class="sub" data-tiers="0">
-          <summary><i class="sw bll"></i>Benign liver lesions</summary>
+        <details class="sub citem" data-tiers="0" data-item="bll">
+          <summary><i class="sw bll"></i><span class="cname">Benign liver lesions</span><span class="ccnt" hidden></span><button class="learn" data-learn="bll">Learn ›</button></summary>
           <div class="psim">
             <div class="pform">
               <label>Lesion <select id="bll-type"><option value="abs">Liver abscess</option><option value="cyst">Liver cyst</option><option value="bfl">Benign focal lesion</option></select></label>
@@ -135,47 +134,134 @@
             <div class="pform">
               <label>Size <input id="bll-size" type="number" min="0.5" max="20" step="0.1" value="4"><span>cm</span></label>
               <label>Segment <select id="bll-seg"></select></label>
-              <button class="gobtn bll" id="bll-go">Go</button>
+              <button class="gobtn" id="bll-go">Add lesion</button>
             </div>
             <ul class="hcclist" id="bll-list"></ul>
             <div class="pnote">Click a lesion for its imaging features and management (EASL 2016 benign liver tumours; EASL 2022 cystic liver disease).</div>
           </div>
         </details>
-        <details class="sub" data-tiers="0">
-          <summary><i class="sw pc"></i>Pancreatic cancer</summary>
+        </details>
+
+        <details class="cgrp" data-g="bilpanc" open><summary><b>Biliary &amp; pancreatic</b><span class="gn">3</span><span class="gact" hidden></span></summary>
+        <details class="sub citem" data-tiers="0" data-item="bil">
+          <summary><i class="sw bil"></i><span class="cname">Biliary obstruction</span><span class="ccnt" hidden></span><button class="learn" data-learn="bil">Learn ›</button></summary>
+          <div class="psim">
+            <div class="plab">Cause</div>
+            <div class="segctl" data-key="bilc"><button data-v="none">None</button><button data-v="cbd">CBD stone</button><button data-v="mirizzi">Mirizzi</button><button data-v="stricture" title="Benign common bile duct stricture">Stricture</button><button data-v="psc">PSC</button></div>
+            <div class="plab">Choledochal cyst (Todani)</div>
+            <div class="segctl" data-key="bcc"><button data-v="none">None</button><button data-v="I" title="Fusiform dilatation of the extrahepatic duct">I</button><button data-v="II" title="Supraduodenal diverticulum">II</button><button data-v="III" title="Choledochocele">III</button><button data-v="IVa" title="Intra- and extrahepatic cysts">IVa</button><button data-v="IVb" title="Multiple extrahepatic cysts">IVb</button><button data-v="V" title="Caroli disease: intrahepatic saccules">V</button></div>
+            <ul class="hcclist act" data-act="bil"></ul>
+            <div class="drow">Drainage: <b class="dval" data-key="bils"></b><button class="tlink" data-jump="bils">Change ›</button></div>
+            <div class="readout bilro" id="bil-read"></div>
+            <div class="manage"><span class="plab">Manage</span><button class="pbtn" data-jump="ercp">ERCP ›</button><button class="pbtn" data-jump="bils">Drainage ›</button></div>
+          </div>
+        </details>
+        <details class="sub citem" data-tiers="0" data-item="pc">
+          <summary><i class="sw pc"></i><span class="cname">Pancreatic cancer</span><span class="ccnt" hidden></span><button class="learn" data-learn="pc">Learn ›</button></summary>
           <div class="psim">
             <div class="pform">
               <label>Site <select id="pc-site"><option value="head">Head</option><option value="tail">Tail</option></select></label>
               <label>Size <input id="pc-size" type="number" min="0.5" max="12" step="0.1" value="3"><span>cm</span></label>
-              <button class="gobtn pc" id="pc-go">Go</button>
+              <button class="gobtn" id="pc-go">Add lesion</button>
             </div>
             <ul class="hcclist" id="pc-list"></ul>
-            <div class="plab">Biliary drainage</div>
-            <div class="segctl" data-key="bils"><button data-v="none">None</button><button data-v="plastic">Plastic</button><button data-v="sems" title="Self-expanding metal stent">Metal</button><button data-v="bilateral" title="Bilateral hilar metal stents">Bilateral</button><button data-v="ptc" title="Percutaneous transhepatic internal–external drain">PTC</button></div>
+            <div class="drow">Drainage: <b class="dval" data-key="bils"></b><button class="tlink" data-jump="bils">Change ›</button></div>
+            <div class="drow">Pancreatic duct: <b class="dval" data-key="pds"></b><button class="tlink" data-jump="pds">Change ›</button></div>
             <div class="readout bilro"></div>
-            <div class="plab">Pancreatic duct drainage</div>
-            <div class="segctl" data-key="pds"><button data-v="none">None</button><button data-v="plastic" title="5–7 Fr plastic pancreatic stent">Plastic</button><button data-v="sems" title="Fully covered self-expanding metal stent">Metal</button></div>
             <div class="pnote">Pancreatic ductal adenocarcinoma. A head tumour encases the intrapancreatic bile duct and the main pancreatic duct (double duct sign) and distends the gallbladder; a tail tumour leaves the bile duct alone. NICE NG85: resectable disease with jaundice goes straight to surgery without preoperative drainage unless surgery must wait (then an endoscopic metal stent); unresectable disease is palliated with an endoscopic metal stent. PTC is for when ERCP fails.</div>
           </div>
         </details>
-        <details class="sub" data-tiers="0">
-          <summary><i class="sw panc"></i>Pancreatitis</summary>
+        <details class="sub citem" data-tiers="0" data-item="panc">
+          <summary><i class="sw panc"></i><span class="cname">Pancreatitis</span><span class="ccnt" hidden></span><button class="learn" data-learn="panc">Learn ›</button></summary>
           <div class="psim">
             <div class="segctl" data-key="panc"><button data-v="none">None</button><button data-v="acute">Acute</button><button data-v="chronic">Chronic</button></div>
             <label class="chk"><input type="checkbox" id="panc-svt"><span>Splenic vein thrombosis</span></label>
+            <ul class="hcclist act" data-act="panc"></ul>
             <div class="readout" id="panc-read"></div>
             <div class="pnote">Acute: an oedematous, inflamed gland with peripancreatic fluid and fat stranding. Chronic: an atrophic, calcified gland with a dilated, irregular main duct and pseudocysts. Splenic vein thrombosis causes left-sided (sinistral) portal hypertension with isolated gastric varices. NICE NG104.</div>
           </div>
         </details>
-        <details class="sub" data-tiers="0">
-          <summary><i class="sw bx"></i>Liver biopsy</summary>
+        </details>
+
+        <details class="cgrp" data-g="vasc" open><summary><b>Vascular</b><span class="gn">3</span><span class="gact" hidden></span></summary>
+        <details class="sub citem" data-tiers="0" data-item="ph">
+          <summary><i class="sw ph"></i><span class="cname">Portal hypertension</span><span class="ccnt" hidden></span><button class="learn" data-learn="ph">Learn ›</button></summary>
+          <div class="psim">
+            <p class="pline">Driven by the fibrosis slider (sinusoidal) and by thrombosis or outflow block.</p>
+            <div class="plab">Complication</div>
+            <div class="prow"><button class="gobtn bleed" id="bleed-btn">Oesophageal variceal bleed</button></div>
+            <ul class="hcclist act" data-act="ph"></ul>
+            <div class="readout" id="ph-read"></div>
+            <div class="manage"><span class="plab">Manage</span><button class="pbtn" data-jump="hvpg">HVPG ›</button><button class="pbtn" data-jump="tips">TIPSS ›</button></div>
+            <div class="pnote">A lower oesophageal varix ruptures: portal blood is diverted up the left gastric vein and pours into the oesophagus, stomach and duodenum (haematemesis, melaena). Management: resuscitation with restrictive transfusion (Hb 70–80 g/L), terlipressin, antibiotics, endoscopy within 12 h with band ligation; pre-emptive TIPSS within 72 h in Child–Pugh C 10–13 or B &gt;7 with active bleeding; rescue TIPSS or balloon tamponade if bleeding continues (Baveno VII, 2022).</div>
+          </div>
+        </details>
+        <details class="sub citem" data-tiers="0" data-item="pvt">
+          <summary><i class="sw pvt"></i><span class="cname">Portal vein thrombosis</span><span class="ccnt" hidden></span><button class="learn" data-learn="pvt">Learn ›</button></summary>
+          <div class="psim">
+            <div class="segctl" data-key="pvt"><button data-v="none">None</button><button data-v="partial">Partial</button><button data-v="acute" title="Acute occlusive thrombus">Acute</button><button data-v="chronic" title="Chronic occlusion with cavernous transformation">Chronic</button></div>
+            <label class="chk"><input type="checkbox" id="pvt-smv"><span>Extends into the SMV</span></label>
+            <ul class="hcclist act" data-act="pvt"></ul>
+          </div>
+        </details>
+        <details class="sub citem" data-tiers="0,1,2,3" data-item="bcs">
+          <summary><i class="sw bcs"></i><span class="cname">Budd&ndash;Chiari syndrome</span><span class="ccnt" hidden></span><button class="learn" data-learn="bcs">Learn ›</button></summary>
+          <div class="psim">
+            <div class="segctl" data-key="bcs"><button data-v="none">None</button><button data-v="hv">Hepatic veins</button><button data-v="ivc">IVC web</button><button data-v="mixed">Combined</button></div>
+            <ul class="hcclist act" data-act="bcs"></ul>
+          </div>
+        </details>
+        </details>
+
+        <details class="cgrp" data-g="par" open><summary><b>Parenchymal</b><span class="gn">3</span><span class="gact" hidden></span></summary>
+        <details class="sub citem" data-tiers="0,1,2,3,4" data-item="masld">
+          <summary><i class="sw fat"></i><span class="cname">MASLD</span><span class="ccnt" hidden></span><button class="learn" data-learn="masld">Learn ›</button></summary>
+          <div class="psim">
+            <div class="plab">Steatosis grade &middot; S1 5&ndash;33% &middot; S2 34&ndash;66% &middot; S3 &gt;66%</div>
+            <div class="segctl" data-key="masld"><button data-v="0">S0</button><button data-v="1" title="5–33% of hepatocytes">S1</button><button data-v="2" title="34–66%">S2</button><button data-v="3" title="&gt;66%">S3</button></div>
+            <ul class="hcclist act" data-act="masld"></ul>
+            <div class="plab">Fibrosis assessment pathway</div>
+            <div class="readout" id="masld-read"></div>
+            <p class="pline">FIB-4, then VCTE or ELF if not low risk. Illustrative values; drag the fibrosis slider.</p>
+            <div class="clin-note">First line FIB-4 (&lt;1.3, or &lt;2.0 aged &ge;65: low risk). If not low, second line VCTE (&lt;8 / 8&ndash;12 / &ge;12 kPa; EASL&ndash;EASD&ndash;EASO 2024) or ELF (&ge;10.51 advanced fibrosis; NICE NG49, currently being updated). Illustrative values; drag the fibrosis slider.</div>
+          </div>
+        </details>
+        <details class="sub citem" data-tiers="0,1,2,3,4" data-item="mash">
+          <summary><i class="sw fat"></i><span class="cname">MASH</span><span class="ccnt" hidden></span><button class="learn" data-learn="mash">Learn ›</button></summary>
+          <div class="psim">
+            <label class="chk"><input type="checkbox" id="mash"><span>Steatohepatitis: ballooning, lobular inflammation, Mallory&ndash;Denk bodies</span></label>
+            <ul class="hcclist act" data-act="mash"></ul>
+          </div>
+        </details>
+        <details class="sub citem" data-tiers="1,2,3,4" data-item="zonal">
+          <summary><i class="sw zon"></i><span class="cname">Zonal injury patterns</span><span class="ccnt" hidden></span><button class="learn" data-learn="zonal">Learn ›</button></summary>
+          <div class="psim">
+            <div class="segctl wrap" data-key="zonal"><button data-v="none">None</button><button data-v="apap">Paracetamol</button><button data-v="ischaemic">Ischaemic</button><button data-v="congestive">Congestive</button><button data-v="iron">Iron (HH)</button><button data-v="aih">Interface (AIH)</button><button data-v="yf">Yellow fever</button></div>
+            <ul class="hcclist act" data-act="zonal"></ul>
+            <p class="pline" id="zon-note">Painted across the lobule, acinus and sinusoid by acinar zone.</p>
+          </div>
+        </details>
+        </details>
+
+        <div class="clin-hd clin-hd2"><span class="eyebrow">Procedures</span></div>
+        <details class="cgrp" data-g="diag" open><summary><b>Diagnostic</b><span class="gn">2</span><span class="gact" hidden></span></summary>
+        <details class="sub citem proc" data-tiers="0" data-item="bx">
+          <summary><i class="sw bx"></i><span class="cname">Liver biopsy</span><span class="ccnt" hidden></span><button class="learn" data-learn="bx">Learn ›</button></summary>
           <div class="psim">
             <div class="prow"><button class="gobtn bx" id="bx-tj">Transjugular</button><button class="gobtn bx" id="bx-pc">Percutaneous</button></div>
             <div class="pnote">Each opens a stepped simulation with a card explaining when that route is chosen (BSG/RCR/RCPath 2020).</div>
           </div>
         </details>
-        <details class="sub" data-tiers="0">
-          <summary><i class="sw ercp"></i>ERCP</summary>
+        <details class="sub citem proc" data-tiers="0" data-item="hvpg">
+          <summary><i class="sw ph"></i><span class="cname">HVPG measurement</span><span class="ccnt" hidden></span><button class="learn" data-learn="hvpg">Learn ›</button></summary>
+          <div class="psim">
+            <div class="prow"><button class="gobtn hvpg" id="hvpg-btn">Measure HVPG</button></div>
+          </div>
+        </details>
+        </details>
+        <details class="cgrp" data-g="ther" open><summary><b>Therapeutic</b><span class="gn">6</span><span class="gact" hidden></span></summary>
+        <details class="sub citem proc" data-tiers="0" data-item="ercp">
+          <summary><i class="sw ercp"></i><span class="cname">ERCP</span><span class="ccnt" hidden></span><button class="learn" data-learn="ercp">Learn ›</button></summary>
           <div class="psim">
             <div class="plab">Therapy at the final stage</div>
             <div class="segctl" data-key="ercpT"><button data-v="trawl">Balloon trawl</button><button data-v="plastic">Plastic stent</button><button data-v="sems" title="Self-expanding metal stent">Metal stent</button></div>
@@ -183,61 +269,40 @@
             <div class="pnote">A stepped simulation: intubation, cannulation and cholangiogram, sphincterotomy, then the chosen therapy. Set a cause first (CBD stone, Mirizzi, cholangiocarcinoma or pancreatic head cancer) to see its effect.</div>
           </div>
         </details>
-        <details class="sub" data-tiers="0">
-          <summary><i class="sw ph"></i>Portal hypertension</summary>
+        <details class="sub citem proc" data-tiers="0" data-item="bils">
+          <summary><i class="sw bil"></i><span class="cname">Biliary drainage</span><span class="ccnt" hidden></span><button class="learn" data-learn="bils">Learn ›</button></summary>
           <div class="psim">
-            <div class="readout" id="ph-read"></div>
-            <div class="plab">Haemodynamic measurement</div>
-            <div class="prow"><button class="gobtn hvpg" id="hvpg-btn">Measure HVPG</button></div>
-            <div class="plab">Intervention</div>
-            <div class="prow"><button class="gobtn tips" id="tips-btn">Insert TIPSS</button></div>
-            <div class="plab">Complication</div>
-            <div class="prow"><button class="gobtn bleed" id="bleed-btn">Oesophageal variceal bleed</button></div>
-            <div class="pnote">A lower oesophageal varix ruptures: portal blood is diverted up the left gastric vein and pours into the oesophagus, stomach and duodenum (haematemesis, melaena). Management: resuscitation with restrictive transfusion (Hb 70–80 g/L), terlipressin, antibiotics, endoscopy within 12 h with band ligation; pre-emptive TIPSS within 72 h in Child–Pugh C 10–13 or B &gt;7 with active bleeding; rescue TIPSS or balloon tamponade if bleeding continues (Baveno VII, 2022).</div>
-          </div>
-        </details>
-        <details class="sub" data-tiers="0">
-          <summary><i class="sw pvt"></i>Portal vein thrombosis</summary>
-          <div class="psim">
-            <div class="segctl" data-key="pvt"><button data-v="none">None</button><button data-v="partial">Partial</button><button data-v="acute" title="Acute occlusive thrombus">Acute</button><button data-v="chronic" title="Chronic occlusion with cavernous transformation">Chronic</button></div>
-            <label class="chk"><input type="checkbox" id="pvt-smv"><span>Extends into the SMV</span></label>
-          </div>
-        </details>
-        <details class="sub" data-tiers="0,1,2,3">
-          <summary><i class="sw bcs"></i>Budd&ndash;Chiari syndrome</summary>
-          <div class="psim">
-            <div class="segctl" data-key="bcs"><button data-v="none">None</button><button data-v="hv">Hepatic veins</button><button data-v="ivc">IVC web</button><button data-v="mixed">Combined</button></div>
-          </div>
-        </details>
-        <details class="sub" data-tiers="0">
-          <summary><i class="sw bil"></i>Biliary obstruction</summary>
-          <div class="psim">
-            <div class="plab">Cause</div>
-            <div class="segctl" data-key="bilc"><button data-v="none">None</button><button data-v="cbd">CBD stone</button><button data-v="mirizzi">Mirizzi</button><button data-v="stricture" title="Benign common bile duct stricture">Stricture</button><button data-v="psc">PSC</button></div>
-            <div class="plab">Choledochal cyst (Todani)</div>
-            <div class="segctl" data-key="bcc"><button data-v="none">None</button><button data-v="I" title="Fusiform dilatation of the extrahepatic duct">I</button><button data-v="II" title="Supraduodenal diverticulum">II</button><button data-v="III" title="Choledochocele">III</button><button data-v="IVa" title="Intra- and extrahepatic cysts">IVa</button><button data-v="IVb" title="Multiple extrahepatic cysts">IVb</button><button data-v="V" title="Caroli disease: intrahepatic saccules">V</button></div>
-            <div class="plab">Drainage</div>
             <div class="segctl" data-key="bils"><button data-v="none">None</button><button data-v="plastic">Plastic</button><button data-v="sems" title="Self-expanding metal stent">Metal</button><button data-v="bilateral" title="Bilateral hilar metal stents">Bilateral</button><button data-v="ptc" title="Percutaneous transhepatic internal–external drain">PTC</button></div>
-            <div class="readout bilro" id="bil-read"></div>
+            <div class="readout bilro"></div>
           </div>
         </details>
-        <details class="sub" data-tiers="0,1,2,3,4">
-          <summary><i class="sw fat"></i>MASLD &middot; MASH</summary>
+        <details class="sub citem proc" data-tiers="0" data-item="pds">
+          <summary><i class="sw pc"></i><span class="cname">Pancreatic duct drainage</span><span class="ccnt" hidden></span><button class="learn" data-learn="pds">Learn ›</button></summary>
           <div class="psim">
-            <div class="plab">Steatosis grade &middot; S1 5&ndash;33% &middot; S2 34&ndash;66% &middot; S3 &gt;66%</div>
-            <div class="segctl" data-key="masld"><button data-v="0">S0</button><button data-v="1" title="5–33% of hepatocytes">S1</button><button data-v="2" title="34–66%">S2</button><button data-v="3" title="&gt;66%">S3</button></div>
-            <label class="chk"><input type="checkbox" id="mash"><span>Steatohepatitis (MASH): ballooning, lobular inflammation, Mallory&ndash;Denk bodies</span></label>
-            <div class="plab">Fibrosis assessment pathway</div>
-            <div class="readout" id="masld-read"></div>
-            <div class="clin-note">First line FIB-4 (&lt;1.3, or &lt;2.0 aged &ge;65: low risk). If not low, second line VCTE (&lt;8 / 8&ndash;12 / &ge;12 kPa; EASL&ndash;EASD&ndash;EASO 2024) or ELF (&ge;10.51 advanced fibrosis; NICE NG49, currently being updated). Illustrative values; drag the fibrosis slider.</div>
+            <div class="segctl" data-key="pds"><button data-v="none">None</button><button data-v="plastic" title="5–7 Fr plastic pancreatic stent">Plastic</button><button data-v="sems" title="Fully covered self-expanding metal stent">Metal</button></div>
           </div>
         </details>
-        <details class="sub" data-tiers="1,2,3,4">
-          <summary><i class="sw zon"></i>Zonal injury patterns</summary>
+        <details class="sub citem proc" data-tiers="0" data-item="tips">
+          <summary><i class="sw tips"></i><span class="cname">TIPSS</span><span class="ccnt" hidden></span><button class="learn" data-learn="tips">Learn ›</button></summary>
           <div class="psim">
-            <div class="segctl wrap" data-key="zonal"><button data-v="none">None</button><button data-v="apap">Paracetamol</button><button data-v="ischaemic">Ischaemic</button><button data-v="congestive">Congestive</button><button data-v="iron">Iron (HH)</button><button data-v="aih">Interface (AIH)</button><button data-v="yf">Yellow fever</button></div>
-            <div class="pnote" id="zon-note">Painted across the lobule, acinus and sinusoid by acinar zone.</div>
+            <div class="prow"><button class="gobtn tips" id="tips-btn">Insert TIPSS</button></div>
+            <p class="preason" id="tips-why" hidden></p>
           </div>
+        </details>
+        <details class="sub citem proc" data-tiers="0" data-item="tace">
+          <summary><i class="sw hcc"></i><span class="cname">TACE</span><span class="ccnt" hidden></span><button class="learn" data-learn="tace">Learn ›</button></summary>
+          <div class="psim">
+            <div class="prow"><button class="gobtn hcc" id="tace-go" disabled>Start TACE</button></div>
+            <p class="preason" id="tace-why">Needs an HCC: add one under Focal lesions.</p>
+          </div>
+        </details>
+        <details class="sub citem proc" data-tiers="0" data-item="resect">
+          <summary><i class="sw hcc"></i><span class="cname">Resection</span><span class="ccnt" hidden></span><button class="learn" data-learn="resect">Learn ›</button></summary>
+          <div class="psim">
+            <div class="prow"><button class="gobtn hcc" id="resect-go" disabled>Plan resection</button></div>
+            <p class="preason" id="resect-why">Needs an HCC: add one under Focal lesions.</p>
+          </div>
+        </details>
         </details>
       </div>
       </section>

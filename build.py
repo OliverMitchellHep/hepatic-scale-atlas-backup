@@ -26,6 +26,13 @@ def registry_js():
     return '{\n' + ',\n'.join(lines) + '\n}'
 
 
+def regmeta_js():
+    """v50: per-name metadata for the interface (search, Isolate, guidance badges): {name: [id, layers, tiers, cites]}."""
+    reg = json.loads((ROOT / 'data/registry.json').read_text())
+    return json.dumps({e['name']: [e['id'], e.get('layer', []), e.get('tier', []), e.get('cites', [])] for e in reg['structures']},
+                      ensure_ascii=False, separators=(',', ':'))
+
+
 def assemble():
     page = (ROOT / 'src/page.html').read_text()
 
@@ -36,7 +43,9 @@ def assemble():
     out = re.sub(r'@@INCLUDE:([^@]+)@@', inc, page)
     if '@@REGISTRY@@' in out:
         out = out.replace('@@REGISTRY@@', registry_js(), 1)
-    assert '@@INCLUDE:' not in out and '@@REGISTRY@@' not in out, 'unresolved build marker'
+    if '@@REGMETA@@' in out:
+        out = out.replace('@@REGMETA@@', regmeta_js(), 1)
+    assert '@@INCLUDE:' not in out and '@@REGISTRY@@' not in out and '@@REGMETA@@' not in out, 'unresolved build marker'
     return out
 
 
