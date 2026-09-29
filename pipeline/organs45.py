@@ -141,23 +141,41 @@ LAND = {   # CT frame landmarks (measured on the meshes)
     'dj': np.array([1.012, -1.557, 0.25]), 'oes_top': np.array([0.335, 1.325, -0.412]), 'head': np.array([0.0, -0.9, 0.35])}
 
 
+def tortuous(surf, P, amp, wav, seed):
+    """v46b: a curvature line made to wander across the surface: lateral offset of ±amp mm, mixing a slow sine
+    (wavelength ~wav mm) with fBm so the course is irregular, re-projected onto the surface every 0.5 mm"""
+    P = resample(P, 0.5 / MM); P, N = surf.project(P)
+    T = np.gradient(P, axis=0); T /= np.linalg.norm(T, axis=1, keepdims=True) + 1e-12
+    Lt = np.cross(N, T); Lt /= np.linalg.norm(Lt, axis=1, keepdims=True) + 1e-12
+    s = np.arange(len(P)) * 0.5
+    off = amp * (0.55 * np.sin(2 * np.pi * s / wav + seed) + 0.9 * fbm(np.c_[s / wav * 1.7, np.full(len(s), seed * 1.3), np.zeros(len(s))], 3, seed=seed))
+    Q, _ = surf.project(P + Lt * (off / MM)[:, None])
+    for _ in range(3): Q[1:-1] = (Q[:-2] + 2 * Q[1:-1] + Q[2:]) / 4                  # no kinks from the projection
+    Q, _ = surf.project(Q); return Q
+
+
 def vessels_for(organ, V, F, seed=45):
     rng = np.random.default_rng(seed); surf = Surface(V, F)
-    if organ == 'stomach':
+    if organ == 'stomach':   # v46b: the arcades wander (were the smoothed curvature lines)
         les, gre, _ = curvature_lines(V, F, LAND['goj'], LAND['pylorus'], 70)
-        return grow(surf, [(gre[2:-2], 0.95), (les[3:-2], 0.85)], rng, spacing=7.5, length=(26, 55), r0=0.55)
+        return grow(surf, [(tortuous(surf, gre[2:-2], 3.0, 22, 3), 0.95), (tortuous(surf, les[3:-2], 2.4, 18, 7), 0.85)],
+                    rng, spacing=7.5, length=(26, 55), r0=0.55)
     if organ == 'duodenum':
         med, _, _ = curvature_lines(V, F, LAND['pylorus'], LAND['dj'], 60, ref=LAND['head'])
-        return grow(surf, [(med[1:-1], 0.70)], rng, spacing=7.0, length=(16, 34), r0=0.45)
-    if organ == 'esophagus':
+        return grow(surf, [(tortuous(surf, med[1:-1], 2.2, 16, 11), 0.70)], rng, spacing=7.0, length=(16, 34), r0=0.45)
+    if organ == 'esophagus':   # v46b: longitudinal vessels in the folds: six irregular, tortuous vertical runs, no branches
         _, _, cen = curvature_lines(V, F, LAND['oes_top'], LAND['goj'], 40); arc = []
         T = np.gradient(cen, axis=0); T /= np.linalg.norm(T, axis=1, keepdims=True)
-        for a in np.radians([20, 200]):                                          # v46: two trunks (were four)
+        for k, a in enumerate(np.radians([10, 70, 130, 190, 250, 310])):
             u = np.cross(T, [1.0, 0, 0]); u /= np.linalg.norm(u, axis=1, keepdims=True); w = np.cross(T, u)
-            wig = 0.9 * fbm(np.c_[np.arange(len(cen)) * 0.35, np.full(len(cen), a), np.zeros(len(cen))], 2, seed=51)   # wandering, not straight
+            t = np.arange(len(cen)) * 0.35
+            wig = 0.30 * np.sin(t * 1.9 + k) + 0.45 * fbm(np.c_[t * 1.4, np.full(len(cen), a), np.zeros(len(cen))], 3, seed=51 + k)
             aa = a + wig
-            line = cen + (u * np.cos(aa)[:, None] + w * np.sin(aa)[:, None]) * 0.3; line, _ = surf.project(line); arc.append((line[1:-1], 0.42))
-        return grow(surf, arc, rng, spacing=16.0, length=(6, 12), r0=0.28, avoid=2.2, split=9.0, angle=45)   # v46: sparser, shorter (were 9 mm / 8–18 mm / 0.32)
+            line = cen + (u * np.cos(aa)[:, None] + w * np.sin(aa)[:, None]) * 0.3; line, _ = surf.project(line)
+            line = tortuous(surf, line[1 + k % 3:len(line) - 1 - (k * 2) % 4], 1.2, 7, 60 + k)   # fine irregular waves
+            r = (0.34 + 0.08 * rng.random()) * (0.75 + 0.25 * np.sin(np.linspace(0, np.pi, len(line))))   # thinner at the ends
+            arc.append((line, r / MM))
+        return arc
     # v46: the kidneys carry no surface vessels (v45 grew faint capsular vessels from the hilum)
     return []
 
@@ -173,8 +191,29 @@ def height(organ, X, vf=None):
         h = 0.0006 * fbm(X * 6.0, 2, seed=15) + 0.00025 * fbm(X * 45.0, 2, seed=16)       # smooth capsule
     if organ in ('kidney_left', 'kidney_right'):
         h = 0.0007 * fbm(X * 9.0, 3, seed=17) + 0.0003 * fbm(X * 60.0, 2, seed=18)
-    if vf is not None: h = h + vf(X)[2] * (0.4 if organ == 'esophagus' else 1.0)   # v46: oesophageal vessels barely raised
+    if vf is not None:
+        if organ in ('stomach', 'duodenum'):   # v46b: raised in sections (up to ×2.6), nearly flat between them
+            h = h + vf(X)[2] * (0.25 + 2.35 * vessel_raise(X))
+        else: h = h + vf(X)[2] * (0.0 if organ == 'esophagus' else 1.0)   # v46b: oesophageal vessels subserosal (flat)
     return h
+
+
+def vessel_raise(X):
+    """v46b: 0..1 along the vessels' course: where a gastric / duodenal vessel stands proud of the serosa"""
+    return ss(fbm(X * 9.0, 2, seed=91), -0.05, 0.35)
+
+
+def vessel_opacity(X):
+    """v46b: 0.3..1 along the vessels' course: where they surface (1) or sink under the serosa (faint, blurred)"""
+    return 0.3 + 0.7 * ss(fbm(X * 7.0 + 3.3, 2, seed=93), -0.30, 0.30)
+
+
+def subserosal(X):
+    """v46b: the v44 subserosal vessel network (the procedural skin's ridged, domain-warped noise, SKIN_TEX alpha),
+    rebuilt in 3D: fine dark vessels under the serosa, 0..1"""
+    w = X * 4.2 + 0.25 * np.stack([fbm(X * 4.2, 3, seed=95), fbm(X * 4.2 + 1.7, 3, seed=96), fbm(X * 4.2 + 3.9, 3, seed=97)], -1)
+    r1 = 1 - np.abs(fbm(w * 1.0, 3, seed=98)) * 2.2; r2 = 1 - np.abs(fbm(w * 2.0, 3, seed=99)) * 2.2
+    return np.maximum(ss(r1, 0.80, 0.96), 0.55 * ss(r2, 0.84, 0.97))
 
 
 def spleen_notches(X, N):
@@ -195,6 +234,13 @@ def compose(organ, X, ao, cav, curv, thick, onrm, vf=None):
         col = lin(base)[None] * (1 + 0.08 * m1 + 0.06 * m2 + 0.03 * m3)[:, None]
         pink = lin('#E4A294'); col = col * (1 - 0.10 * np.clip(m2, 0, 1))[:, None] + pink[None] * (0.10 * np.clip(m2, 0, 1))[:, None]
         rough = np.clip(0.34 + 0.06 * m2 + 0.08 * (1 - cav), 0.22, 0.60); wet = np.clip(0.80 + 0.2 * m1 - 0.4 * (1 - cav), 0, 1)
+        if organ in ('stomach', 'duodenum'):
+            # v46b: darker areas of tissue colour, blending softly into the lighter serosa (broad, low-frequency patches)
+            dk = ss(fbm(X * 2.4 + 5.1, 3, seed=101), -0.05, 0.45) * (0.6 + 0.4 * ss(fbm(X * 7.0, 2, seed=102), -0.3, 0.3))
+            col = col * (1 - 0.30 * dk)[:, None] + lin('#A8604F')[None] * (0.30 * dk)[:, None]
+        # v46b: the v44 subserosal network under the serosa (darker, purple-red, soft), in addition to the surface vessels
+        sub = subserosal(X) * {'stomach': 0.30, 'duodenum': 0.26, 'esophagus': 0.14}[organ]
+        col = col * (1 - sub)[:, None] + (col * lin('#9A4A62')[None] * 1.6) * sub[:, None]
     elif organ == 'spleen':
         col = lin('#5C2434')[None] * (1 + 0.06 * m1 + 0.03 * m2)[:, None]
         rough = np.clip(0.28 + 0.04 * m2, 0.2, 0.5); wet = np.clip(0.9 + 0.1 * m1, 0, 1)
@@ -206,6 +252,10 @@ def compose(organ, X, ao, cav, curv, thick, onrm, vf=None):
         pale, dark = lin('#C86E68'), lin('#5A1216')
         e = edge * (0.55 if organ.startswith('kidney') else 0.45 if organ == 'esophagus' else 0.85)   # v46: oesophagus fainter (was 0.85 / 0.80)
         c = core * (0.45 if organ.startswith('kidney') else 0.45 if organ == 'esophagus' else 0.80)
+        if organ in ('stomach', 'duodenum'):   # v46b: opacity varies along the course (sinking under the serosa in places)
+            op = vessel_opacity(X); e = e * op; c = c * op
+        if organ == 'esophagus':   # v46b: paler, subserosal: a soft pink-red line, no dark core
+            pale, dark = lin('#C98076'), lin('#A4525A'); e = edge * 0.42; c = core * 0.34
         col = col * (1 - e)[:, None] + pale[None] * e[:, None]; col = col * (1 - c)[:, None] + dark[None] * c[:, None]
         rough = np.clip(rough + 0.10 * edge, 0, 1); wet = wet * (1 - 0.35 * edge)   # vessels a little less glossy than the serosa
     col = col * (0.70 + 0.30 * ao ** 0.8)[:, None] * (0.88 + 0.12 * cav)[:, None]
