@@ -463,7 +463,7 @@ class Hepatocyte {
     const proj = (p) => { v.copy(p).project(this.camera); if (v.z > 1 || v.z < -1) return null; return { x: (v.x * 0.5 + 0.5) * w, y: (-v.y * 0.5 + 0.5) * h }; };
     const item = (id) => this.data.organelles.items.find((x) => x.id === id);
     const add = (key, id, p, extra = {}) => { const it = item(id); if (!it || !p) return; if (on && p.y > cy && p.z > cz) return; const s = proj(p); if (s) out.push({ key, x: s.x, y: s.y - 14, text: it.callout, color: it.color, ...extra }); };
-    if (this.hover && this.hoverPoint) add('hover', this.hover, this.hoverPoint);
+    if (this.hover && this.hoverPoint && this.hover !== this.selected) add('hover', this.hover, this.hoverPoint);
     if (this.selected && this.focusPoint) add('sel', this.selected, this.focusPoint);
     const pid = this.flow.isolated || this.selPathway;
     if (pid) {

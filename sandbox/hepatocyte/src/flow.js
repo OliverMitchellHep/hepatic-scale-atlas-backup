@@ -39,7 +39,8 @@ void main(){
   pos += j;
   vec4 cc = uClassCol[ci];
   float fade = smoothstep(0.0, 0.035, u) * smoothstep(1.0, 0.965, u);
-  float size = 0.05 * cc.a * (0.8 + 0.45*aRnd.z) * uSize * (1.0 + pulse * 0.9) * vis;
+  float boost = clamp(rw.y - 1.0, 0.0, 1.0);
+  float size = 0.057 * cc.a * (0.8 + 0.45*aRnd.z) * uSize * (1.0 + pulse * 0.9) * (1.0 + 0.45*boost) * vis;
   vec4 mv = viewMatrix * vec4(pos, 1.0);
   mv.xy += corner * size * 1.7;
   gl_Position = projectionMatrix * mv;
@@ -234,7 +235,7 @@ export class FlowSystem {
     const inst = [];
     routeData.forEach((r, ri) => {
       const v = this.variants[r.variant];
-      const count = Math.max(4, Math.round(v.particles * this.scale * 0.6));
+      const count = Math.max(4, Math.round(v.particles * this.scale * 0.85));
       for (let i = 0; i < count; i++) inst.push({ route: ri, phase: (i + R()) / count, rnd: [R(), R(), R()], rate: BASE_SPEED * (v.speed ?? 1) * R.range(0.92, 1.08) / r.len });
     });
     const M = inst.length;
@@ -275,8 +276,8 @@ export class FlowSystem {
     const ps = this.pathwayState[v.pathway];
     if (!ps.enabled) return { w: 0, a: 1 };
     const dens = this.style.flow.density;
-    if (this.isolated && this.isolated !== v.pathway) return { w: w * dens * 0.0, a: 1 };
-    return { w: w * dens, a: 1 };
+    if (this.isolated && this.isolated !== v.pathway) return { w: 0, a: 1 };
+    return { w: w * dens, a: this.isolated ? 1.7 : 1 };
   }
 
   applyWeights() {
@@ -304,7 +305,7 @@ export class FlowSystem {
       const cls = this.classes.find((x) => x.family === def.family);
       c.set(cls ? cls.color : '#8899cc');
       const dim = this.isolated && !(w > 0);
-      c.multiplyScalar((0.22 + 1.9 * w) * this.style.glow.gateGlow * (dim ? 0.3 : 1));
+      c.multiplyScalar((0.55 + 1.7 * w) * this.style.glow.gateGlow * (dim ? 0.55 : 1));
       ctx.gateMesh.setColorAt(i, c);
     });
     ctx.gateMesh.instanceColor.needsUpdate = true;

@@ -9,14 +9,14 @@ import { mergeGeos, register, addAnchor, instanced, proxyFor } from './common.js
 const proxyGeo = new THREE.IcosahedronGeometry(1, 1);
 
 /** Planar cut caps for spherical solids: updated when the cut moves. */
-export function addCapDiscs(ctx, center, radius, color, id, bump = 1) {
+export function addCapDiscs(ctx, center, radius, color, id, bump = 1, lift = 0.004) {
   const geo = new THREE.CircleGeometry(1, 72);
-  const mf = makeMaterial(ctx.shared, { color, roughness: 0.8, bump, bumpFreq: 7, wbump: true, sss: 0.3, capPlane: 'floor', side: THREE.DoubleSide, type: id, polygonOffset: -2 });
-  const mw = makeMaterial(ctx.shared, { color, roughness: 0.8, bump, bumpFreq: 7, wbump: true, sss: 0.3, capPlane: 'wall', side: THREE.DoubleSide, type: id, polygonOffset: -2 });
+  const mf = makeMaterial(ctx.shared, { color, roughness: 0.8, bump, bumpFreq: 7, wbump: true, sss: 0.3, capPlane: 'floor', side: THREE.DoubleSide, type: id, polygonOffset: -2 - lift * 200 });
+  const mw = makeMaterial(ctx.shared, { color, roughness: 0.8, bump, bumpFreq: 7, wbump: true, sss: 0.3, capPlane: 'wall', side: THREE.DoubleSide, type: id, polygonOffset: -2 - lift * 200 });
   const floor = new THREE.Mesh(geo, mf), wall = new THREE.Mesh(geo, mw);
   floor.rotation.x = -Math.PI / 2;
   floor.userData.cap = wall.userData.cap = true;
-  ctx.capDiscs.push({ center, radius, floor, wall });
+  ctx.capDiscs.push({ center, radius, floor, wall, lift });
   ctx.group.add(floor, wall);
   register(ctx, id, [floor, wall], [mf, mw]);
 }
@@ -26,11 +26,11 @@ export function updateCapDiscs(ctx) {
     const dy = cy - d.center.y, dz = cz - d.center.z;
     const fr = Math.sqrt(Math.max(0, d.radius * d.radius - dy * dy));
     d.floor.visible = Math.abs(dy) < d.radius;
-    d.floor.position.set(d.center.x, cy + 0.004, d.center.z);
+    d.floor.position.set(d.center.x, cy + d.lift, d.center.z);
     d.floor.scale.setScalar(Math.max(fr, 1e-3));
     const wr = Math.sqrt(Math.max(0, d.radius * d.radius - dz * dz));
     d.wall.visible = Math.abs(dz) < d.radius;
-    d.wall.position.set(d.center.x, d.center.y, cz + 0.004);
+    d.wall.position.set(d.center.x, d.center.y, cz + d.lift);
     d.wall.scale.setScalar(Math.max(wr, 1e-3));
   }
 }
@@ -83,7 +83,7 @@ export function buildNucleus(ctx) {
   L.nucleoli.forEach((u) => {
     const m = new THREE.Mesh(new THREE.SphereGeometry(u.r, 48, 32), nuMat); m.position.copy(u.c);
     ctx.group.add(m); register(ctx, 'nucleolus', m, nuMat, { pick: m });
-    addCapDiscs(ctx, u.c, u.r * 0.985, '#5a34b8', 'nucleolus', 1.2);
+    addCapDiscs(ctx, u.c, u.r * 0.985, '#5a34b8', 'nucleolus', 1.2, 0.012);
   });
 }
 

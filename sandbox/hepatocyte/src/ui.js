@@ -150,8 +150,8 @@ export class HepUI {
       document.head.appendChild(l);
     }
     const st = document.createElement('style'); st.textContent = CSS(t); root.appendChild(st); this.styleEl = st;
-    const ui = this.ui = document.createElement('div'); ui.className = 'hl-ui'; root.appendChild(ui);
     this.labelsEl = document.createElement('div'); this.labelsEl.className = 'hl-labels'; root.appendChild(this.labelsEl);
+    const ui = this.ui = document.createElement('div'); ui.className = 'hl-ui'; root.appendChild(ui);
     this._build();
     this._labels = new Map();
   }

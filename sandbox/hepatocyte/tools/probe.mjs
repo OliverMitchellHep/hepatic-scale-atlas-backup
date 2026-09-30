@@ -18,6 +18,7 @@ await page.waitForTimeout(2000);
 for (const s of steps) {
   const r = await page.evaluate(new Function('h', 'return (async()=>{' + (s.code || '') + '})()').toString().replace(/^function anonymous\(h\n\) \{/, '(h) => {').replace(/^\(h\) => \{/, '(h) => {') && `(async()=>{const h=window.hep._internal; ${s.code||''}})()`);
   if (r !== undefined) console.log(s.name, '->', JSON.stringify(r));
+  if (s.mouse) { await page.mouse.move(s.mouse[0], s.mouse[1]); await page.waitForTimeout(600); await page.mouse.move(s.mouse[0] + 1, s.mouse[1] + 1); if (s.click) { await page.mouse.down(); await page.mouse.up(); } }
   await page.waitForTimeout(s.wait || 900);
   if (s.name) { await page.screenshot({ path: path.join(out, s.name + '.png'), clip: s.clip, timeout: 180000 }); console.log('shot', s.name); }
 }

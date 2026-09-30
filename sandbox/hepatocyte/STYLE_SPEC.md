@@ -69,8 +69,8 @@ distinguishable by hue *and* by shape so it survives colour-vision deficiency).
   to load; `bumpScale` per organelle). Nuclear pores, Golgi rims and cristae edges get extra bump.
 - **Sub-surface (faked):** `emissive += sssColour * sss * pow(1 - N·V, 2.5)` plus a wrap-diffuse term. Applied to
   nucleus, lipid droplets, vesicles, glycogen, mitochondria (strong on orange). Zero cost beyond one pow.
-- **Membrane sheen:** the plasma membrane is a translucent double-sided shell (front alpha ≈ 0.16, back
-  alpha ≈ 0.28) with fresnel rim `pow(1 - N·V, 3)` in the domain colour and a `clearcoat 0.5` broad highlight.
+- **Membrane sheen:** the plasma membrane is a translucent double-sided shell (front alpha ≈ 0.10, back
+  alpha ≈ 0.20) with fresnel rim `pow(1 - N·V, 3)` in the domain colour and a `clearcoat 0.5` broad highlight.
 - **Translucency:** mitochondrial outer membrane (alpha 0.28), lipid droplets (0.85), LSEC (0.3), sinusoid wall.
   Translucent instanced meshes are drawn after opaque, `depthWrite: false`; sorting is per-mesh only (accepted).
 - **Cut face ("cap"):** opaque solids (nucleus, lipid droplets, peroxisomes, lysosomes) draw back faces in
@@ -84,15 +84,15 @@ distinguishable by hue *and* by shape so it survives colour-vision deficiency).
 - Key `DirectionalLight` `#fff1dc`, intensity 2.6, from (-6, 9, 7) (upper-left-front).
 - Fill `DirectionalLight` `#8fb2ff`, 0.9, from (8, 2, 4).
 - Rim `DirectionalLight` `#ffd0f0`, 1.2, from (2, 4, -9).
-- Environment: neutral studio PMREM (`RoomEnvironment`) at intensity 0.5 for the membrane/vesicle sheen; **never shown as background**.
-- Tone mapping ACES Filmic, exposure 1.0, sRGB output. No shadow maps (soft contact cues come from bump,
+- Environment: neutral studio PMREM (`RoomEnvironment`) at intensity 0.35 for the membrane/vesicle sheen; **never shown as background**.
+- Tone mapping ACES Filmic, exposure 0.92, sRGB output. No shadow maps (soft contact cues come from bump,
   vertex AO on the shell and the cytosol haze; cheaper and steadier at 60 fps).
-- Bloom (half-res, threshold 0.85, strength 0.55, radius 0.6) catches only particles, gates and highlights.
+- Bloom (half-res, threshold 1.0, strength 0.42, radius 0.5) catches only particles, gates and highlights.
 
 ## 6. Depth cues
 
 1. Cytosol haze: a back-face additive shell tinted `#3f5bb8` gives the interior volume.
-2. Exponential-squared fog to black (density 0.012) so far organelles sink into the dark background.
+2. Exponential fog to black (density 0.012) so far organelles sink into the dark background.
 3. Fresnel rim and edge brightening on translucent membranes.
 4. Particle size attenuation and additive glow with per-depth fade.
 5. Section planes: the cut floor/back-wall caps give the eye two large flat references.
@@ -116,10 +116,10 @@ canvas stays opaque black so it composites cleanly in the atlas.
 
 ## 9. Camera behaviour
 
-- Perspective 35° FOV; default azimuth -18°, elevation 34°, framed so the polarised cell fills ~75 % of the viewport height.
+- Perspective 35° FOV; default azimuth -24°, elevation 32°, distance 24.5 (wider on portrait screens), target offset so the sinusoid and the cell both sit between the UI columns.
 - `OrbitControls` with damping 0.08, rotate speed 0.6, zoom to cursor off, pan on ctrl/right-drag, min/max distance 4 – 38 units,
   polar clamp 8°–172°.
-- **Rotate** button: slow auto-orbit (0.35 rad/s·10⁻¹), pauses on user input for 4 s.
+- **Rotate** button: slow auto-orbit, pauses on user input for 4 s.
 - **Reset view**: tweened return (700 ms, ease-in-out cubic).
 - **Isolate / select**: camera glides to frame the chosen organelle (distance = 3.2 × its radius, min 4), others dim to 18 %.
 - Motion budget: no camera shake, no roll; user input always wins over tweens.
