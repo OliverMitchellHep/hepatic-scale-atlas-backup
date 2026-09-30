@@ -1,14 +1,57 @@
-/* Dark instrument look to match the atlas: black ground, dark navy panels. */
-:root:not([data-theme='light']) {
-  --sl-color-bg: #000000;
-  --sl-color-bg-nav: #070b16;
-  --sl-color-bg-sidebar: #070b16;
-  --sl-color-bg-inline-code: #0d1426;
-  --sl-color-hairline: #1a2440;
-  --sl-color-accent: #d1473a;
-  --sl-color-accent-high: #f0b4a6;
-  --sl-color-accent-low: #3a1410;
-}
+/* White and navy, matching the title page (src/pages/index.astro). One light theme; the atlas keeps its own dark stage. */
+:root,
+:root[data-theme='dark'],
 :root[data-theme='light'] {
-  --sl-color-accent: #a8342a;
+  color-scheme: light;
+  --sl-color-white: #0E1A2E;      /* strong text */
+  --sl-color-gray-1: #1D2A42;
+  --sl-color-gray-2: #33415C;
+  --sl-color-gray-3: #4A5872;     /* secondary text */
+  --sl-color-gray-4: #6B7890;
+  --sl-color-gray-5: #B5BFD0;
+  --sl-color-gray-6: #E3E8F0;
+  --sl-color-gray-7: #F3F6FA;
+  --sl-color-black: #FFFFFF;      /* page ground */
+  --sl-color-accent-low: #DCE8F7;
+  --sl-color-accent: #2C6DBA;
+  --sl-color-accent-high: #1F4F8C;
+  --sl-color-bg-nav: #FFFFFF;
+  --sl-color-bg-sidebar: #FFFFFF;
+  --sl-color-bg-inline-code: #F3F6FA;
+  --sl-color-hairline: #D5DCE8;
+  --sl-color-hairline-light: #E3E8F0;
+  --sl-font: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --sl-font-mono: "IBM Plex Mono", ui-monospace, monospace;
+  --sl-text-h1: clamp(2.25rem, 4vw, 3rem);
 }
+::selection { background: #CFE0F5; color: #0E1A2E; }
+
+/* Serif headings and wordmark, as on the title page */
+.sl-markdown-content :is(h1, h2, h3, h4),
+h1#_top,
+.site-title {
+  font-family: "Newsreader", Georgia, serif;
+  font-weight: 400;
+  letter-spacing: -0.015em;
+  color: var(--sl-color-white);
+}
+h1#_top { letter-spacing: -0.025em; line-height: 1.05; }
+.site-title { font-weight: 600; font-size: 1.3rem; letter-spacing: 0; }
+
+/* Flat, rule-based chrome: hairline under the header, no shadows */
+header.header { border-bottom: 1px solid var(--sl-color-white); }
+.sl-markdown-content a:not(.sl-link-button) { text-underline-offset: 4px; text-decoration-color: #9DBFE6; }
+.sl-markdown-content a:not(.sl-link-button):hover { text-decoration-color: currentColor; }
+.sl-markdown-content blockquote { border-inline-start-color: var(--sl-color-gray-5); }
+.atlas-link { white-space: nowrap; }
+a:focus-visible, button:focus-visible { outline: 2px solid var(--sl-color-accent); outline-offset: 3px; }
+
+/* Calm current-page marker (tint, not a filled block) and one accent for card icons */
+.sidebar-content a[aria-current='page'],
+.sidebar-content a[aria-current='page']:hover {
+  background-color: var(--sl-color-accent-low) !important;
+  color: var(--sl-color-white) !important;
+  font-weight: 600;
+}
+.card { --sl-card-border: var(--sl-color-accent) !important; --sl-card-bg: var(--sl-color-accent-low) !important; border-radius: 2px; }
+.card .title { font-family: "Newsreader", Georgia, serif; font-weight: 400; letter-spacing: -0.01em; }
