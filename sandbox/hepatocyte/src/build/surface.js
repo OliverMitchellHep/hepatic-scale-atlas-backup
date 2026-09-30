@@ -82,12 +82,12 @@ export function buildShellAndSurface(ctx, detail) {
   // ---------- tight-junction strands: stadium loops flanking the groove mouth ----------
   const tjMat = makeMaterial(shared, { color: P.tightJunction, roughness: 0.35, emissive: P.tightJunction, emissiveIntensity: 0.35, sss: 0.5, type: 'tight_junction' });
   const loops = [];
-  const mouthX = 4.95;
+  const mouthX = 4.98;
   const halfW = Math.sqrt(Math.max(0.05, GROOVE.r * GROOVE.r - (GROOVE.x - mouthX) ** 2)) + 0.02;
+  let lastX = mouthX;
   const surfX = (y, z) => { // outer surface x at (y,z): march inward from +x
-    const d = V3(-1, 0, 0);
-    for (let x = 6.5; x > 3.5; x -= 0.02) if (sdf.f(x, y, z) <= 0) return x;
-    return mouthX;
+    for (let x = 6.5; x > 3.5; x -= 0.02) if (sdf.f(x, y, z) <= 0) return (lastX = x);
+    return lastX;
   };
   for (let s = 0; s < 3; s++) {
     const w = halfW + s * 0.11, pts = [];

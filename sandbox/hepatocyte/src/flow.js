@@ -44,7 +44,7 @@ void main(){
   mv.xy += corner * size * 1.7;
   gl_Position = projectionMatrix * mv;
   vUv = corner; vCol = cc.rgb; vShape = uClassShape[ci];
-  vAlpha = fade * vis * rw.y * uOpacity; vPulse = pulse; vWPos = pos;
+  vAlpha = fade * vis * rw.y * uOpacity * smoothstep(1.0, 4.5, -mv.z); vPulse = pulse; vWPos = pos;
 }`;
 
 const FS = /* glsl */`

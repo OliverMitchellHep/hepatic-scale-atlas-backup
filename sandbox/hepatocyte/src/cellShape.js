@@ -7,7 +7,7 @@ import * as THREE from 'three';
 import { mergeVertices } from 'three/addons/utils/BufferGeometryUtils.js';
 import { rng, V3 } from './util.js';
 
-export const GROOVE = { x: 5.32, z: 0.0, r: 0.95, y0: -3.15, y1: 3.15 };
+export const GROOVE = { x: 5.1, z: 0.0, r: 0.78, y0: -2.7, y1: 2.7 };
 
 export function makeSDF(seed = 7) {
   const R = rng(seed);

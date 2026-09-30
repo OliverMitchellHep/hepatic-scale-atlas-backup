@@ -10,6 +10,7 @@ Generated from `data/uncertainties.json` (`npm run docs`). Where the literature 
 - Sinusoidal microvilli count/length, glycogen rosette size (≈100–200 nm α-particles) and fenestra diameter (≈100–200 nm) are order-of-magnitude values from reviews, not taken from one dataset.
 - The fed↔fasted slider applies linear interpolation between two hand-set flux weights per route. Real regulation is time-dependent (glycogenolysis dominates the first ≈12–24 h of fasting, gluconeogenesis later), zonated along the sinusoid (periportal vs perivenous) and hormone-dose dependent. The weights are teaching illustrations, not quantitative fluxes.
 - Metabolic zonation (periportal urea cycle and gluconeogenesis vs perivenous glycolysis, glutamine synthesis, CYP expression) is not drawn: one generic hepatocyte carries all pathways.
+- Cell size: this model is ≈20 µm across (10 scene units × 2 µm), inside the literature range for hepatocytes (≈20–30 µm). The atlas 'cell' scale card currently quotes '≈ 14 µm'; reconcile the two before integration.
 
 ## Glucose handling (`glucose`)
 

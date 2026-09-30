@@ -68,7 +68,7 @@ const CSS = (t) => `
 .hl-range{width:100%;accent-color:${t.accent};margin:2px 0}
 .hl-ends{display:flex;justify-content:space-between;font-size:11.5px;color:${t.textDim}}
 .hl-hor{display:flex;gap:10px;margin-top:6px;font-size:11px;color:${t.textFaint};align-items:center}
-.hl-hor i{display:block;height:5px;border-radius:4px;background:${t.accent};transition:width .15s}
+.hl-hor i{display:block;height:5px;border-radius:4px;background:${t.accent}}
 .hl-hor i.g{background:${t.accent2}}
 .hl-hor span{flex:1;display:flex;align-items:center;gap:6px}
 .hl-hor em{font-style:normal;flex:1;height:5px;background:#1a2748;border-radius:4px;overflow:hidden;display:block}
@@ -128,8 +128,14 @@ const CSS = (t) => `
 .hl-hidden{display:none!important}
 .hl-mob .hl-title h1{font-size:38px}.hl-mob .hl-title{left:14px;top:10px}.hl-mob .hl-title p{font-size:16px}
 .hl-mob .hl-tip,.hl-mob .hl-disc{display:none}
-.hl-mob .hl-left{left:10px;top:auto;bottom:70px;width:min(260px,calc(100% - 20px));max-height:40%}
-.hl-mob .hl-right{right:10px;top:60px;bottom:auto;width:min(290px,calc(100% - 20px));max-height:calc(100% - 200px);overflow:auto}
+.hl-mob .hl-left{left:10px;top:auto;bottom:130px;width:min(260px,calc(100% - 20px));max-height:45%;display:none}
+.hl-mob .hl-right{right:10px;top:56px;bottom:auto;width:min(300px,calc(100% - 20px));max-height:calc(100% - 210px);overflow:auto;display:none}
+.hl-mob.hl-show-left .hl-left{display:flex}.hl-mob.hl-show-right .hl-right{display:flex}
+.hl-mobbar{display:none;position:absolute;right:10px;top:10px;gap:6px}
+.hl-mob .hl-mobbar{display:flex}
+.hl-mobbar button{height:38px;padding:0 12px;border-radius:12px;background:${t.panel};border:1px solid ${t.panelBorder};color:${t.textDim};font:500 12px ${t.fontUi};cursor:pointer}
+.hl-mobbar button.on{color:${t.text};border-color:${t.accent}}
+.hl-mob .hl-state p{display:none}
 .hl-mob .hl-state{width:calc(100% - 20px);min-width:0;bottom:10px}
 .hl-mob .hl-tools{display:none}.hl-mob .hl-shot{display:none}
 `;
@@ -181,6 +187,7 @@ export class HepUI {
         <input class="hl-range" type="range" min="0" max="1000" value="0"><div class="hl-ends"><span>${L.panels.fed}</span><span>${L.panels.fasted}</span></div>
         <div class="hl-hor"><span>${L.panels.insulin}<em><i class="ins" style="width:100%"></i></em></span><span>${L.panels.glucagon}<em><i class="g gl" style="width:10%"></i></em></span></div>
         <p class="sd"></p></div>
+      <div class="hl-mobbar"><button data-mb="left">Pathways</button><button data-mb="right">Controls</button></div>
       <div class="hl-card hl-shot"><button data-t="shot">${ICON.camera}${L.toolbar.screenshot}</button></div>`;
     const q = (s) => ui.querySelector(s), qa = (s) => [...ui.querySelectorAll(s)];
     this.el = { details: q('.hl-details'), pwlist: q('.hl-pwlist'), lg: q('.hl-legend .lg'), sn: q('.sn'), sd: q('.sd'), range: q('.hl-range'), ins: q('.ins'), gl: q('.gl'), pp: q('[data-pp]'), left: q('.hl-left'), tip: q('.hl-tip') };
@@ -190,6 +197,7 @@ export class HepUI {
     this.el.pp.addEventListener('click', () => api.setPlaying(!this.playing));
     qa('[data-t]').forEach((b) => b.addEventListener('click', () => api.tool(b.dataset.t)));
     this.el.range.addEventListener('input', () => api.setMetabolicState(this.el.range.value / 1000));
+    qa('[data-mb]').forEach((b) => b.addEventListener('click', () => { const c = 'hl-show-' + b.dataset.mb; const on = !this.root.classList.contains(c); this.root.classList.remove('hl-show-left', 'hl-show-right'); this.root.classList.toggle(c, on); qa('[data-mb]').forEach((x) => x.classList.toggle('on', x === b && on)); }));
     q('.hl-details .hl-x').addEventListener('click', () => api.select(null));
     q('.hl-lghd').addEventListener('click', () => { this.el.lg.classList.toggle('hl-hidden'); });
     this._buildPathways(); this._buildLegend();
@@ -248,7 +256,7 @@ export class HepUI {
   setMobile(m) { this.root.classList.toggle('hl-mob', m); }
 
   showDetails({ title, color, html }) {
-    const d = this.el.details; d.classList.add('show');
+    const d = this.el.details; d.classList.add('show'); if (this.root.classList.contains('hl-mob')) { this.root.classList.remove('hl-show-left'); this.root.classList.add('hl-show-right'); }
     d.querySelector('h2').textContent = title; d.querySelector('.sw').style.background = color;
     const bd = d.querySelector('.bd'); bd.innerHTML = html; bd.scrollTop = 0;
     bd.querySelectorAll('[data-pw]').forEach((a) => a.addEventListener('click', () => this.api.selectPathway(a.dataset.pw)));

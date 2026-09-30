@@ -67,7 +67,9 @@ class Hepatocyte {
 
     // renderer
     const q = this.quality;
-    const renderer = this.renderer = new THREE.WebGLRenderer({ canvas: cv, antialias: q.msaa === 0 || !q.bloom, powerPreference: 'high-performance', alpha: false, preserveDrawingBuffer: !!this.opts.preserveDrawingBuffer });
+    let renderer;
+    try { renderer = this.renderer = new THREE.WebGLRenderer({ canvas: cv, antialias: q.msaa === 0 || !q.bloom, powerPreference: 'high-performance', alpha: false, preserveDrawingBuffer: !!this.opts.preserveDrawingBuffer }); }
+    catch (err) { root.innerHTML = '<div style="padding:24px;color:#a9b6d8;font:14px system-ui">WebGL 2 is not available in this browser, so the 3D hepatocyte cannot be shown.</div>'; this.failed = true; throw err; }
     this.dprBase = Math.min(this.opts.pixelRatio || window.devicePixelRatio || 1, q.dprMax); this.dpr = this.dprBase;
     renderer.setPixelRatio(this.dpr);
     renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.outputColorSpace = THREE.SRGBColorSpace;
@@ -87,7 +89,7 @@ class Hepatocyte {
     ctl.autoRotateSpeed = c.autoRotateSpeed * 3;
     this.homeTarget = V3(-1.9, 0, 0);
     this._homeCamera();
-    ctl.addEventListener('start', () => { this.tween = null; this.lastInput = performance.now(); });
+    ctl.addEventListener('start', () => { this.tween = null; this.userMoved = true; this.lastInput = performance.now(); });
     this.lastInput = -1e9;
 
     // UI
@@ -192,14 +194,17 @@ class Hepatocyte {
   }
 
   // ---------------------------------------------------------------- camera
+  _homeDist() { const a = (this.w || this.container.clientWidth || 1200) / (this.h || this.container.clientHeight || 800); return this.style.camera.distance * Math.max(1, 1.45 / a); }
   _homeCamera() {
+    const asp = (this.w || this.container.clientWidth || 1200) / (this.h || this.container.clientHeight || 800);
+    this.homeTarget.x = asp < 1.2 ? -0.5 : -1.9;
     const c = this.style.camera, az = THREE.MathUtils.degToRad(c.azimuthDeg), el = THREE.MathUtils.degToRad(c.elevationDeg);
     const dir = V3(Math.sin(az) * Math.cos(el), Math.sin(el), Math.cos(az) * Math.cos(el));
-    this.camera.position.copy(this.homeTarget).addScaledVector(dir, c.distance);
+    this.camera.position.copy(this.homeTarget).addScaledVector(dir, this._homeDist());
     this.controls.target.copy(this.homeTarget); this.controls.update();
     this.camera.fov = c.fov; this.camera.updateProjectionMatrix();
   }
-  resetView() { this._flyTo(this.homeTarget, this.style.camera.distance, null, 700); }
+  resetView() { this._flyTo(this.homeTarget, this._homeDist(), null, 700); }
   _flyTo(target, dist, dir, dur = 800) {
     const cam = this.camera, ctl = this.controls;
     const d = dir ? dir.clone().normalize() : cam.position.clone().sub(ctl.target).normalize();
@@ -307,7 +312,8 @@ class Hepatocyte {
       if (focus && id !== sel) dim = 0.8;
       else if (involved && !involved.has(id) && id !== 'plasma_lateral' && id !== 'cell_body') dim = 0.72;
       else if (involved && id === 'cytoskeleton') dim = 0.8;
-      const hi = (id === sel ? 0.3 : 0) + (id === this.hover ? 0.45 : 0);
+      const hv = this.hover && (id === this.hover || (id === 'plasma_lateral' && this.hover.startsWith('plasma_')));
+      const hi = (id === sel || (id === 'plasma_lateral' && sel && sel.startsWith('plasma_')) ? 0.3 : 0) + (hv ? 0.45 : 0);
       const involvedHi = involved && involved.has(id) && id !== 'plasma_lateral' ? 0.12 : 0;
       for (const m of r.mats) { m.userData.own.uDim.value = dim; m.userData.own.uHi.value = hi + involvedHi; }
       const hidden = this.tools.hide && sel && id !== sel;
@@ -407,7 +413,7 @@ class Hepatocyte {
     this.camera.aspect = w / h;
     // keep the whole cell in view on narrow / portrait windows
     const c = this.style.camera; const fitDist = c.distance * (w / h < 1.25 ? 1.25 / (w / h) : 1);
-    if (!this._userMoved && !this.tween && this.controls) { /* leave as is */ }
+    if (!this.userMoved && !this.tween && this.controls && this.homeTarget) this._homeCamera();
     this.camera.updateProjectionMatrix();
     this.composer?.setSize(w, h); this.composer?.setPixelRatio?.(this.dpr);
     this.bloom?.resolution.set(w * this.dpr / 2, h * this.dpr / 2);
@@ -515,16 +521,16 @@ class Hepatocyte {
     if (this.disposed) return; this.disposed = true;
     cancelAnimationFrame(this.raf);
     const cv = this.canvas;
-    cv.removeEventListener('pointermove', this._onMove); cv.removeEventListener('pointerleave', this._onLeave); cv.removeEventListener('pointerdown', this._onDown); cv.removeEventListener('pointerup', this._onUp);
+    if (cv && this._onMove) cv.removeEventListener('pointermove', this._onMove); cv.removeEventListener('pointerleave', this._onLeave); cv.removeEventListener('pointerdown', this._onDown); cv.removeEventListener('pointerup', this._onUp);
     window.removeEventListener('keydown', this._onKey); document.removeEventListener('visibilitychange', this._vis);
     this._ro?.disconnect();
     this.flow?.dispose();
-    this.controls.dispose();
+    this.controls?.dispose();
     if (this.group) { disposeObject(this.group); this.ctx.disposables.forEach((d) => d.dispose()); }
-    this.scene.traverse((o) => { if (o.isLight && o.dispose) o.dispose(); });
+    this.scene?.traverse((o) => { if (o.isLight && o.dispose) o.dispose(); });
     this.envTex?.dispose(); this.composer?.dispose?.(); this.bloom?.dispose?.();
     this.ui?.dispose();
-    this.renderer.dispose(); this.renderer.forceContextLoss();
+    this.renderer?.dispose(); this.renderer?.forceContextLoss();
     this.root.remove();
     this.listeners = {};
   }

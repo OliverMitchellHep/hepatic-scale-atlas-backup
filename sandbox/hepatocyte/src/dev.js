@@ -16,6 +16,8 @@ hep.ready.then((api) => {
   const S = api.getStyle();
   const gui = new GUI({ title: 'Hepatocyte tweaks', width: 300 }); gui.close();
   window.gui = gui;
+  if (innerWidth < 700) gui.domElement.style.display = 'none';
+  Object.assign(gui.domElement.style, { position: 'fixed', left: '318px', right: 'auto', top: '6px', zIndex: 20 });
   const on = () => api.refreshStyle();
   const col = (f, o, k, n) => f.addColor(o, k).name(n || k).onChange(on);
   const f1 = gui.addFolder('Flow');

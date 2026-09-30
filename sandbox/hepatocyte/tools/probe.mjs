@@ -10,7 +10,7 @@ fs.mkdirSync(out, { recursive: true });
 const server = await createServer({ root, server: { port: 5198, host: '127.0.0.1' }, logLevel: 'error' }); await server.listen();
 const exe = ['/opt/pw-browsers/chromium', '/opt/pw-browsers/chromium-1194/chrome-linux/chrome'].find((p) => fs.existsSync(p) && fs.statSync(p).isFile());
 const browser = await chromium.launch({ executablePath: exe, args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', '--no-sandbox'] });
-const page = await browser.newPage({ viewport: { width: 1600, height: 900 } });
+const page = await browser.newPage({ viewport: { width: +(process.env.VP || '1600x900').split('x')[0], height: +(process.env.VP || '1600x900').split('x')[1] } });
 const logs = []; page.on('console', (m) => logs.push(m.text())); page.on('pageerror', (e) => logs.push('[pageerror] ' + e.message));
 await page.goto('http://127.0.0.1:5198/?quality=' + (process.env.Q || 'high') + '&shot=1', { waitUntil: 'load' });
 await page.waitForFunction(() => window.hep && window.hep.stats, null, { timeout: 180000 });
