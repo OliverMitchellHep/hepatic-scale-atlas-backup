@@ -1,0 +1,32 @@
+---
+/**
+ * Deep link into the atlas, using the atlas's own share-link format (`#v=<base64url JSON>`, schema v1).
+ * The atlas merges what you give over its defaults, so pass only what you want to change.
+ *
+ *   <AtlasLink z={3}>Open at sinusoid scale</AtlasLink>
+ *   <AtlasLink layers={{ ribcage: 'ghost', segments: true }}>Segments with ribs</AtlasLink>
+ *   <AtlasLink path={{ pvt: 'chronic' }} fibrosis={0.5}>Portal vein thrombosis</AtlasLink>
+ *   <AtlasLink module={['A02', 0]}>Guided module</AtlasLink>
+ *
+ * z: 0 organ, 1 lobule, 2 acinus, 3 sinusoid, 4 hepatocyte.  Layer keys: see LAYERS in src/atlas.js.
+ * Path values: see state.path in src/atlas.js (nested objects such as `bil` must be passed complete).
+ */
+interface Props {
+  z?: number;
+  layers?: Record<string, string | boolean>;
+  path?: Record<string, unknown>;
+  fibrosis?: number;
+  module?: [string, number];
+  class?: string;
+}
+const { z, layers, path, fibrosis, module: mod, class: cls } = Astro.props;
+const S: Record<string, unknown> = { v: 1 };
+if (z !== undefined) S.z = z;
+if (layers) S.L = layers;
+if (path) S.path = path;
+if (fibrosis !== undefined) S.f = fibrosis;
+if (mod) S.m = mod;
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const href = `${base}/atlas/#v=${Buffer.from(JSON.stringify(S), 'utf8').toString('base64url')}`;
+---
+<a href={href} target="_blank" rel="noopener" class:list={['atlas-link', cls]}><slot />&nbsp;↗</a>

@@ -1,0 +1,32 @@
+---
+title: Histology overview
+description: Placeholder histology page showing tabs and atlas deep links.
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+import AtlasLink from '../../../components/AtlasLink.astro';
+
+*Trial page: layout only, no teaching content yet.*
+
+<Tabs>
+  <TabItem label="Lobule">
+    Hexagonal lobule, portal tracts at the corners, central vein at the centre.
+
+    <AtlasLink z={1}>Open the atlas at lobule scale</AtlasLink>
+  </TabItem>
+  <TabItem label="Acinus">
+    Rappaport acinus and zones 1 to 3.
+
+    <AtlasLink z={2}>Open the atlas at acinus scale</AtlasLink>
+  </TabItem>
+  <TabItem label="Sinusoid">
+    Fenestrated endothelium, space of Disse, Kupffer and stellate cells.
+
+    <AtlasLink z={3}>Open the atlas at sinusoid scale</AtlasLink>
+  </TabItem>
+  <TabItem label="Hepatocyte">
+    Polarised cell, organelles and transporters.
+
+    <AtlasLink z={4}>Open the atlas at hepatocyte scale</AtlasLink>
+  </TabItem>
+</Tabs>

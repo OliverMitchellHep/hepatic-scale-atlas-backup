@@ -1,0 +1,23 @@
+---
+title: Portal vein thrombosis
+description: Placeholder pathology page showing tabs, an atlas deep link and a simulation link.
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+import AtlasLink from '../../../components/AtlasLink.astro';
+
+*Trial page: layout only, no clinical content yet. Content will follow the current EASL vascular liver disease guideline and Baveno VIII.*
+
+<Tabs>
+  <TabItem label="Overview">
+    Definition, classification (acute, chronic, cavernous transformation) and causes.
+  </TabItem>
+  <TabItem label="Atlas simulation">
+    Portal circulation with a chronic portal vein thrombosis, showing re-routed flow and collaterals.
+
+    <AtlasLink path={{ pvt: 'chronic' }} fibrosis={0.2}>Open the PVT simulation</AtlasLink>
+  </TabItem>
+  <TabItem label="Management">
+    Anticoagulation, portal hypertension and varices. To be written from current guidelines.
+  </TabItem>
+</Tabs>

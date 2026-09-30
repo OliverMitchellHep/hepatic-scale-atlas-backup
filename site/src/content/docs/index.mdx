@@ -1,0 +1,28 @@
+---
+title: Rex Hepatis
+description: Consultant-level hepatobiliary teaching built around an interactive 3D atlas.
+template: splash
+hero:
+  tagline: Hepatobiliary anatomy, physiology, histology and pathology, taught through an interactive 3D atlas from organ to hepatocyte.
+  actions:
+    - text: Open the atlas
+      link: /atlas/
+      icon: right-arrow
+      variant: primary
+      attrs:
+        target: _blank
+    - text: Start with anatomy
+      link: /anatomy/a01-liver-gross-structure/
+      variant: minimal
+---
+
+import { CardGrid, Card } from '@astrojs/starlight/components';
+
+<CardGrid>
+  <Card title="Anatomy" icon="open-book">Gross structure, Couinaud segments, vasculature, biliary tree, pancreas, innervation, lymphatics, variants.</Card>
+  <Card title="Physiology" icon="pencil">Blood flow, sinusoidal exchange, bile formation, metabolism, portal pressure, jaundice, immunity.</Card>
+  <Card title="Histology" icon="magnifier">Lobule, acinus, sinusoid and hepatocyte, linked to the atlas scale by scale.</Card>
+  <Card title="Pathology" icon="warning">Disease modules that drive the atlas simulations, such as portal vein thrombosis.</Card>
+</CardGrid>
+
+*Educational model, not for clinical decision-making. Guideline sources: EASL, BSG, UEG, NICE, NHS/NHSBT, Baveno, ESGE.*

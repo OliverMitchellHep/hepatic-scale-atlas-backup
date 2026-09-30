@@ -1,0 +1,14 @@
+/* Dark instrument look to match the atlas: black ground, dark navy panels. */
+:root:not([data-theme='light']) {
+  --sl-color-bg: #000000;
+  --sl-color-bg-nav: #070b16;
+  --sl-color-bg-sidebar: #070b16;
+  --sl-color-bg-inline-code: #0d1426;
+  --sl-color-hairline: #1a2440;
+  --sl-color-accent: #d1473a;
+  --sl-color-accent-high: #f0b4a6;
+  --sl-color-accent-low: #3a1410;
+}
+:root[data-theme='light'] {
+  --sl-color-accent: #a8342a;
+}

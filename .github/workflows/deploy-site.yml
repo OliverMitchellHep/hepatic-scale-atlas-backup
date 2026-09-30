@@ -1,0 +1,50 @@
+name: Deploy site
+
+# Builds the atlas (build.py) and the Astro Starlight site (site/) and publishes site/dist to GitHub Pages.
+# Manual trigger only while this is a trial. Add `push: branches: [main]` once you are happy with it.
+# Note: GitHub Pages from a PRIVATE repo needs a paid GitHub plan; Cloudflare Pages / Netlify can build the
+# same way (build command: cd site && npm ci && npm run build, output directory: site/dist).
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: site/package-lock.json
+      - run: npm ci
+        working-directory: site
+      - run: npm run build
+        working-directory: site
+        # For a custom domain served from the root, leave SITE_BASE unset. For a github.io project site set:
+        # env: { SITE_URL: 'https://<user>.github.io', SITE_BASE: '/hepatic-scale-atlas' }
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site/dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
