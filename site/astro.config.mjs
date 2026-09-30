@@ -29,6 +29,7 @@ export default defineConfig({
         { label: 'Histology', autogenerate: { directory: 'histology' } },
         { label: 'Pathology', autogenerate: { directory: 'pathology' } },
         { label: 'Guidelines', autogenerate: { directory: 'guidelines' } },
+        { label: 'Research', autogenerate: { directory: 'research' } },
         { label: 'About', autogenerate: { directory: 'about' } },
       ],
     }),
