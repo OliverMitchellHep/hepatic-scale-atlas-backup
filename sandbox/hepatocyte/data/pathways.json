@@ -1,309 +1,75 @@
 {
-  "note": "Pathway definitions. A variant's path is a list of nodes; node.mol is the molecule class carried on the segment LEAVING that node, node.label names the transporter/enzyme acting at the node. Anchors: sinusoid | gate:<id> | exo:sin | cytosol | canaliculus | mito | mito:matrix | mito:cristae | ser | rer | golgi | perox | lyso | ld | glyc | endo | nucleus. flux = relative weight fed/fasted (0-1). Crossings between the sinusoid and the cell membrane automatically route through an LSEC fenestra and the space of Disse. Anything uncertain is listed in ../UNCERTAINTIES.md.",
-  "gates": {
-    "GLUT2":      { "domain": "sin", "label": "GLUT2 (SLC2A2)",                       "family": "carbohydrate", "copies": 4, "kind": "facilitated diffusion, bidirectional" },
-    "MCT":        { "domain": "sin", "label": "MCT1/2 (SLC16A1/7)",                   "family": "carbon",       "copies": 3, "kind": "H+-coupled monocarboxylate carrier, bidirectional" },
-    "CD36FATP":   { "domain": "sin", "label": "CD36 · FATP2/5 (SLC27A2/5)",           "family": "lipid",        "copies": 4, "kind": "uptake" },
-    "AATRANS":    { "domain": "sin", "label": "SLC38 (SNAT) · SLC7 (LAT) amino-acid carriers", "family": "amino", "copies": 3, "kind": "Na+-coupled / exchange uptake" },
-    "NH3":        { "domain": "sin", "label": "NH3 / NH4+ entry",                     "family": "nitrogen",     "copies": 3, "kind": "diffusion (transporters uncertain)" },
-    "UREAEXP":    { "domain": "sin", "label": "Urea export (AQP9 / UT-B)",            "family": "nitrogen",     "copies": 3, "kind": "facilitated efflux (isoform uncertain)" },
-    "OATP":       { "domain": "sin", "label": "OATP1B1 / OATP1B3 (SLCO1B1/1B3)",      "family": "bilirubin",    "copies": 3, "kind": "uptake" },
-    "MRP34":      { "domain": "sin", "label": "MRP3 / MRP4 (ABCC3/4)",                "family": "bilirubin",    "copies": 3, "kind": "ATP-dependent efflux to blood" },
-    "NTCP":       { "domain": "sin", "label": "NTCP (SLC10A1)",                       "family": "bileacid",     "copies": 4, "kind": "Na+-coupled uptake" },
-    "DRUGUP":     { "domain": "sin", "label": "OATP1B1/1B3 · OCT1 · passive",         "family": "xeno",         "copies": 3, "kind": "uptake" },
-    "LDLR":       { "domain": "sin", "label": "LDLR · LRP1 · HSPG (SDC1)",            "family": "lipoprotein",  "copies": 3, "kind": "receptor-mediated endocytosis" },
-    "EXO":        { "domain": "sin", "label": "Exocytosis (sinusoidal domain)",       "family": "protein",      "copies": 4, "kind": "vesicle fusion" },
-    "BSEP":       { "domain": "can", "label": "BSEP (ABCB11)",                        "family": "bileacid",     "copies": 3, "kind": "ATP-dependent efflux" },
-    "MRP2":       { "domain": "can", "label": "MRP2 (ABCC2)",                         "family": "bilirubin",    "copies": 3, "kind": "ATP-dependent efflux" },
-    "XENOCAN":    { "domain": "can", "label": "MRP2 · P-gp (ABCB1) · BCRP (ABCG2)",   "family": "xeno",         "copies": 3, "kind": "ATP-dependent efflux" },
-    "ABCG58":     { "domain": "can", "label": "ABCG5/ABCG8",                          "family": "sterol",       "copies": 3, "kind": "ATP-dependent sterol efflux" }
-  },
+  "note": "Simplified to ONE pathway for now (the eight-pathway version is in git history, commit e6f8a86). Stage list drives the numbered guide and the legend. Uncertainties in ../UNCERTAINTIES.md.",
+  "gates": {},
   "pathways": [
     {
-      "id": "glucose",
-      "name": "Glucose handling",
-      "order": 1,
-      "summary": "Fed: GLUT2 uptake, glucokinase trapping, glycogen synthesis and glycolysis. Fasted: glycogenolysis and gluconeogenesis feed glucose-6-phosphatase in the ER and glucose leaves by GLUT2.",
-      "substrates": ["glucose", "glucose-6-phosphate", "lactate", "alanine", "glycogen"],
-      "transportersEnzymes": ["GLUT2 (SLC2A2)", "glucokinase (GCK)", "glycogen synthase (GYS2)", "glycogen phosphorylase (PYGL)", "G6PT (SLC37A4)", "glucose-6-phosphatase (G6PC1)", "pyruvate carboxylase (PC)", "PEPCK (PCK1/PCK2)", "FBP1", "MPC"],
-      "compartmentRoute": "Sinusoid ⇄ space of Disse ⇄ GLUT2 ⇄ cytosol; fed: cytosol → glycogen / glycolysis → mitochondrion; fasted: glycogen or lactate → (mitochondrion) → cytosol → ER (G6PT, G6Pase) → cytosol → GLUT2 → sinusoid",
-      "direction": "Net influx when portal glucose is high (fed, insulin); net efflux when fasted (glucagon).",
-      "clinical": "Glycogen storage disease type Ia (G6PC1 deficiency): fasting hypoglycaemia with hepatomegaly, lactic acidosis, hyperlipidaemia. Insulin resistance in MASLD leaves gluconeogenesis unsuppressed in the fed state, contributing to hyperglycaemia.",
-      "citations": ["han2016", "petersen2017", "roach2012", "hutton2009", "chou2010"],
-      "involves": ["glycogen", "ser", "mitochondrion"],
+      "id": "bile_formation",
+      "name": "Uptake \u2192 processing \u2192 bile",
+      "summary": "Blood contents cross the fenestrated endothelium into the space of Disse and are taken up by microvilli on the sinusoidal face; they are processed in the endoplasmic reticulum, handled by the Golgi and vesicular traffic, and secreted across the canalicular membrane into bile, which flows counter-current to blood.",
+      "substrates": [
+        "bile acids",
+        "bilirubin",
+        "drugs and other xenobiotics (shown generically)"
+      ],
+      "transportersEnzymes": [
+        "NTCP (SLC10A1) and OATP1B1/1B3 at the sinusoidal face",
+        "CYP450 and UGT1A1 in the smooth ER",
+        "BSEP (ABCB11), MRP2 (ABCC2), ABCG5/G8 at the canalicular membrane"
+      ],
+      "compartmentRoute": "Sinusoid \u2192 LSEC fenestra \u2192 space of Disse \u2192 sinusoidal microvilli \u2192 cytosol \u2192 smooth ER \u2192 Golgi / vesicles \u2192 canalicular membrane \u2192 bile canaliculus \u2192 toward the bile ductule",
+      "direction": "Blood flows one way along the sinusoid; bile flows the opposite way along the canaliculus (toward the portal tract).",
+      "clinical": "Cholestasis when any step fails: sinusoidal uptake (NTCP/OATP), ER conjugation (e.g. UGT1A1 in Gilbert and Crigler\u2013Najjar), or canalicular export (BSEP in PFIC2 and drug-induced cholestasis; MRP2 in Dubin\u2013Johnson).",
+      "citations": [
+        "boyer2013",
+        "erlinger2014",
+        "stieger2011",
+        "chiang2018",
+        "treyer2013"
+      ],
+      "involves": [
+        "microvilli_sinusoidal",
+        "lsec",
+        "ser",
+        "golgi",
+        "bile_canaliculus"
+      ],
+      "stages": [
+        {
+          "id": "uptake",
+          "n": 1,
+          "mol": "absorbed",
+          "label": "Microvilli take up contents from the space of Disse"
+        },
+        {
+          "id": "process",
+          "n": 2,
+          "mol": "processed",
+          "label": "Processed in the endoplasmic reticulum"
+        },
+        {
+          "id": "package",
+          "n": 3,
+          "mol": "packaged",
+          "label": "Packaged and handled by the Golgi"
+        },
+        {
+          "id": "secrete",
+          "n": 4,
+          "mol": "bile",
+          "label": "Secreted into the bile canaliculus"
+        }
+      ],
       "variants": [
-        { "id": "glucose_glycogenesis", "name": "Uptake → glycogen synthesis", "state": "fed", "flux": { "fed": 1.0, "fasted": 0.0 }, "routes": 6, "particles": 60,
-          "path": [
-            { "at": "sinusoid", "mol": "glucose" },
-            { "at": "gate:GLUT2", "mol": "glucose", "label": "GLUT2 (facilitated diffusion, inward)" },
-            { "at": "cytosol", "mol": "glucose_phosphate", "label": "Glucokinase (GCK): glucose → G6P" },
-            { "at": "glyc", "label": "PGM1 → UGP2 → glycogen synthase (GYS2) → glycogen" }
-          ] },
-        { "id": "glucose_glycolysis", "name": "Uptake → glycolysis → mitochondrion", "state": "fed", "flux": { "fed": 0.6, "fasted": 0.0 }, "routes": 5, "particles": 50,
-          "path": [
-            { "at": "sinusoid", "mol": "glucose" },
-            { "at": "gate:GLUT2", "mol": "glucose", "label": "GLUT2" },
-            { "at": "cytosol", "mol": "glucose_phosphate", "label": "Glucokinase (GCK)" },
-            { "at": "cytosol", "mol": "pyruvate_lactate", "label": "Glycolysis → pyruvate (PKLR)" },
-            { "at": "mito:matrix", "mol": "acetyl_coa", "label": "MPC → pyruvate dehydrogenase → acetyl-CoA" }
-          ] },
-        { "id": "glucose_glycogenolysis", "name": "Glycogenolysis → glucose export", "state": "fasted", "flux": { "fed": 0.0, "fasted": 0.75 }, "routes": 6, "particles": 55,
-          "path": [
-            { "at": "glyc", "mol": "glucose_phosphate", "label": "Glycogen phosphorylase (PYGL) + debranching → G1P → G6P (PGM1)" },
-            { "at": "ser", "mol": "glucose", "label": "G6PT (SLC37A4) → glucose-6-phosphatase (G6PC1) in ER lumen" },
-            { "at": "cytosol", "mol": "glucose", "label": "Glucose leaves the ER (exit route uncertain)" },
-            { "at": "gate:GLUT2", "mol": "glucose", "label": "GLUT2 (outward)" },
-            { "at": "sinusoid" }
-          ] },
-        { "id": "glucose_gng", "name": "Gluconeogenesis → glucose export", "state": "fasted", "flux": { "fed": 0.0, "fasted": 1.0 }, "routes": 6, "particles": 55,
-          "path": [
-            { "at": "sinusoid", "mol": "pyruvate_lactate" },
-            { "at": "gate:MCT", "mol": "pyruvate_lactate", "label": "MCT (lactate uptake; Cori cycle) — LDH → pyruvate" },
-            { "at": "mito:matrix", "mol": "pyruvate_lactate", "label": "MPC → pyruvate carboxylase (PC): pyruvate → oxaloacetate" },
-            { "at": "cytosol", "mol": "glucose_phosphate", "label": "PEPCK → PEP → … → FBP1 → G6P" },
-            { "at": "ser", "mol": "glucose", "label": "G6PT → glucose-6-phosphatase (G6PC1)" },
-            { "at": "gate:GLUT2", "mol": "glucose", "label": "GLUT2 (outward)" },
-            { "at": "sinusoid" }
-          ] }
-      ]
-    },
-    {
-      "id": "fatty_acids",
-      "name": "Fatty acid handling",
-      "order": 2,
-      "summary": "Free fatty acids enter via CD36/FATPs, are activated to acyl-CoA and either oxidised in mitochondria (acetyl-CoA → TCA/OXPHOS → ATP, or ketogenesis) or esterified to triglyceride for VLDL secretion or storage in lipid droplets.",
-      "substrates": ["albumin-bound free fatty acids", "acyl-CoA", "acetyl-CoA", "triglyceride"],
-      "transportersEnzymes": ["CD36", "FATP2/FATP5 (SLC27A2/5)", "FABP1 (L-FABP)", "ACSL1", "CPT1A", "CACT", "CPT2", "HMGCS2", "GPAT/AGPAT/LPIN/DGAT", "MTTP", "ApoB100"],
-      "compartmentRoute": "Sinusoid → space of Disse → CD36/FATP → cytosol (FABP1, ACSL1) → (a) mitochondrion: CPT1A → matrix β-oxidation → acetyl-CoA → TCA/OXPHOS or ketogenesis; (b) SER/RER: triglyceride → VLDL assembly (MTTP, ApoB100) → Golgi → exocytosis → space of Disse → sinusoid; (c) SER → lipid droplet",
-      "direction": "Uptake from blood, oxidation and ketone export dominate fasted; esterification and VLDL secretion dominate fed. Malonyl-CoA (insulin-driven) inhibits CPT1A in the fed state.",
-      "clinical": "Steatosis (MASLD): ≥5% of hepatocytes contain fat when uptake and de novo lipogenesis exceed oxidation and VLDL export. Impaired mitochondrial β-oxidation (valproate, acute fatty liver of pregnancy, Reye) gives microvesicular steatosis. Abetalipoproteinaemia (MTTP loss) traps triglyceride because VLDL cannot be assembled.",
-      "citations": ["houten2016", "puchalska2017", "alvesbezerra2017", "tiwari2012", "walther2012", "easl_masld2024"],
-      "involves": ["mitochondrion", "ser", "rer", "golgi", "lipid_droplet"],
-      "variants": [
-        { "id": "fa_oxidation", "name": "Uptake → β-oxidation → TCA/OXPHOS (ATP)", "state": "fasted", "flux": { "fed": 0.15, "fasted": 1.0 }, "routes": 6, "particles": 55,
-          "path": [
-            { "at": "sinusoid", "mol": "fatty_acid" },
-            { "at": "gate:CD36FATP", "mol": "fatty_acid", "label": "CD36 / FATP2/5" },
-            { "at": "cytosol", "mol": "acyl_coa", "label": "FABP1 binding → ACSL1: FFA → acyl-CoA" },
-            { "at": "mito", "mol": "acetyl_coa", "label": "CPT1A (outer membrane) → CACT → CPT2 → β-oxidation" },
-            { "at": "mito:cristae", "mol": "atp", "label": "TCA cycle → respiratory chain → ATP synthase" },
-            { "at": "cytosol" }
-          ] },
-        { "id": "fa_ketogenesis", "name": "β-oxidation → ketogenesis → export", "state": "fasted", "flux": { "fed": 0.0, "fasted": 0.8 }, "routes": 5, "particles": 50,
-          "path": [
-            { "at": "sinusoid", "mol": "fatty_acid" },
-            { "at": "gate:CD36FATP", "mol": "fatty_acid", "label": "CD36 / FATP2/5" },
-            { "at": "cytosol", "mol": "acyl_coa", "label": "ACSL1 → acyl-CoA" },
-            { "at": "mito", "mol": "acetyl_coa", "label": "CPT1A → CPT2 → β-oxidation" },
-            { "at": "mito:matrix", "mol": "ketone", "label": "HMGCS2 → HMG-CoA → acetoacetate / 3-hydroxybutyrate" },
-            { "at": "gate:MCT", "mol": "ketone", "label": "Ketone efflux (MCT; isoform uncertain)" },
-            { "at": "sinusoid" }
-          ] },
-        { "id": "fa_vldl", "name": "Triglyceride synthesis → VLDL → secretion", "state": "fed", "flux": { "fed": 0.85, "fasted": 0.35 }, "routes": 6, "particles": 55,
-          "path": [
-            { "at": "sinusoid", "mol": "fatty_acid" },
-            { "at": "gate:CD36FATP", "mol": "fatty_acid", "label": "CD36 / FATP2/5" },
-            { "at": "cytosol", "mol": "acyl_coa", "label": "ACSL1 → acyl-CoA" },
-            { "at": "ser", "mol": "triglyceride", "label": "GPAT → AGPAT → LPIN → DGAT: triglyceride synthesis in ER" },
-            { "at": "rer", "mol": "vldl", "label": "MTTP + ApoB100: VLDL particle assembly in ER lumen" },
-            { "at": "golgi", "mol": "vldl", "label": "VLDL transport vesicle → Golgi maturation" },
-            { "at": "gate:EXO", "mol": "vldl", "label": "Exocytosis into the space of Disse" },
-            { "at": "sinusoid" }
-          ] },
-        { "id": "fa_storage", "name": "Triglyceride → lipid droplet", "state": "both", "flux": { "fed": 0.5, "fasted": 0.6 }, "routes": 4, "particles": 45,
-          "path": [
-            { "at": "sinusoid", "mol": "fatty_acid" },
-            { "at": "gate:CD36FATP", "mol": "fatty_acid", "label": "CD36 / FATP2/5" },
-            { "at": "cytosol", "mol": "acyl_coa", "label": "ACSL1 → acyl-CoA" },
-            { "at": "ser", "mol": "triglyceride", "label": "DGAT1/2: triglyceride lens forms between ER leaflets" },
-            { "at": "ld", "label": "Nascent lipid droplet (PLIN2/5 coat)" }
-          ] }
-      ]
-    },
-    {
-      "id": "protein_synthesis",
-      "name": "Protein synthesis & secretion",
-      "order": 3,
-      "summary": "Amino acids are taken up, assembled on ribosomes of the rough ER into secretory proteins (albumin, clotting factors, fibrinogen), processed in the Golgi and secreted at the sinusoidal face into the space of Disse.",
-      "substrates": ["amino acids", "albumin", "coagulation factors", "fibrinogen", "acute-phase proteins"],
-      "transportersEnzymes": ["SLC38 (SNAT)", "SLC7 (LAT)", "ribosomes + Sec61 translocon", "signal peptidase", "N-glycosyltransferases (Golgi)", "furin-type convertases"],
-      "compartmentRoute": "Sinusoid → space of Disse → amino-acid carrier → cytosol → RER (ribosome, translocon, lumen) → ER exit sites (COPII) → Golgi cis → trans → secretory vesicle → exocytosis at sinusoidal face → space of Disse → LSEC fenestra → sinusoid",
-      "direction": "Amino acids in; secretory proteins out at the sinusoidal (basolateral) pole. Bile proteins/lipids leave at the canalicular pole by separate routes.",
-      "clinical": "Synthetic dysfunction in liver failure: low albumin, prolonged INR (factors II, V, VII, IX, X). α1-antitrypsin deficiency (PiZZ): misfolded Z-AAT polymers accumulate in the RER (PAS-positive diastase-resistant globules) with liver injury and low circulating AAT.",
-      "citations": ["palade1975", "schreiber1978", "alberts_mbc"],
-      "involves": ["rer", "golgi"],
-      "variants": [
-        { "id": "protein_secretion", "name": "Amino acids → RER → Golgi → secretion", "state": "fed", "flux": { "fed": 0.9, "fasted": 0.55 }, "routes": 8, "particles": 55,
-          "path": [
-            { "at": "sinusoid", "mol": "amino_acid" },
-            { "at": "gate:AATRANS", "mol": "amino_acid", "label": "SLC38 / SLC7 amino-acid carriers" },
-            { "at": "cytosol", "mol": "amino_acid", "label": "Charged tRNAs feed ribosomes" },
-            { "at": "rer", "mol": "protein", "label": "Ribosome + Sec61: nascent chain enters RER lumen; folding, N-glycosylation" },
-            { "at": "golgi", "mol": "protein", "label": "COPII vesicles → Golgi: glycan maturation, sorting" },
-            { "at": "gate:EXO", "mol": "protein", "label": "Exocytosis: albumin, clotting factors, fibrinogen" },
-            { "at": "sinusoid" }
-          ] }
-      ]
-    },
-    {
-      "id": "urea_cycle",
-      "name": "Ammonia → urea",
-      "order": 4,
-      "summary": "Ammonia (portal, from gut bacteria and amino-acid catabolism) is converted to urea by the urea cycle, which spans the mitochondrial matrix (CPS1, OTC) and cytosol (ASS1, ASL, ARG1). Urea leaves to blood.",
-      "substrates": ["NH3/NH4+", "HCO3-", "ATP", "aspartate", "ornithine"],
-      "transportersEnzymes": ["CPS1", "OTC", "ORNT1 (SLC25A15)", "ASS1", "ASL", "ARG1", "AQP9 / UT-B (urea export)"],
-      "compartmentRoute": "Sinusoid → space of Disse → cytosol → mitochondrial matrix (CPS1, OTC: carbamoyl phosphate → citrulline) → ORNT1 → cytosol (ASS1, ASL, ARG1: arginine → urea + ornithine) → urea to sinusoid; ornithine returns to the matrix via ORNT1",
-      "direction": "Nitrogen enters from blood and leaves as urea; ornithine cycles between cytosol and matrix.",
-      "clinical": "Hyperammonaemia in cirrhosis (reduced hepatocyte mass and portosystemic shunting) drives hepatic encephalopathy; urea-cycle enzyme defects (OTC deficiency, X-linked) present with hyperammonaemia. The perivenous glutamine synthetase pool is the high-affinity backup scavenger.",
-      "citations": ["meijer1990", "haussinger1990", "vilstrup2014", "weiner2003"],
-      "involves": ["mitochondrion"],
-      "variants": [
-        { "id": "urea_main", "name": "Urea cycle (mitochondria ↔ cytosol)", "state": "both", "flux": { "fed": 0.7, "fasted": 0.85 }, "routes": 6, "particles": 55,
-          "path": [
-            { "at": "sinusoid", "mol": "ammonia" },
-            { "at": "gate:NH3", "mol": "ammonia", "label": "NH3 / NH4+ entry" },
-            { "at": "cytosol", "mol": "ammonia" },
-            { "at": "mito:matrix", "mol": "nitrogen_intermediate", "label": "CPS1 (NH4+ + HCO3- + 2 ATP → carbamoyl-P) → OTC (+ ornithine) → citrulline" },
-            { "at": "mito", "mol": "nitrogen_intermediate", "label": "ORNT1: citrulline out / ornithine in" },
-            { "at": "cytosol", "mol": "nitrogen_intermediate", "label": "ASS1 (+ aspartate) → argininosuccinate → ASL → arginine" },
-            { "at": "cytosol", "mol": "urea", "label": "ARG1: arginine → urea + ornithine" },
-            { "at": "gate:UREAEXP", "mol": "urea", "label": "Urea export (AQP9 / UT-B)" },
-            { "at": "sinusoid" }
-          ] },
-        { "id": "urea_ornithine", "name": "Ornithine recycling", "state": "both", "flux": { "fed": 0.7, "fasted": 0.85 }, "routes": 4, "particles": 30,
-          "path": [
-            { "at": "cytosol", "mol": "nitrogen_intermediate", "label": "Ornithine (from ARG1)" },
-            { "at": "mito", "mol": "nitrogen_intermediate", "label": "ORNT1 (SLC25A15): ornithine into matrix" },
-            { "at": "mito:matrix", "label": "OTC condenses ornithine with carbamoyl-P" }
-          ] }
-      ]
-    },
-    {
-      "id": "bilirubin",
-      "name": "Bilirubin",
-      "order": 5,
-      "summary": "Albumin-bound unconjugated bilirubin is taken up (OATP1B1/1B3), conjugated with glucuronic acid by UGT1A1 in the smooth ER, and the water-soluble conjugates are pumped into the canaliculus by MRP2. A minor MRP3 route returns conjugates to blood.",
-      "substrates": ["unconjugated bilirubin", "UDP-glucuronic acid", "bilirubin mono/diglucuronide"],
-      "transportersEnzymes": ["OATP1B1/1B3 (SLCO1B1/1B3)", "GSTA1 (ligandin)", "UGT1A1", "MRP2 (ABCC2)", "MRP3 (ABCC3)"],
-      "compartmentRoute": "Sinusoid → space of Disse → OATP1B1/1B3 → cytosol → SER (UGT1A1) → cytosol → MRP2 at the canalicular membrane → bile canaliculus",
-      "direction": "Sinusoid → canaliculus (net). MRP3 efflux back to sinusoid is minor and increases in cholestasis.",
-      "clinical": "Unconjugated hyperbilirubinaemia: Gilbert syndrome (reduced UGT1A1 expression), Crigler–Najjar (severe/absent UGT1A1). Conjugated hyperbilirubinaemia from failed canalicular export: Dubin–Johnson (MRP2/ABCC2 loss) and cholestasis generally. Urine bilirubin appears only when conjugated.",
-      "citations": ["erlinger2014", "nies2007", "boyer2013"],
-      "involves": ["ser"],
-      "variants": [
-        { "id": "bili_main", "name": "Uptake → UGT1A1 conjugation → MRP2 export", "state": "both", "flux": { "fed": 0.8, "fasted": 0.8 }, "routes": 6, "particles": 50,
-          "path": [
-            { "at": "sinusoid", "mol": "bilirubin_uc" },
-            { "at": "gate:OATP", "mol": "bilirubin_uc", "label": "OATP1B1 / OATP1B3" },
-            { "at": "cytosol", "mol": "bilirubin_uc", "label": "Cytosolic binding (GSTA1 / ligandin)" },
-            { "at": "ser", "mol": "bilirubin_conj", "label": "UGT1A1: bilirubin → mono- and diglucuronide" },
-            { "at": "gate:MRP2", "mol": "bilirubin_conj", "label": "MRP2 (ABCC2), ATP-dependent" },
-            { "at": "canaliculus" }
-          ] },
-        { "id": "bili_mrp3", "name": "MRP3 sinusoidal efflux (minor)", "state": "cholestasis", "flux": { "fed": 0.1, "fasted": 0.1 }, "routes": 3, "particles": 25,
-          "path": [
-            { "at": "ser", "mol": "bilirubin_conj", "label": "Conjugated bilirubin" },
-            { "at": "gate:MRP34", "mol": "bilirubin_conj", "label": "MRP3 (ABCC3): back to blood" },
-            { "at": "sinusoid" }
-          ] }
-      ]
-    },
-    {
-      "id": "bile_acids",
-      "name": "Bile acids",
-      "order": 6,
-      "summary": "Conjugated bile acids returning from the gut (enterohepatic circulation) are taken up by NTCP. New bile acids are made from cholesterol (CYP7A1 in the ER), finished and conjugated in peroxisomes/cytosol. BSEP pumps them into the canaliculus.",
-      "substrates": ["conjugated bile acids", "cholesterol", "glycine/taurine"],
-      "transportersEnzymes": ["NTCP (SLC10A1)", "CYP7A1", "CYP8B1", "CYP27A1", "ACOX2", "BAAT", "BSEP (ABCB11)"],
-      "compartmentRoute": "Uptake: sinusoid → space of Disse → NTCP → cytosol → BSEP → canaliculus. Synthesis: cholesterol (ER) → CYP7A1 → peroxisome (side-chain shortening, conjugation) → cytosol → BSEP → canaliculus",
-      "direction": "Sinusoid → canaliculus. NTCP is Na+-coupled inward; BSEP is ATP-dependent outward, the rate-limiting step for bile-salt-dependent bile flow.",
-      "clinical": "Cholestasis: BSEP dysfunction (PFIC2, drug-induced BSEP inhibition, benign recurrent intrahepatic cholestasis), intrahepatic cholestasis of pregnancy. NTCP is the hepatocyte entry receptor for hepatitis B/D viruses. Bile-acid retention drives pruritus and hepatocyte injury.",
-      "citations": ["chiang2018", "stieger2011", "boyer2013", "easl_pbc2017", "bull2018"],
-      "involves": ["ser", "peroxisome"],
-      "variants": [
-        { "id": "ba_uptake", "name": "NTCP uptake → BSEP export", "state": "fed", "flux": { "fed": 1.0, "fasted": 0.35 }, "routes": 6, "particles": 55,
-          "path": [
-            { "at": "sinusoid", "mol": "bile_acid_conj" },
-            { "at": "gate:NTCP", "mol": "bile_acid_conj", "label": "NTCP (Na+-coupled uptake)" },
-            { "at": "cytosol", "mol": "bile_acid_conj" },
-            { "at": "gate:BSEP", "mol": "bile_acid_conj", "label": "BSEP (ABCB11), ATP-dependent" },
-            { "at": "canaliculus" }
-          ] },
-        { "id": "ba_synthesis", "name": "De novo synthesis (CYP7A1) → conjugation → BSEP", "state": "both", "flux": { "fed": 0.3, "fasted": 0.3 }, "routes": 4, "particles": 40,
-          "path": [
-            { "at": "ser", "mol": "cholesterol", "label": "ER cholesterol pool" },
-            { "at": "ser", "mol": "bile_acid", "label": "CYP7A1 (rate-limiting) → CYP8B1 / CYP27A1 → cholic / chenodeoxycholic acid" },
-            { "at": "perox", "mol": "bile_acid_conj", "label": "ACOX2 side-chain shortening; BAAT conjugation (glycine / taurine)" },
-            { "at": "gate:BSEP", "mol": "bile_acid_conj", "label": "BSEP" },
-            { "at": "canaliculus" }
-          ] }
-      ]
-    },
-    {
-      "id": "xenobiotics",
-      "name": "Xenobiotic metabolism",
-      "order": 7,
-      "summary": "Drugs and toxins enter, are oxidised by smooth-ER CYP450 enzymes (phase I), conjugated (phase II: UGT, SULT, GST) and exported into bile (MRP2, P-gp, BCRP) or back to blood (MRP3/4) for renal excretion.",
-      "substrates": ["drugs", "toxins", "lipophilic xenobiotics"],
-      "transportersEnzymes": ["OATP1B1/1B3", "OCT1 (SLC22A1)", "CYP3A4, CYP2D6, CYP2C9, CYP2E1", "UGTs", "SULTs", "GSTs", "MRP2 (ABCC2)", "P-gp (ABCB1)", "BCRP (ABCG2)", "MRP3/MRP4"],
-      "compartmentRoute": "Sinusoid → space of Disse → uptake carrier or diffusion → SER (CYP450) → SER lumen / cytosol (conjugation) → canalicular MRP2/P-gp/BCRP → bile, or sinusoidal MRP3/4 → blood",
-      "direction": "Inward at the sinusoidal pole; outward at either pole depending on the size and polarity of the conjugate (larger amphipathic conjugates favour bile).",
-      "clinical": "Drug-induced liver injury: paracetamol overdose (CYP2E1/3A4 → NAPQI, glutathione depletion), idiosyncratic DILI, cholestatic injury from BSEP/MRP2 inhibition. CYP induction (rifampicin, phenobarbital, alcohol) and inhibition (macrolides, azoles) underlie drug interactions.",
-      "citations": ["zanger2013", "kock2012", "nies2007", "easl_dili2019"],
-      "involves": ["ser"],
-      "variants": [
-        { "id": "xeno_biliary", "name": "Phase I → Phase II → biliary export", "state": "both", "flux": { "fed": 0.6, "fasted": 0.6 }, "routes": 6, "particles": 50,
-          "path": [
-            { "at": "sinusoid", "mol": "xenobiotic" },
-            { "at": "gate:DRUGUP", "mol": "xenobiotic", "label": "OATP / OCT1 / passive diffusion" },
-            { "at": "ser", "mol": "xeno_phase1", "label": "Phase I: CYP450 oxidation (CYP3A4, 2D6, 2C9, 2E1 …)" },
-            { "at": "cytosol", "mol": "xeno_conjugate", "label": "Phase II: UGT / SULT / GST conjugation" },
-            { "at": "gate:XENOCAN", "mol": "xeno_conjugate", "label": "MRP2 · P-gp · BCRP" },
-            { "at": "canaliculus" }
-          ] },
-        { "id": "xeno_sinusoidal", "name": "Phase II conjugate → sinusoidal efflux", "state": "both", "flux": { "fed": 0.35, "fasted": 0.35 }, "routes": 4, "particles": 35,
-          "path": [
-            { "at": "sinusoid", "mol": "xenobiotic" },
-            { "at": "gate:DRUGUP", "mol": "xenobiotic", "label": "OATP / OCT1 / passive diffusion" },
-            { "at": "ser", "mol": "xeno_phase1", "label": "Phase I: CYP450" },
-            { "at": "cytosol", "mol": "xeno_conjugate", "label": "Phase II: conjugation" },
-            { "at": "gate:MRP34", "mol": "xeno_conjugate", "label": "MRP3 / MRP4: efflux to blood (renal excretion)" },
-            { "at": "sinusoid" }
-          ] }
-      ]
-    },
-    {
-      "id": "cholesterol",
-      "name": "Cholesterol & lipoprotein remnants",
-      "order": 8,
-      "summary": "Chylomicron remnants and LDL are taken up by receptor-mediated endocytosis, hydrolysed in lysosomes (LAL), and free cholesterol is exported by NPC1/NPC2 to the ER pool, from which it is secreted into bile (ABCG5/G8), esterified for storage, converted to bile acids or packaged into VLDL.",
-      "substrates": ["chylomicron remnants (ApoE)", "LDL (ApoB100)", "cholesteryl ester", "free cholesterol"],
-      "transportersEnzymes": ["LDLR", "LRP1", "HSPG (SDC1)", "lysosomal acid lipase (LIPA)", "NPC2 / NPC1", "ACAT2 (SOAT2)", "SREBP2", "ABCG5/ABCG8"],
-      "compartmentRoute": "Sinusoid → space of Disse → LDLR/LRP1/HSPG → clathrin-coated vesicle → endosome → lysosome (LAL) → NPC2/NPC1 → ER cholesterol pool → (a) ABCG5/G8 → canaliculus, (b) cholesteryl ester in lipid droplet, (c) CYP7A1 → bile acids, (d) VLDL",
-      "direction": "Remnants and LDL in from blood; free cholesterol out to bile (ABCG5/G8) or stored/reused.",
-      "clinical": "Lysosomal acid lipase deficiency (Wolman disease / CESD): hepatomegaly, microvesicular steatosis and cholesteryl-ester accumulation. LDLR defects cause familial hypercholesterolaemia. ABCG5/G8 loss-of-function causes sitosterolaemia; common ABCG8 variants raise gallstone risk.",
-      "citations": ["luo2020", "yu2002", "reiner2014"],
-      "involves": ["lysosome", "endosome", "ser"],
-      "variants": [
-        { "id": "chol_uptake", "name": "Remnant / LDL uptake → lysosome → ER pool", "state": "fed", "flux": { "fed": 0.9, "fasted": 0.4 }, "routes": 6, "particles": 50,
-          "path": [
-            { "at": "sinusoid", "mol": "remnant" },
-            { "at": "gate:LDLR", "mol": "remnant", "label": "LDLR · LRP1 · HSPG (SDC1)" },
-            { "at": "endo", "mol": "remnant", "label": "Clathrin-mediated endocytosis → endosome" },
-            { "at": "lyso", "mol": "cholesterol", "label": "Lysosomal acid lipase (LIPA); NPC2 → NPC1 export free cholesterol" },
-            { "at": "ser", "label": "ER cholesterol pool (SREBP2 sensing; ACAT2 esterification)" }
-          ] },
-        { "id": "chol_bile", "name": "Biliary cholesterol secretion (ABCG5/G8)", "state": "both", "flux": { "fed": 0.5, "fasted": 0.5 }, "routes": 3, "particles": 35,
-          "path": [
-            { "at": "ser", "mol": "cholesterol", "label": "Free cholesterol" },
-            { "at": "gate:ABCG58", "mol": "cholesterol", "label": "ABCG5/ABCG8" },
-            { "at": "canaliculus" }
-          ] },
-        { "id": "chol_store", "name": "Cholesteryl ester storage", "state": "both", "flux": { "fed": 0.3, "fasted": 0.3 }, "routes": 3, "particles": 30,
-          "path": [
-            { "at": "ser", "mol": "cholesterol", "label": "ACAT2 (SOAT2): esterification" },
-            { "at": "ld", "label": "Cholesteryl ester in lipid droplet core" }
-          ] }
+        {
+          "id": "main",
+          "name": "Uptake \u2192 ER \u2192 Golgi \u2192 bile",
+          "flux": {
+            "fed": 1,
+            "fasted": 1
+          },
+          "routes": 20,
+          "particles": 20
+        }
       ]
     }
   ]

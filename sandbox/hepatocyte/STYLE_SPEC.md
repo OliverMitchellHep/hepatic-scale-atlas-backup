@@ -125,3 +125,16 @@ canvas stays opaque black so it composites cleanly in the atlas.
 - Motion budget: no camera shake, no roll; user input always wins over tweens.
 - Desktop first: 60 fps target on a mid-range discrete GPU with bloom + MSAA ×4; phones get `quality: "low"`
   (no composer, no MSAA, ¼ particle count, DPR ≤ 1.5).
+
+
+## 10. Revision 2 (owner feedback): simpler, opaque, closer to the references
+
+Supersedes conflicting parts above.
+- **Form:** an opaque clay slab cell (raised membrane rim around a recessed cytosol floor), top cut away as in the animal/plant-cell
+  references. No translucent shell, no wedge. "Cross-section" off puts an opaque lid on the cell.
+- **Organelles:** few, chunky, well-defined: nucleus dome with one cut quadrant (flat cut faces, nucleolus ball), concentric brick-like
+  RER rings, cyan SER tubes, upright pink Golgi plates, opened mitochondria showing gold cristae on a red matrix, sparse vesicles,
+  pale filament ropes on a periwinkle floor.
+- **Flow:** one story, four stage colours (uptake gold → ER cyan → Golgi pink → bile green), one particle shape. No per-metabolite symbols.
+- **UI:** no sticky note; a numbered "How it works" card doubles as legend; cross-section / binucleate switches, play + speed, tool strip.
+- **Blood:** one lane of erythrocytes at equal speed and even spacing (cannot overlap; checked by `npm run check`).

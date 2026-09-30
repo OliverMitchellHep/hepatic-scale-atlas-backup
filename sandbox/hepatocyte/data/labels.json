@@ -1,13 +1,33 @@
 {
   "title": "Hepatocyte",
   "subtitle": "Polarised liver parenchymal cell",
-  "tip": ["Tip: Drag to rotate", "Scroll to zoom", "Ctrl + drag to pan", "Click an organelle or pathway"],
-  "viewModes": [
-    { "id": "solid",  "label": "Solid",   "hint": "Opaque membrane, no section" },
-    { "id": "layers", "label": "Layers",  "hint": "Translucent membrane with cut-away section" },
-    { "id": "focus",  "label": "Focus",   "hint": "Dim everything except the selection" }
+  "tip": [
+    "Drag to rotate · Scroll to zoom · Ctrl + drag to pan"
   ],
-  "toolbar": { "rotate": "Rotate", "isolate": "Isolate", "hideOthers": "Hide Others", "reset": "Reset View", "screenshot": "Screenshot" },
+  "viewModes": [
+    {
+      "id": "solid",
+      "label": "Solid",
+      "hint": "Opaque membrane, no section"
+    },
+    {
+      "id": "layers",
+      "label": "Layers",
+      "hint": "Translucent membrane with cut-away section"
+    },
+    {
+      "id": "focus",
+      "label": "Focus",
+      "hint": "Dim everything except the selection"
+    }
+  ],
+  "toolbar": {
+    "rotate": "Rotate",
+    "isolate": "Isolate",
+    "hideOthers": "Hide Others",
+    "reset": "Reset View",
+    "screenshot": "Screenshot"
+  },
   "panels": {
     "viewMode": "View mode",
     "crossSection": "Cross-section",
@@ -26,6 +46,47 @@
     "solo": "Solo",
     "details": "Details"
   },
-  "sideSections": { "function": "Function", "enzymes": "Key enzymes", "transporters": "Transporters", "route": "Compartment route", "direction": "Direction", "clinical": "Clinical relevance", "size": "Size & proportion", "sources": "Sources", "uncertainty": "Flagged uncertainties", "variants": "Flux routes" },
-  "disclaimer": "Illustrative teaching model. Organelle sizes are exaggerated and counts reduced for legibility. Not for clinical decisions."
+  "sideSections": {
+    "function": "Function",
+    "enzymes": "Key enzymes",
+    "transporters": "Transporters",
+    "route": "Compartment route",
+    "direction": "Direction",
+    "clinical": "Clinical relevance",
+    "size": "Size & proportion",
+    "sources": "Sources",
+    "uncertainty": "Flagged uncertainties",
+    "variants": "Flux routes"
+  },
+  "disclaimer": "Illustrative teaching model. Organelle sizes are exaggerated and counts reduced for legibility. Not for clinical decisions.",
+  "steps": [
+    {
+      "n": 1,
+      "text": "Microvilli take up contents from the space of Disse",
+      "short": "Microvilli uptake"
+    },
+    {
+      "n": 2,
+      "text": "Processed in the endoplasmic reticulum",
+      "short": "ER processing"
+    },
+    {
+      "n": 3,
+      "text": "Packaged and handled by the Golgi",
+      "short": "Golgi packaging"
+    },
+    {
+      "n": 4,
+      "text": "Secreted into the bile canaliculus",
+      "short": "Secretion to bile"
+    }
+  ],
+  "context": {
+    "sinusoid": "Sinusoid (blood)",
+    "disse": "Space of Disse",
+    "lsec": "Fenestrated endothelium",
+    "bile": "Bile canaliculus",
+    "bileflow": "Bile flow →",
+    "bloodflow": "Blood flow"
+  }
 }

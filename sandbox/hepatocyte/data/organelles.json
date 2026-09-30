@@ -3,154 +3,434 @@
   "cell": {
     "realDiameterUm": "≈20–30",
     "unitUm": 2.0,
-    "surfaceFractions": { "sinusoidal": 0.37, "lateral": 0.50, "canalicular": 0.13, "source": "blouin1977" },
+    "surfaceFractions": {
+      "sinusoidal": 0.37,
+      "lateral": 0.5,
+      "canalicular": 0.13,
+      "source": "blouin1977"
+    },
     "binucleateFraction": "≈25–30% of adult human hepatocytes are binucleate (verify; see UNCERTAINTIES.md)"
   },
   "items": [
-    { "id": "nucleus", "name": "Nucleus", "color": "#8a55d6", "count": 1,
+    {
+      "id": "nucleus",
+      "name": "Nucleus",
+      "color": "#8a55d6",
+      "count": 1,
       "callout": "Nucleus (double envelope, pores)",
-      "sizeUm": "5–10 µm diameter (≈ 6% of cell volume)", "volumeFraction": 0.06, "realCount": "1 (≈25–30% of adult human hepatocytes are binucleate; many are polyploid)",
+      "sizeUm": "5–10 µm diameter (≈ 6% of cell volume)",
+      "volumeFraction": 0.06,
+      "realCount": "1 (≈25–30% of adult human hepatocytes are binucleate; many are polyploid)",
       "function": "Houses the genome; transcription of liver-specific genes (HNF4A, CEBPA…) and mRNA export through nuclear pores. Polyploid and binucleate hepatocytes are the norm in adult liver and confer stress resilience.",
-      "keyEnzymes": ["RNA polymerase II", "SREBP/PPAR/FXR/HNF4A transcription programmes"], "keyTransporters": ["Nuclear pore complexes (NPC)"],
+      "keyEnzymes": [
+        "RNA polymerase II",
+        "SREBP/PPAR/FXR/HNF4A transcription programmes"
+      ],
+      "keyTransporters": [
+        "Nuclear pore complexes (NPC)"
+      ],
       "clinical": "Glycogenated nuclei (diabetes, Wilson disease, MASLD); 'sanded' nuclei from HBcAg in chronic hepatitis B; nuclear pleomorphism and high N:C ratio in dysplasia and hepatocellular carcinoma.",
-      "citations": ["alberts_mbc", "gentric2014"] },
-    { "id": "nucleolus", "name": "Nucleolus", "color": "#4a27a8", "count": 1,
+      "citations": [
+        "alberts_mbc",
+        "gentric2014"
+      ]
+    },
+    {
+      "id": "nucleolus",
+      "name": "Nucleolus",
+      "color": "#4a27a8",
+      "count": 1,
       "callout": "Nucleolus (rRNA transcription, ribosome assembly)",
-      "sizeUm": "≈1–2 µm", "function": "Site of rRNA synthesis and ribosome subunit assembly; large and active in hepatocytes because of their high protein-synthetic output.",
-      "keyEnzymes": ["RNA polymerase I"], "keyTransporters": [],
+      "sizeUm": "≈1–2 µm",
+      "function": "Site of rRNA synthesis and ribosome subunit assembly; large and active in hepatocytes because of their high protein-synthetic output.",
+      "keyEnzymes": [
+        "RNA polymerase I"
+      ],
+      "keyTransporters": [],
       "clinical": "Enlarged, prominent nucleoli are a feature of regenerating liver and of dysplastic or malignant hepatocytes.",
-      "citations": ["alberts_mbc"] },
-    { "id": "rer", "name": "Rough endoplasmic reticulum", "color": "#3b4fb0", "count": 7,
+      "citations": [
+        "alberts_mbc"
+      ]
+    },
+    {
+      "id": "rer",
+      "name": "Rough endoplasmic reticulum",
+      "color": "#3b4fb0",
+      "count": 3,
       "callout": "Rough ER (ribosome-studded; secretory protein synthesis)",
-      "sizeUm": "cisternae ≈ 50–100 nm thick, stacked in basophilic clusters", "volumeFraction": 0.09,
+      "sizeUm": "cisternae ≈ 50–100 nm thick, stacked in basophilic clusters",
+      "volumeFraction": 0.09,
       "function": "Ribosome-studded cisternae synthesise secretory and membrane proteins (albumin, fibrinogen, clotting factors, apolipoproteins) and start N-glycosylation; ApoB100 is lipidated here by MTTP for VLDL assembly.",
-      "keyEnzymes": ["Sec61 translocon", "signal peptidase", "oligosaccharyltransferase", "MTTP", "chaperones (BiP/GRP78, calnexin)"], "keyTransporters": ["Sec61"],
+      "keyEnzymes": [
+        "Sec61 translocon",
+        "signal peptidase",
+        "oligosaccharyltransferase",
+        "MTTP",
+        "chaperones (BiP/GRP78, calnexin)"
+      ],
+      "keyTransporters": [
+        "Sec61"
+      ],
       "clinical": "α1-antitrypsin deficiency (Z-polymers retained in RER); ground-glass hepatocytes from HBsAg accumulation; ER stress/unfolded-protein response in MASLD and alcohol-related liver disease.",
-      "citations": ["alberts_mbc", "blouin1977", "palade1975", "tiwari2012"] },
-    { "id": "ser", "name": "Smooth endoplasmic reticulum", "color": "#3fb4d6", "count": 1,
+      "citations": [
+        "alberts_mbc",
+        "blouin1977",
+        "palade1975",
+        "tiwari2012"
+      ]
+    },
+    {
+      "id": "ser",
+      "name": "Smooth endoplasmic reticulum",
+      "color": "#3fb4d6",
+      "count": 1,
       "callout": "Smooth ER (CYP450, UGT1A1, G6Pase, lipid synthesis)",
-      "sizeUm": "tubular network, ≈ 50–100 nm tubules", "volumeFraction": 0.06,
+      "sizeUm": "tubular network, ≈ 50–100 nm tubules",
+      "volumeFraction": 0.06,
       "function": "Xenobiotic and steroid oxidation (CYP450), glucuronidation (UGT1A1 incl. bilirubin), glucose-6-phosphatase for glucose release, triglyceride and cholesterol synthesis, bile-acid synthesis (CYP7A1), Ca2+ storage.",
-      "keyEnzymes": ["CYP3A4 / 2D6 / 2C9 / 2E1", "UGT1A1", "glucose-6-phosphatase (G6PC1)", "CYP7A1", "DGAT", "HMG-CoA reductase"], "keyTransporters": ["G6PT (SLC37A4)", "SERCA"],
+      "keyEnzymes": [
+        "CYP3A4 / 2D6 / 2C9 / 2E1",
+        "UGT1A1",
+        "glucose-6-phosphatase (G6PC1)",
+        "CYP7A1",
+        "DGAT",
+        "HMG-CoA reductase"
+      ],
+      "keyTransporters": [
+        "G6PT (SLC37A4)",
+        "SERCA"
+      ],
       "clinical": "Enzyme induction (rifampicin, phenobarbital) proliferates SER; Gilbert and Crigler–Najjar syndromes (UGT1A1); GSD Ia (G6PC1).",
-      "citations": ["alberts_mbc", "blouin1977", "erlinger2014", "zanger2013"] },
-    { "id": "golgi", "name": "Golgi apparatus", "color": "#ee7f8c", "count": 3,
+      "citations": [
+        "alberts_mbc",
+        "blouin1977",
+        "erlinger2014",
+        "zanger2013"
+      ]
+    },
+    {
+      "id": "golgi",
+      "name": "Golgi apparatus",
+      "color": "#ee7f8c",
+      "count": 1,
       "callout": "Golgi (glycan maturation, VLDL and protein secretion)",
-      "sizeUm": "stacks of 4–6 cisternae; several per cell, pericanalicular", "volumeFraction": 0.03,
+      "sizeUm": "stacks of 4–6 cisternae; several per cell, pericanalicular",
+      "volumeFraction": 0.03,
       "function": "Processes and sorts secretory proteins and VLDL for exocytosis at the sinusoidal face; supplies apical (canalicular) transporters and lysosomal enzymes. Hepatocyte Golgi stacks cluster near the bile canaliculus.",
-      "keyEnzymes": ["glycosyltransferases", "sialyltransferases", "furin-type convertases"], "keyTransporters": ["nucleotide-sugar transporters"],
+      "keyEnzymes": [
+        "glycosyltransferases",
+        "sialyltransferases",
+        "furin-type convertases"
+      ],
+      "keyTransporters": [
+        "nucleotide-sugar transporters"
+      ],
       "clinical": "Congenital disorders of glycosylation can present with liver disease and coagulopathy; disturbed trafficking of BSEP/MRP2 contributes to some cholestatic syndromes.",
-      "citations": ["alberts_mbc", "treyer2013", "tiwari2012"] },
-    { "id": "mitochondrion", "name": "Mitochondrion", "color": "#e0662e", "count": 110,
+      "citations": [
+        "alberts_mbc",
+        "treyer2013",
+        "tiwari2012"
+      ]
+    },
+    {
+      "id": "mitochondrion",
+      "name": "Mitochondrion",
+      "color": "#e0662e",
+      "count": 5,
       "callout": "Mitochondria (β-oxidation, TCA, OXPHOS, ketogenesis, urea cycle)",
-      "sizeUm": "≈0.5–1 µm wide, 1–3 µm long", "volumeFraction": 0.22, "realCount": "≈1,000–2,000 per hepatocyte (reduced ~10× in the model)",
+      "sizeUm": "≈0.5–1 µm wide, 1–3 µm long",
+      "volumeFraction": 0.22,
+      "realCount": "≈1,000–2,000 per hepatocyte (reduced ~10× in the model)",
       "function": "Fatty-acid β-oxidation, TCA cycle and oxidative phosphorylation; ketogenesis (HMGCS2); pyruvate carboxylase for gluconeogenesis; first two urea-cycle steps (CPS1, OTC); ATP for the cell's very high synthetic and transport workload.",
-      "keyEnzymes": ["CPT2", "acyl-CoA dehydrogenases", "HMGCS2", "pyruvate carboxylase", "CPS1", "OTC", "ATP synthase"], "keyTransporters": ["CACT (SLC25A20)", "ORNT1 (SLC25A15)", "MPC"],
+      "keyEnzymes": [
+        "CPT2",
+        "acyl-CoA dehydrogenases",
+        "HMGCS2",
+        "pyruvate carboxylase",
+        "CPS1",
+        "OTC",
+        "ATP synthase"
+      ],
+      "keyTransporters": [
+        "CACT (SLC25A20)",
+        "ORNT1 (SLC25A15)",
+        "MPC"
+      ],
       "clinical": "Microvesicular steatosis with impaired β-oxidation (valproate, acute fatty liver of pregnancy, Reye); megamitochondria and reduced OXPHOS in alcohol-related and metabolic steatohepatitis; paracetamol toxicity involves mitochondrial injury.",
-      "citations": ["alberts_mbc", "houten2016", "rui2014", "puchalska2017"] },
-    { "id": "peroxisome", "name": "Peroxisome", "color": "#e6b93c", "count": 34,
+      "citations": [
+        "alberts_mbc",
+        "houten2016",
+        "rui2014",
+        "puchalska2017"
+      ]
+    },
+    {
+      "id": "peroxisome",
+      "name": "Peroxisome",
+      "color": "#e6b93c",
+      "count": 34,
       "callout": "Peroxisomes (VLCFA oxidation, bile-acid side-chain shortening)",
-      "sizeUm": "≈0.2–1 µm", "volumeFraction": 0.01, "realCount": "several hundred per hepatocyte",
+      "sizeUm": "≈0.2–1 µm",
+      "volumeFraction": 0.01,
+      "realCount": "several hundred per hepatocyte",
       "function": "Very-long-chain fatty-acid and branched-chain oxidation, plasmalogen synthesis, H2O2 handling (catalase), and the final steps of bile-acid synthesis (side-chain shortening, amino-acid conjugation).",
-      "keyEnzymes": ["ACOX1/2", "catalase", "BAAT", "AMACR"], "keyTransporters": ["ABCD1/3"],
+      "keyEnzymes": [
+        "ACOX1/2",
+        "catalase",
+        "BAAT",
+        "AMACR"
+      ],
+      "keyTransporters": [
+        "ABCD1/3"
+      ],
       "clinical": "Zellweger spectrum disorders: hepatomegaly, cholestasis and fibrosis with VLCFA and bile-acid intermediate accumulation.",
-      "citations": ["alberts_mbc", "wanders2006"] },
-    { "id": "lysosome", "name": "Lysosome", "color": "#c23a86", "count": 26,
+      "citations": [
+        "alberts_mbc",
+        "wanders2006"
+      ]
+    },
+    {
+      "id": "lysosome",
+      "name": "Lysosome",
+      "color": "#c23a86",
+      "count": 26,
       "callout": "Lysosomes (LAL, autophagy; pericanalicular)",
-      "sizeUm": "≈0.2–0.5 µm", "volumeFraction": 0.01,
+      "sizeUm": "≈0.2–0.5 µm",
+      "volumeFraction": 0.01,
       "function": "Degrades endocytosed lipoproteins (lysosomal acid lipase), autophagic cargo and damaged organelles; pericanalicular lysosomes also contribute to biliary secretion of some proteins and copper.",
-      "keyEnzymes": ["lysosomal acid lipase (LIPA)", "cathepsins"], "keyTransporters": ["NPC1 / NPC2", "V-ATPase"],
+      "keyEnzymes": [
+        "lysosomal acid lipase (LIPA)",
+        "cathepsins"
+      ],
+      "keyTransporters": [
+        "NPC1 / NPC2",
+        "V-ATPase"
+      ],
       "clinical": "LAL deficiency (Wolman / CESD); Niemann–Pick C; lipofuscin accumulation with age; copper storage in Wilson disease.",
-      "citations": ["alberts_mbc", "reiner2014"] },
-    { "id": "endosome", "name": "Endosome / coated vesicle", "color": "#f0a6d4", "count": 16,
-      "callout": "Endosomes (LDLR / remnant uptake)",
-      "sizeUm": "≈0.1–0.5 µm", "function": "Sorting compartments for receptor-mediated endocytosis of lipoprotein remnants, LDL and albumin-bound ligands; receptors recycle (LDLR) while cargo passes to lysosomes.",
-      "keyEnzymes": [], "keyTransporters": ["clathrin/AP2", "PCSK9-regulated LDLR recycling"],
-      "clinical": "PCSK9 gain-of-function lowers LDLR recycling; PCSK9 inhibitors raise hepatic LDLR.",
-      "citations": ["luo2020", "alberts_mbc"] },
-    { "id": "glycogen", "name": "Glycogen rosettes", "color": "#f7c9d6", "count": 14,
+      "citations": [
+        "alberts_mbc",
+        "reiner2014"
+      ]
+    },
+    {
+      "id": "glycogen",
+      "name": "Glycogen rosettes",
+      "color": "#f7c9d6",
+      "count": 14,
       "callout": "Glycogen (α-rosettes; shrinks when fasted)",
-      "sizeUm": "α-particles ≈ 100–200 nm rosettes of ≈ 20–30 nm β-particles", "function": "Post-prandial glucose store (up to ≈5–8% of liver wet weight when fed), sited beside smooth ER; broken down by phosphorylase during fasting.",
-      "keyEnzymes": ["glycogen synthase (GYS2)", "glycogenin", "branching enzyme", "phosphorylase (PYGL)", "debranching enzyme"], "keyTransporters": [],
+      "sizeUm": "α-particles ≈ 100–200 nm rosettes of ≈ 20–30 nm β-particles",
+      "function": "Post-prandial glucose store (up to ≈5–8% of liver wet weight when fed), sited beside smooth ER; broken down by phosphorylase during fasting.",
+      "keyEnzymes": [
+        "glycogen synthase (GYS2)",
+        "glycogenin",
+        "branching enzyme",
+        "phosphorylase (PYGL)",
+        "debranching enzyme"
+      ],
+      "keyTransporters": [],
       "clinical": "Glycogen storage diseases I, III, IV, VI, IX: hepatomegaly, hypoglycaemia; glycogenic hepatopathy in poorly controlled type 1 diabetes.",
-      "citations": ["roach2012", "chou2010"] },
-    { "id": "lipid_droplet", "name": "Lipid droplet", "color": "#f6e7a1", "count": 9,
+      "citations": [
+        "roach2012",
+        "chou2010"
+      ]
+    },
+    {
+      "id": "lipid_droplet",
+      "name": "Lipid droplet",
+      "color": "#f6e7a1",
+      "count": 9,
       "callout": "Lipid droplets (triglyceride / cholesteryl ester)",
-      "sizeUm": "0.1 to >5 µm", "function": "Neutral-lipid stores (triglyceride, cholesteryl ester) bounded by a phospholipid monolayer with PLIN2/5 coat; supply substrates for VLDL and β-oxidation.",
-      "keyEnzymes": ["DGAT1/2", "ATGL (PNPLA2)", "PNPLA3", "PLIN2/PLIN5"], "keyTransporters": [],
+      "sizeUm": "0.1 to >5 µm",
+      "function": "Neutral-lipid stores (triglyceride, cholesteryl ester) bounded by a phospholipid monolayer with PLIN2/5 coat; supply substrates for VLDL and β-oxidation.",
+      "keyEnzymes": [
+        "DGAT1/2",
+        "ATGL (PNPLA2)",
+        "PNPLA3",
+        "PLIN2/PLIN5"
+      ],
+      "keyTransporters": [],
       "clinical": "Steatosis: ≥5% of hepatocytes with fat (MASLD). Macrovesicular (single large droplet displacing the nucleus) vs microvesicular. PNPLA3 I148M raises steatosis and fibrosis risk.",
-      "citations": ["walther2012", "easl_masld2024", "alvesbezerra2017"] },
-    { "id": "cytoskeleton", "name": "Cytoskeleton", "color": "#c7d6f5", "count": 1,
-      "callout": "Microtubules, actin cortex, keratin 8/18",
-      "sizeUm": "microtubule 25 nm; actin 7 nm; intermediate filament 10 nm", "function": "Microtubules carry vesicle traffic (VLDL, secretory and apical carriers); the pericanalicular actin belt drives canalicular contraction and bile flow; keratin 8/18 intermediate filaments anchor desmosomes.",
-      "keyEnzymes": ["kinesins / dyneins / myosin II"], "keyTransporters": [],
-      "clinical": "Mallory–Denk bodies (keratin 8/18 aggregates) in steatohepatitis and alcohol-related liver disease; keratin 8/18 variants predispose to liver injury; colchicine-sensitive VLDL secretion.",
-      "citations": ["treyer2013", "alberts_mbc"] },
-    { "id": "plasma_sinusoidal", "name": "Sinusoidal (basolateral) membrane", "color": "#e58aa0", "count": 1,
+      "citations": [
+        "walther2012",
+        "easl_masld2024",
+        "alvesbezerra2017"
+      ]
+    },
+    {
+      "id": "plasma_sinusoidal",
+      "name": "Sinusoidal (basolateral) membrane",
+      "color": "#e58aa0",
+      "count": 1,
       "callout": "Sinusoidal domain (~37% of surface; blood-facing)",
-      "sizeUm": "≈37% of hepatocyte surface", "function": "Blood-facing domain, amplified about sixfold by microvilli. Houses uptake carriers (NTCP, OATP1B1/1B3, GLUT2, CD36) and is the site of secretory exocytosis (albumin, VLDL).",
-      "keyEnzymes": ["Na+/K+-ATPase"], "keyTransporters": ["NTCP", "OATP1B1/1B3", "GLUT2", "CD36", "MRP3/4", "LDLR"],
+      "sizeUm": "≈37% of hepatocyte surface",
+      "function": "Blood-facing domain, amplified about sixfold by microvilli. Houses uptake carriers (NTCP, OATP1B1/1B3, GLUT2, CD36) and is the site of secretory exocytosis (albumin, VLDL).",
+      "keyEnzymes": [
+        "Na+/K+-ATPase"
+      ],
+      "keyTransporters": [
+        "NTCP",
+        "OATP1B1/1B3",
+        "GLUT2",
+        "CD36",
+        "MRP3/4",
+        "LDLR"
+      ],
       "clinical": "NTCP is the receptor for hepatitis B and D virus entry; sinusoidal uptake failure raises conjugated and unconjugated bile-acid and bilirubin levels.",
-      "citations": ["blouin1977", "treyer2013", "stieger2011"] },
-    { "id": "microvilli_sinusoidal", "name": "Sinusoidal microvilli", "color": "#f2a7b8", "count": 210,
+      "citations": [
+        "blouin1977",
+        "treyer2013",
+        "stieger2011"
+      ]
+    },
+    {
+      "id": "microvilli_sinusoidal",
+      "name": "Sinusoidal microvilli",
+      "color": "#f2a7b8",
+      "count": 210,
       "callout": "Microvilli project into the space of Disse",
-      "sizeUm": "≈0.1 µm wide, up to ≈0.5–1 µm long", "function": "Increase the exchange surface toward the plasma-filled space of Disse, allowing rapid uptake from albumin-bound ligands.",
-      "keyEnzymes": [], "keyTransporters": [],
+      "sizeUm": "≈0.1 µm wide, up to ≈0.5–1 µm long",
+      "function": "Increase the exchange surface toward the plasma-filled space of Disse, allowing rapid uptake from albumin-bound ligands.",
+      "keyEnzymes": [],
+      "keyTransporters": [],
       "clinical": "Microvilli are lost or blunted in cholestasis and injury; capillarisation and collagen deposition in the space of Disse impairs exchange in cirrhosis.",
-      "citations": ["blouin1977", "wisse1985"] },
-    { "id": "plasma_canalicular", "name": "Canalicular (apical) membrane", "color": "#4fc9b0", "count": 1,
+      "citations": [
+        "blouin1977",
+        "wisse1985"
+      ]
+    },
+    {
+      "id": "plasma_canalicular",
+      "name": "Canalicular (apical) membrane",
+      "color": "#4fc9b0",
+      "count": 1,
       "callout": "Canalicular domain (~13% of surface; bile-facing)",
-      "sizeUm": "≈13% of surface; canaliculus lumen ≈ 1 µm", "function": "Apical domain forming the bile canaliculus with short microvilli. Houses ATP-dependent efflux pumps (BSEP, MRP2, ABCG5/G8, P-gp, BCRP, ABCB4) that drive bile secretion.",
-      "keyEnzymes": ["ALP", "GGT"], "keyTransporters": ["BSEP (ABCB11)", "MRP2 (ABCC2)", "ABCG5/ABCG8", "P-gp (ABCB1)", "BCRP (ABCG2)", "ABCB4 (MDR3)", "ATP8B1"],
+      "sizeUm": "≈13% of surface; canaliculus lumen ≈ 1 µm",
+      "function": "Apical domain forming the bile canaliculus with short microvilli. Houses ATP-dependent efflux pumps (BSEP, MRP2, ABCG5/G8, P-gp, BCRP, ABCB4) that drive bile secretion.",
+      "keyEnzymes": [
+        "ALP",
+        "GGT"
+      ],
+      "keyTransporters": [
+        "BSEP (ABCB11)",
+        "MRP2 (ABCC2)",
+        "ABCG5/ABCG8",
+        "P-gp (ABCB1)",
+        "BCRP (ABCG2)",
+        "ABCB4 (MDR3)",
+        "ATP8B1"
+      ],
       "clinical": "PFIC1 (ATP8B1), PFIC2 (ABCB11), PFIC3 (ABCB4); Dubin–Johnson (ABCC2); raised ALP/GGT in cholestasis.",
-      "citations": ["boyer2013", "bull2018", "treyer2013"] },
-    { "id": "bile_canaliculus", "name": "Bile canaliculus", "color": "#4fc9b0", "count": 1,
+      "citations": [
+        "boyer2013",
+        "bull2018",
+        "treyer2013"
+      ]
+    },
+    {
+      "id": "bile_canaliculus",
+      "name": "Bile canaliculus",
+      "color": "#4fc9b0",
+      "count": 1,
       "callout": "Bile canaliculus (≈1 µm lumen, sealed by tight junctions)",
-      "sizeUm": "≈0.5–1 µm lumen", "function": "Tiny channel between adjacent hepatocytes that collects primary bile. Bile flows toward the periportal Canal of Hering, i.e. in the opposite direction to blood flow in the sinusoid.",
-      "keyEnzymes": [], "keyTransporters": ["aquaporins for osmotic water flow"],
+      "sizeUm": "≈0.5–1 µm lumen",
+      "function": "Tiny channel between adjacent hepatocytes that collects primary bile. Bile flows toward the periportal Canal of Hering, i.e. in the opposite direction to blood flow in the sinusoid.",
+      "keyEnzymes": [],
+      "keyTransporters": [
+        "aquaporins for osmotic water flow"
+      ],
       "clinical": "Canalicular cholestasis: dilated canaliculi with bile plugs on histology; bile-duct obstruction raises intracanalicular pressure and disrupts tight junctions.",
-      "citations": ["boyer2013", "treyer2013"] },
-    { "id": "plasma_lateral", "name": "Lateral membrane", "color": "#b58ad6", "count": 1,
+      "citations": [
+        "boyer2013",
+        "treyer2013"
+      ]
+    },
+    {
+      "id": "plasma_lateral",
+      "name": "Lateral membrane",
+      "color": "#b58ad6",
+      "count": 1,
       "callout": "Lateral domain (~50% of surface; neighbour contact)",
-      "sizeUm": "≈50% of surface", "function": "Contact faces with neighbouring hepatocytes, carrying desmosomes and gap junctions and bounded apically by the tight junctions that seal the canaliculus.",
-      "keyEnzymes": [], "keyTransporters": ["connexin 32/26 gap-junction channels"],
+      "sizeUm": "≈50% of surface",
+      "function": "Contact faces with neighbouring hepatocytes, carrying desmosomes and gap junctions and bounded apically by the tight junctions that seal the canaliculus.",
+      "keyEnzymes": [],
+      "keyTransporters": [
+        "connexin 32/26 gap-junction channels"
+      ],
       "clinical": "Loss of lateral integrity in interface hepatitis and cholestasis.",
-      "citations": ["blouin1977", "treyer2013"] },
-    { "id": "tight_junction", "name": "Tight junction", "color": "#ffe7a3", "count": 1,
+      "citations": [
+        "blouin1977",
+        "treyer2013"
+      ]
+    },
+    {
+      "id": "tight_junction",
+      "name": "Tight junction",
+      "color": "#ffe7a3",
+      "count": 1,
       "callout": "Tight junctions (seal the canaliculus)",
-      "sizeUm": "belt-like strands flanking the canaliculus", "function": "Claudin/occludin/ZO-1 strands seal the canaliculus from the sinusoid and space of Disse and define the polarity border between apical and basolateral domains.",
-      "keyEnzymes": [], "keyTransporters": ["claudins", "occludin", "ZO-1 (TJP1)", "ZO-2 (TJP2)"],
+      "sizeUm": "belt-like strands flanking the canaliculus",
+      "function": "Claudin/occludin/ZO-1 strands seal the canaliculus from the sinusoid and space of Disse and define the polarity border between apical and basolateral domains.",
+      "keyEnzymes": [],
+      "keyTransporters": [
+        "claudins",
+        "occludin",
+        "ZO-1 (TJP1)",
+        "ZO-2 (TJP2)"
+      ],
       "clinical": "TJP2 deficiency (PFIC4) and claudin-1 defects (neonatal ichthyosis-sclerosing cholangitis) give cholestasis; leaky junctions allow bile regurgitation.",
-      "citations": ["treyer2013", "boyer2013"] },
-    { "id": "gap_junction", "name": "Gap junction", "color": "#7fd6ff", "count": 14,
-      "callout": "Gap junctions (connexin 32/26)",
-      "sizeUm": "plaques ≈0.1–0.5 µm", "function": "Connexin hemichannel pairs couple neighbouring hepatocytes electrically and metabolically, coordinating Ca2+ waves and bile secretion across the plate.",
-      "keyEnzymes": [], "keyTransporters": ["connexin 32 (GJB1)", "connexin 26 (GJB2)"],
-      "clinical": "Connexin expression is reported to fall in cholestasis and hepatocellular carcinoma (illustrative; see sources).",
-      "citations": ["treyer2013"] },
-    { "id": "desmosome", "name": "Desmosome", "color": "#ff9a6b", "count": 12,
-      "callout": "Desmosomes (keratin 8/18 anchorage)",
-      "sizeUm": "≈0.2–0.5 µm discs", "function": "Spot adhesions anchoring keratin 8/18 filaments of adjacent hepatocytes, resisting mechanical stress in the liver plate.",
-      "keyEnzymes": [], "keyTransporters": ["desmoglein 2", "desmocollin 2", "desmoplakin"],
-      "clinical": "Keratin 8/18 variants predispose to acute liver failure and progressive fibrosis; Mallory–Denk bodies.",
-      "citations": ["treyer2013"] },
-    { "id": "space_of_disse", "name": "Space of Disse", "color": "#e6d8ff", "count": 1,
+      "citations": [
+        "treyer2013",
+        "boyer2013"
+      ]
+    },
+    {
+      "id": "space_of_disse",
+      "name": "Space of Disse",
+      "color": "#e6d8ff",
+      "count": 1,
       "callout": "Space of Disse (perisinusoidal space)",
-      "sizeUm": "≈0.2–0.5 µm", "function": "Plasma-filled gap between LSEC and hepatocyte; no basement membrane, so albumin-bound ligands reach the microvilli directly. Hepatic stellate cells reside here.",
-      "keyEnzymes": [], "keyTransporters": [],
+      "sizeUm": "≈0.2–0.5 µm",
+      "function": "Plasma-filled gap between LSEC and hepatocyte; no basement membrane, so albumin-bound ligands reach the microvilli directly. Hepatic stellate cells reside here.",
+      "keyEnzymes": [],
+      "keyTransporters": [],
       "clinical": "Collagen deposition and loss of LSEC fenestrae (capillarisation) in fibrosis and cirrhosis; stellate-cell activation drives fibrosis.",
-      "citations": ["wisse1985"] },
-    { "id": "lsec", "name": "Sinusoidal endothelium (LSEC)", "color": "#7ea2ff", "count": 1,
+      "citations": [
+        "wisse1985"
+      ]
+    },
+    {
+      "id": "lsec",
+      "name": "Sinusoidal endothelium (LSEC)",
+      "color": "#7ea2ff",
+      "count": 1,
       "callout": "LSEC with fenestrae (sieve plates)",
-      "sizeUm": "fenestrae ≈ 100–200 nm, grouped in sieve plates", "function": "Fenestrated endothelium without a diaphragm or basement membrane filters chylomicron remnants, VLDL and plasma proteins in both directions; also scavenges waste macromolecules.",
-      "keyEnzymes": ["eNOS"], "keyTransporters": ["fenestrae"],
+      "sizeUm": "fenestrae ≈ 100–200 nm, grouped in sieve plates",
+      "function": "Fenestrated endothelium without a diaphragm or basement membrane filters chylomicron remnants, VLDL and plasma proteins in both directions; also scavenges waste macromolecules.",
+      "keyEnzymes": [
+        "eNOS"
+      ],
+      "keyTransporters": [
+        "fenestrae"
+      ],
       "clinical": "Capillarisation (fenestrae lost) in cirrhosis; LSEC injury in sinusoidal obstruction syndrome.",
-      "citations": ["wisse1985"] },
-    { "id": "sinusoid", "name": "Sinusoid lumen", "color": "#c4353f", "count": 1,
+      "citations": [
+        "wisse1985"
+      ]
+    },
+    {
+      "id": "sinusoid",
+      "name": "Sinusoid lumen",
+      "color": "#c4353f",
+      "count": 1,
       "callout": "Sinusoid (mixed portal/arterial blood)",
-      "sizeUm": "≈7–15 µm calibre", "function": "Low-pressure capillary carrying mixed portal-venous and hepatic-arterial blood past the hepatocyte plate, from portal tract to central vein.",
-      "keyEnzymes": [], "keyTransporters": [],
+      "sizeUm": "≈7–15 µm calibre",
+      "function": "Low-pressure capillary carrying mixed portal-venous and hepatic-arterial blood past the hepatocyte plate, from portal tract to central vein.",
+      "keyEnzymes": [],
+      "keyTransporters": [],
       "clinical": "Portal hypertension and sinusoidal resistance in cirrhosis; Budd–Chiari syndrome.",
-      "citations": ["wisse1985"] }
+      "citations": [
+        "wisse1985"
+      ]
+    }
   ]
 }

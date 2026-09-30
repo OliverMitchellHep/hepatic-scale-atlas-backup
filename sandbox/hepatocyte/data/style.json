@@ -16,26 +16,26 @@
     "fontHand": "'Caveat', 'Segoe Script', 'Bradley Hand', cursive"
   },
   "palette": {
-    "cytosol": "#3f5bb8",
+    "cytosol": "#4a63c9",
     "sinusoidal": "#e58aa0",
     "microvilliSin": "#f2a7b8",
     "canalicular": "#4fc9b0",
-    "lateral": "#b58ad6",
+    "lateral": "#a06fd8",
     "tightJunction": "#ffe7a3",
     "gapJunction": "#7fd6ff",
     "desmosome": "#ff9a6b",
-    "nucleus": "#8a55d6",
+    "nucleus": "#8f58e0",
     "chromatin": "#a57bf0",
-    "nucleusCap": "#b48cff",
+    "nucleusCap": "#b892ff",
     "nucleolus": "#4a27a8",
-    "rer": "#3b4fb0",
+    "rer": "#4d5fd2",
     "ribosome": "#f4e7b0",
-    "ser": "#3fb4d6",
-    "golgi": "#ee7f8c",
+    "ser": "#3fc0e0",
+    "golgi": "#f08795",
     "golgiVesicle": "#ffb0a0",
-    "mitoOuter": "#e0662e",
-    "mitoMatrix": "#b8321f",
-    "mitoCristae": "#f0b04a",
+    "mitoOuter": "#e07a34",
+    "mitoMatrix": "#a82c1c",
+    "mitoCristae": "#f2b24c",
     "peroxisome": "#e6b93c",
     "peroxisomeCore": "#5a3b12",
     "lysosome": "#c23a86",
@@ -43,26 +43,88 @@
     "lipidDroplet": "#f6e7a1",
     "glycogen": "#f7c9d6",
     "cytoskeleton": "#c7d6f5",
-    "lsec": "#7ea2ff",
-    "rbc": "#c4353f"
+    "lsec": "#8fa4f0",
+    "rbc": "#d63a45",
+    "filament": "#c9d6f5"
   },
   "lights": {
-    "hemiSky": "#b9c8ff", "hemiGround": "#2a1b3a", "hemi": 0.55,
-    "key": "#fff1dc", "keyI": 2.6,
-    "fill": "#8fb2ff", "fillI": 0.9,
-    "rim": "#ffd0f0", "rimI": 1.2,
-    "env": 0.35, "exposure": 0.92
+    "hemiSky": "#b9c8ff",
+    "hemiGround": "#2a1b3a",
+    "hemi": 0.7,
+    "key": "#fff1dc",
+    "keyI": 2.4,
+    "fill": "#8fb2ff",
+    "fillI": 0.9,
+    "rim": "#ffd0f0",
+    "rimI": 1.0,
+    "env": 0.4,
+    "exposure": 1.0
   },
-  "membrane": { "opacityFront": 0.10, "opacityBack": 0.20, "rim": 0.45, "haze": 0.07 },
-  "material": { "roughness": 0.5, "bump": 1.0, "sss": 0.6 },
-  "glow": { "bloomStrength": 0.42, "bloomRadius": 0.5, "bloomThreshold": 1.0, "particleGlow": 1.0, "gateGlow": 1.0 },
-  "flow": { "speed": 1.0, "size": 1.0, "density": 0.85, "jitter": 1.0, "opacity": 1.0 },
-  "cut": { "enabled": true },
-  "camera": { "fov": 35, "azimuthDeg": -24, "elevationDeg": 32, "distance": 24.5, "minDistance": 4, "maxDistance": 38, "damping": 0.08, "autoRotateSpeed": 0.6 },
-  "fog": { "density": 0.012 },
+  "membrane": {
+    "opacityFront": 1,
+    "opacityBack": 1,
+    "rim": 0.4,
+    "haze": 0
+  },
+  "material": {
+    "roughness": 0.5,
+    "bump": 1.0,
+    "sss": 0.6
+  },
+  "glow": {
+    "bloomStrength": 0.22,
+    "bloomRadius": 0.5,
+    "bloomThreshold": 1.0,
+    "particleGlow": 1.0,
+    "gateGlow": 1.0
+  },
+  "flow": {
+    "speed": 1.0,
+    "size": 1.0,
+    "density": 1.0,
+    "jitter": 1.0,
+    "opacity": 1.0
+  },
+  "cut": {
+    "enabled": true
+  },
+  "camera": {
+    "fov": 35,
+    "azimuthDeg": -34,
+    "elevationDeg": 40,
+    "distance": 21.5,
+    "minDistance": 4,
+    "maxDistance": 38,
+    "damping": 0.08,
+    "autoRotateSpeed": 0.6
+  },
+  "fog": {
+    "density": 0.0
+  },
   "quality": {
-    "high":   { "dprMax": 2,   "msaa": 4, "bloom": true,  "particleScale": 1.0,  "cellDetail": 56, "mitoCount": 1.0 },
-    "medium": { "dprMax": 1.5, "msaa": 2, "bloom": true,  "particleScale": 0.6,  "cellDetail": 48, "mitoCount": 0.8 },
-    "low":    { "dprMax": 1.25, "msaa": 0, "bloom": false, "particleScale": 0.25, "cellDetail": 32, "mitoCount": 0.5 }
+    "high": {
+      "dprMax": 2,
+      "msaa": 4,
+      "bloom": true,
+      "particleScale": 1.0,
+      "cellDetail": 56,
+      "mitoCount": 1.0
+    },
+    "medium": {
+      "dprMax": 1.5,
+      "msaa": 2,
+      "bloom": true,
+      "particleScale": 0.6,
+      "cellDetail": 48,
+      "mitoCount": 0.8
+    },
+    "low": {
+      "dprMax": 1.25,
+      "msaa": 0,
+      "bloom": false,
+      "particleScale": 0.25,
+      "cellDetail": 32,
+      "mitoCount": 0.5
+    }
   }
 }
