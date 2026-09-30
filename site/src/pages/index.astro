@@ -133,6 +133,7 @@ const scales = [['Organ', 0], ['Lobule', 1], ['Acinus', 2], ['Sinusoid', 3], ['H
     }, { rootMargin: '200px' });
     const go = () => io.observe(card);
     document.addEventListener('visibilitychange', sync);
+    card.addEventListener('click', () => post('pause'));   // free the main thread for the navigation into the full atlas
     if (document.readyState === 'complete') go(); else addEventListener('load', go, { once: true });
   })();
   </script>
