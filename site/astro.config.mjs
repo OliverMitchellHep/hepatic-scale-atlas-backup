@@ -13,7 +13,7 @@ export default defineConfig({
       customCss: ['./src/styles/custom.css'],
       social: [],
       sidebar: [
-        { label: 'Start here', items: [{ label: 'Overview', slug: 'index' }, { label: 'Open the atlas', link: '/atlas/', attrs: { target: '_blank' } }] },
+        { label: 'Start here', items: [{ label: 'Overview', slug: 'overview' }, { label: 'Open the atlas', link: '/atlas/', attrs: { target: '_blank' } }] },
         { label: 'Anatomy', autogenerate: { directory: 'anatomy' } },
         { label: 'Physiology', autogenerate: { directory: 'physiology' } },
         { label: 'Histology', autogenerate: { directory: 'histology' } },
