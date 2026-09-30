@@ -1,0 +1,68 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Rex Hepatis — Plate comp</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,400&family=IBM+Plex+Sans:wght@400;500&family=IBM+Plex+Mono:wght@400&display=swap" rel="stylesheet">
+<style>
+:root{--paper:#F4EFE4;--paper-2:#EAE3D3;--ink:#1B2230;--ink-2:#454E5E;--rule:#C9C0AC;--sel:#B0361F}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{background:var(--paper);color:var(--ink);font-family:"IBM Plex Sans",system-ui,sans-serif;overflow:hidden}
+::selection{background:#E9C9BF;color:var(--ink)}
+.page{position:relative;width:100vw;height:100vh;min-height:640px}
+.mark{position:absolute;left:64px;top:44px;font:600 22px "Newsreader",Georgia,serif;letter-spacing:.01em}
+.nav{position:absolute;right:64px;top:48px;font-size:14px;color:var(--ink-2);display:flex;gap:32px}
+.nav a{color:inherit;text-decoration:underline;text-decoration-color:var(--rule);text-underline-offset:5px}
+.copy{position:absolute;left:64px;top:220px;width:470px}
+h1{font:400 76px/1.02 "Newsreader",Georgia,serif;letter-spacing:-.025em;margin:0 0 28px;text-wrap:balance;font-variation-settings:"opsz" 72}
+h1 em{font-style:italic}
+.copy p{font-size:18px;line-height:1.55;color:var(--ink-2);margin:0 0 36px;max-width:44ch}
+.go{display:inline-block;background:var(--ink);color:var(--paper);font-weight:500;font-size:16px;padding:15px 26px;border-radius:2px;text-decoration:none}
+.note{position:absolute;left:64px;bottom:44px;font-size:12.5px;color:var(--ink-2);max-width:340px;line-height:1.5}
+.plate{position:absolute;left:600px;top:150px;width:700px;height:506px}
+.plate img{width:100%;height:100%;display:block;filter:drop-shadow(0 26px 22px rgba(60,40,20,.28)) drop-shadow(0 4px 5px rgba(60,40,20,.25))}
+svg.lead{position:absolute;left:0;top:0;width:100vw;height:100vh;pointer-events:none}
+svg.lead line,svg.lead polyline{stroke:var(--ink);stroke-width:1;fill:none}
+svg.lead .sel{stroke:var(--sel)}
+svg.lead circle{fill:var(--paper);stroke:var(--ink);stroke-width:1.2}
+svg.lead circle.sel{stroke:var(--sel);fill:var(--sel)}
+.lab{position:absolute;width:210px}
+.lab b{display:block;font:italic 400 22px/1.15 "Newsreader",Georgia,serif}
+.lab span{display:block;font-size:13px;color:var(--ink-2);margin-top:3px;line-height:1.4}
+.lab.sel b{color:var(--sel)}
+.scale{position:absolute;left:600px;right:64px;bottom:86px}
+.scale .track{position:relative;height:1px;background:var(--ink)}
+.scale .stop{position:absolute;top:-5px;transform:translateX(-50%);text-align:center;width:120px}
+.scale .stop i{display:block;width:1px;height:11px;background:var(--ink);margin:0 auto 10px}
+.scale .stop b{display:block;font:italic 400 17px "Newsreader",serif}
+.scale .stop small{display:block;font:400 12px "IBM Plex Mono",monospace;color:var(--ink-2);margin-top:2px;font-variant-numeric:tabular-nums}
+.scale .stop.on i{background:var(--sel);width:2px;height:15px}
+.scale .stop.on b{color:var(--sel)}
+.scale .hint{position:absolute;right:0;top:-34px;font-size:12.5px;color:var(--ink-2)}
+</style></head><body><div class="page">
+<div class="mark">Rex Hepatis</div>
+<nav class="nav"><a href="#">How to use it</a><a href="#">Guideline sources</a></nav>
+<div class="copy"><h1>The liver, from <em>organ</em> to hepatocyte.</h1>
+<p>An interactive 3D teaching model of the liver and hepatobiliary system, built for hepatology trainees and consultants.</p>
+<a class="go" href="#">Open the atlas</a></div>
+<div class="plate"><img src="liver-plate.png" alt="Anterior view of the liver"></div>
+<svg class="lead" viewBox="0 0 1440 900" preserveAspectRatio="none">
+ <!-- right lobe -->
+ <polyline points="790,340 700,340 700,214 604,214"/><circle cx="790" cy="340" r="4"/>
+ <!-- falciform -->
+ <polyline points="985,400 985,246 1132,246"/><circle cx="985" cy="400" r="4" class="sel"/><line class="sel" x1="985" y1="400" x2="985" y2="246"/><line class="sel" x1="985" y1="246" x2="1132" y2="246"/>
+ <!-- left lobe -->
+ <polyline points="1150,470 1240,470 1240,566 1262,566"/><circle cx="1150" cy="470" r="4"/>
+</svg>
+<div class="lab" style="left:392px;top:186px;text-align:right;width:200px;display:none"></div>
+<div class="lab" style="left:1142px;top:214px;width:200px"><b style="color:var(--sel)">Falciform ligament</b><span>Attaches the liver to the anterior abdominal wall.</span></div>
+<div class="lab" style="left:1252px;top:574px;width:150px;display:none"></div>
+<div class="lab" style="left:1272px;top:552px;width:150px"><b>Left lobe</b><span>Segments II–IV.</span></div>
+<div class="lab" style="left:476px;top:196px;width:120px;text-align:right"><b>Right lobe</b><span>Segments V–VIII.</span></div>
+<div class="scale"><div class="hint">Drag along the scale to descend</div><div class="track">
+ <div class="stop on" style="left:6%"><i></i><b>Organ</b><small>≈ 15 cm</small></div>
+ <div class="stop" style="left:32%"><i></i><b>Segment</b><small>≈ 5 cm</small></div>
+ <div class="stop" style="left:58%"><i></i><b>Lobule</b><small>≈ 1 mm</small></div>
+ <div class="stop" style="left:94%"><i></i><b>Hepatocyte</b><small>≈ 25 µm</small></div>
+</div></div>
+<div class="note">Illustrative teaching model. Not for clinical decisions.</div>
+</div></body></html>
