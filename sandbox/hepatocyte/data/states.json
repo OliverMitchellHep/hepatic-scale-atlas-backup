@@ -1,0 +1,13 @@
+{
+  "note": "Metabolic state slider. s = 0 fed (postprandial, portal glucose/insulin high), s = 1 fasted (glucagon high). Flux weights per pathway variant are linear between the fed and fasted values given in pathways.json.",
+  "stops": [
+    { "s": 0.0, "label": "Fed", "insulin": 1.0, "glucagon": 0.1,
+      "text": "Postprandial: high portal glucose and insulin. Glucokinase, glycogen synthase and de novo lipogenesis are active; malonyl-CoA inhibits CPT1 so beta-oxidation is low; VLDL secretion and bile-acid uptake (post-meal enterohepatic return) are high." },
+    { "s": 0.5, "label": "Post-absorptive", "insulin": 0.4, "glucagon": 0.5,
+      "text": "Hormones cross over. Glycogen is broken down to hold plasma glucose; gluconeogenesis begins; fatty-acid oxidation rises as adipose lipolysis delivers free fatty acids." },
+    { "s": 1.0, "label": "Fasted", "insulin": 0.1, "glucagon": 1.0,
+      "text": "Prolonged fast: glucagon high, insulin low. Gluconeogenesis dominates glucose output, mitochondrial beta-oxidation is maximal and ketogenesis is on; glycogen stores are depleted (rosettes shrink)." }
+  ],
+  "glycogen": { "fed": 1.0, "fasted": 0.25 },
+  "lipidDroplet": { "fed": 0.9, "fasted": 1.15 }
+}

@@ -1,0 +1,43 @@
+{
+  "note": "Flow-particle classes. Colour is by family + shape so families stay distinguishable without hue alone. shape: 0 circle, 1 diamond, 2 ring, 3 hexagon, 4 triangle.",
+  "families": [
+    { "id": "carbohydrate", "label": "Glucose & phosphosugars" },
+    { "id": "carbon", "label": "Pyruvate, lactate, acetyl-CoA, ketones" },
+    { "id": "energy", "label": "ATP" },
+    { "id": "lipid", "label": "Fatty acids, acyl-CoA, triglyceride" },
+    { "id": "lipoprotein", "label": "Lipoproteins (VLDL, remnants)" },
+    { "id": "amino", "label": "Amino acids" },
+    { "id": "protein", "label": "Secreted proteins" },
+    { "id": "nitrogen", "label": "Ammonia, urea-cycle N, urea" },
+    { "id": "bilirubin", "label": "Bilirubin" },
+    { "id": "bileacid", "label": "Bile acids" },
+    { "id": "sterol", "label": "Cholesterol" },
+    { "id": "xeno", "label": "Xenobiotics" }
+  ],
+  "classes": [
+    { "id": "glucose",           "family": "carbohydrate", "label": "Glucose",                                   "color": "#ffe14d", "shape": 0, "size": 1.0 },
+    { "id": "glucose_phosphate", "family": "carbohydrate", "label": "G6P / G1P / UDP-glucose",                   "color": "#f2b01e", "shape": 0, "size": 0.9 },
+    { "id": "pyruvate_lactate",  "family": "carbon",       "label": "Pyruvate / lactate / alanine",              "color": "#ffb38a", "shape": 1, "size": 0.95 },
+    { "id": "acetyl_coa",        "family": "carbon",       "label": "Acetyl-CoA",                                "color": "#ff8f66", "shape": 1, "size": 1.0 },
+    { "id": "ketone",            "family": "carbon",       "label": "Ketone bodies (acetoacetate, 3-hydroxybutyrate)", "color": "#ffd6a8", "shape": 4, "size": 1.0 },
+    { "id": "atp",               "family": "energy",       "label": "ATP",                                       "color": "#fff3c4", "shape": 3, "size": 0.8 },
+    { "id": "fatty_acid",        "family": "lipid",        "label": "Free fatty acid",                           "color": "#c6ef52", "shape": 0, "size": 1.0 },
+    { "id": "acyl_coa",          "family": "lipid",        "label": "Acyl-CoA / acylcarnitine",                  "color": "#9fd033", "shape": 1, "size": 1.0 },
+    { "id": "triglyceride",      "family": "lipid",        "label": "Triglyceride",                              "color": "#e6f27a", "shape": 3, "size": 1.1 },
+    { "id": "vldl",              "family": "lipoprotein",  "label": "VLDL (ApoB100)",                            "color": "#fff3b0", "shape": 2, "size": 1.9 },
+    { "id": "remnant",           "family": "lipoprotein",  "label": "Chylomicron remnant / LDL",                 "color": "#ffd9a0", "shape": 2, "size": 1.7 },
+    { "id": "amino_acid",        "family": "amino",        "label": "Amino acid",                                "color": "#46e08a", "shape": 0, "size": 1.0 },
+    { "id": "protein",           "family": "protein",      "label": "Albumin / clotting factors",                "color": "#38c8f0", "shape": 2, "size": 1.6 },
+    { "id": "ammonia",           "family": "nitrogen",     "label": "Ammonia (NH3 / NH4+)",                      "color": "#ff5cc8", "shape": 0, "size": 0.9 },
+    { "id": "nitrogen_intermediate", "family": "nitrogen", "label": "Carbamoyl-P, citrulline, argininosuccinate, arginine, ornithine", "color": "#d06bff", "shape": 1, "size": 1.0 },
+    { "id": "urea",              "family": "nitrogen",     "label": "Urea",                                      "color": "#f1ecff", "shape": 4, "size": 1.0 },
+    { "id": "bilirubin_uc",      "family": "bilirubin",    "label": "Unconjugated bilirubin",                    "color": "#ff8c1a", "shape": 3, "size": 1.1 },
+    { "id": "bilirubin_conj",    "family": "bilirubin",    "label": "Conjugated bilirubin (glucuronides)",       "color": "#ff4d2e", "shape": 3, "size": 1.2 },
+    { "id": "bile_acid",         "family": "bileacid",     "label": "Bile acid (unconjugated / newly synthesised)", "color": "#4f8bff", "shape": 0, "size": 1.0 },
+    { "id": "bile_acid_conj",    "family": "bileacid",     "label": "Conjugated bile acid (glyco-/tauro-)",      "color": "#86b0ff", "shape": 1, "size": 1.05 },
+    { "id": "cholesterol",       "family": "sterol",       "label": "Cholesterol / cholesteryl ester",           "color": "#ff6b6b", "shape": 0, "size": 1.1 },
+    { "id": "xenobiotic",        "family": "xeno",         "label": "Parent drug / xenobiotic",                  "color": "#c9b6ff", "shape": 0, "size": 1.0 },
+    { "id": "xeno_phase1",       "family": "xeno",         "label": "Phase I metabolite",                        "color": "#a98bff", "shape": 1, "size": 1.0 },
+    { "id": "xeno_conjugate",    "family": "xeno",         "label": "Phase II conjugate",                        "color": "#e6dcff", "shape": 3, "size": 1.1 }
+  ]
+}
