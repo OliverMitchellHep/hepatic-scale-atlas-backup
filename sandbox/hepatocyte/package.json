@@ -8,13 +8,16 @@
     "dev:hepatocyte": "vite --host",
     "build:hepatocyte": "vite build",
     "preview:hepatocyte": "vite preview",
-    "shots": "node tools/shots.mjs"
+    "shots": "node tools/shots.mjs",
+    "docs": "node tools/gen-docs.mjs",
+    "check": "node tools/check.mjs"
   },
   "dependencies": {
-    "three": "0.160.0",
-    "lil-gui": "0.19.2"
+    "lil-gui": "0.19.2",
+    "three": "0.160.0"
   },
   "devDependencies": {
+    "playwright-core": "1.56",
     "vite": "^5.4.0"
   }
 }
