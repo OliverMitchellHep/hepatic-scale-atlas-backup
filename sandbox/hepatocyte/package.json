@@ -1,0 +1,20 @@
+{
+  "name": "hepatocyte-lab",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Standalone animated 3D hepatocyte for Rex Hepatis (developed in isolation from the atlas)",
+  "scripts": {
+    "dev:hepatocyte": "vite --host",
+    "build:hepatocyte": "vite build",
+    "preview:hepatocyte": "vite preview",
+    "shots": "node tools/shots.mjs"
+  },
+  "dependencies": {
+    "three": "0.160.0",
+    "lil-gui": "0.19.2"
+  },
+  "devDependencies": {
+    "vite": "^5.4.0"
+  }
+}
