@@ -47,7 +47,7 @@ fast-simplification and trimesh; `spine44.py` needs numpy only.
 - Every organ set is 4K desktop / 2K phone WebP (`<organ>44_{albedo,normal,orm}_{4k,2k}.webp`), chosen at load.
 
 ## Geometry (CT → meshes)
-The organ, context and diaphragm meshes come from the s1267 CT case (TotalSegmentator masks), through the scripts recorded in the project docs `hepatic-scale-atlas-v39/v40-pipeline-scripts.md`. The CT source data are held privately in the "Atlas Source s1267" artifact and are deliberately **not** in this repository until the dataset licence for public redistribution is confirmed.
+The organ, context and diaphragm meshes come from the s1267 CT case (TotalSegmentator masks), through the scripts recorded in the project docs `hepatic-scale-atlas-v39/v40-pipeline-scripts.md`. The CT source data are held privately in the "Atlas Source s1267" artifact and are deliberately **not** in this repository. The dataset is CC BY 4.0 (TotalSegmentator, Wasserthal et al., Radiology AI 2023), so the derived meshes may be published with attribution; the credit is on the site's About page.
 
 ## Fidelity rule for new meshes
 Every new or re-exported mesh states its simplification error limit (default 0.1 % of its bounding-box diagonal for desktop) and gets a side-by-side screenshot, original vs simplified, before it replaces the old one.

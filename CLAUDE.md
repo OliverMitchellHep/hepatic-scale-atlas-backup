@@ -31,7 +31,7 @@ validate.py        build + all checks; writes tests/out/report.md
 ## Rules
 - Registry ids are permanent (teaching pages and deep links use them). Rename the `name`, never the `id`; to retire an entry, keep the id with `"retired": true`.
 - Model frame: +x patient left, +y superior, +z anterior; 1 unit ≈ 7 cm. New CT-anchored points are CT-frame `V3()` literals.
-- CT source data (s1267 masks) stay out of this repository until the dataset licence for public release is confirmed; keep the repo private until then.
+- CT source data (s1267 masks) stay out of this repository; only derived meshes and textures are committed. The dataset (TotalSegmentator, Wasserthal et al. 2023) is CC BY 4.0, so public release is allowed with attribution (site About page > Credits).
 - The artifact host refuses `.ktx2`; textures are WebP/PNG.
 - Desktop is the primary target; phones must still work (`body.mob` layout).
 - Oli reviews each version himself. Fix clear, obvious errors without asking; spend effort on construction, not long review rounds.

@@ -33,4 +33,4 @@ Add a `.md`/`.mdx` file under `src/content/docs/<section>/`; it appears in the s
 
 ## Deploy
 `.github/workflows/deploy-site.yml` (manual trigger) publishes to GitHub Pages. Private repos need a paid plan for Pages; Cloudflare Pages/Netlify work with build command `cd site && npm ci && npm run build`, output `site/dist`.
-The atlas contains no CT source masks; `CLAUDE.md` says keep the repo private until the dataset licence for public release is confirmed. The built site does include the derived atlas meshes.
+The atlas contains no CT source masks. The built site includes the derived atlas meshes, which come from a CC BY 4.0 dataset (TotalSegmentator); the required credit is on the About page, so keep it there.
