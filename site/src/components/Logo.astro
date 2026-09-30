@@ -1,0 +1,24 @@
+---
+/**
+ * The Rex Hepatis logo: the Newsreader 700 wordmark with the gold crown seated upright on the R. The one logo
+ * component: the title page, the docs header (Header.astro) and the atlas page (pages/atlas/index.astro) all
+ * render it, and it always links to the home page.
+ *
+ * Crown placement, from Newsreader 700 (opsz 48) glyph metrics at line-height 1: the R's cap top sits 0.04em below the
+ * line box; its top edge is flat from 0.03em to 0.45em and within 0.006em of the cap line at 0.50em, where the bowl
+ * turns down. The crown's base corners (x 5.7 and 54.3, y 37 of its 60 × 40 viewBox) are put at 0.03em and 0.50em on
+ * that cap line (crown 0.58em wide), so both touch the R's upper edge and nothing of the crown overlaps the letter.
+ * The crown is drawn after the text (on top). padding-top makes room for it inside the link box.
+ *
+ * size: font size of the wordmark (any CSS length); the crown scales with it.
+ */
+import Crown from './Crown.astro';
+interface Props { size?: string; class?: string }
+const { size, class: cls } = Astro.props;
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+---
+<a class:list={['rh-logo', cls]} href={`${base}/`} style={size ? `--rh-logo-size:${size}` : undefined} aria-label="Rex Hepatis, home">Rex Hepatis<Crown /></a>
+<style is:inline>
+.rh-logo{position:relative;display:inline-block;padding-top:.325em;font:700 var(--rh-logo-size,50px)/1 "Newsreader",Georgia,serif;font-variation-settings:"opsz" 48;letter-spacing:-.005em;color:inherit;text-decoration:none;white-space:nowrap}
+.rh-logo .crown{position:absolute;z-index:1;left:-.0251em;top:.0072em;width:.5802em;height:.3868em;pointer-events:none;filter:drop-shadow(0 .02em .02em rgba(14,26,46,.25))}
+</style>

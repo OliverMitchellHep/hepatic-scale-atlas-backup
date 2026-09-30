@@ -23,7 +23,9 @@
   --sl-font: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
   --sl-font-mono: "IBM Plex Mono", ui-monospace, monospace;
   --sl-text-h1: clamp(2.25rem, 4vw, 3rem);
+  --sl-nav-height: 4.5rem;             /* room for the crowned logo */
 }
+@media (min-width: 50rem) { :root { --sl-nav-height: 5.5rem; } }
 ::selection { background: #CFE0F5; color: #0E1A2E; }
 
 /* Serif headings and wordmark, as on the title page */

@@ -1,5 +1,9 @@
 # Changelog
 
+## v52 — website: crowned logo, larger nav, live atlas preview on the home page (30 Sept 2026)
+- **Atlas preview mode.** `#preview` in the URL (read by boot.js) shows the stage only: no header, dock, strip, labels, intro or coach marks; no pointer input; slow auto-rotate; pixel ratio capped at 1.25; phone layout never engages. Once built it sets the view through the layer system (vessels and biliary on, liver and the other viscera ghosted, context off, blood flow on), frames the organs closer, and talks to the embedding page by postMessage (`ready` out; `pause` / `play` in). Without `#preview` nothing changes.
+- **Website** (`site/`): one shared logo component (Logo.astro) with the crown seated upright on the R, ~1.4× larger, on the title page, the docs header and the atlas page, always linking home; larger site tabs (SiteNav.astro) on the title page and docs header; the title page's Gray's plate is replaced by a live, non-interactive atlas preview card (poster `site/public/img/atlas-preview.webp` on phones and until the preview is ready); hero subtitle and the "Start with anatomy" link changed. The atlas at `/atlas/` is now an Astro page that serves the built atlas with the shared logo in its header.
+
 ## v51 — Rex Hepatis: header and dock, Clinical therapeutics, micro views, gallbladder, cirrhosis coupling (29 Sept 2026)
 Built on v50 (branch `v48-interface`) from Oli's v50 review.
 - **Name.** The project is now **Rex Hepatis**, with the tagline "An interactive 3D model of the hepatobiliary system, from the whole organ down to the individual hepatocyte" beside it in the header (dropped when the header is too narrow). "Macroscopic → subcellular · CT anatomy" is gone. Intro key `hsa-intro-seen-v51`.

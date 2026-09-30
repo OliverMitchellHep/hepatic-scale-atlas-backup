@@ -1,0 +1,27 @@
+---
+/**
+ * Site tabs (Atlas, Education, Guidelines, Research): navy ink, a navy bar on hover and a gold bar under the current
+ * section. Shared by the title page and the docs header. Each tab is at least 44px tall.
+ */
+interface Props { current?: string }
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const tabs = [['Atlas', '/atlas/'], ['Education', '/overview/'], ['Guidelines', '/guidelines/'], ['Research', '/research/']] as const;
+const { current } = Astro.props;
+---
+<nav class="rh-tabs" aria-label="Site">
+  {tabs.map(([name, href]) => <a href={`${base}${href}`} aria-current={current === name ? 'page' : undefined}>{name}</a>)}
+</nav>
+<style is:inline>
+.rh-tabs{display:flex;align-items:stretch;gap:clamp(6px,1.4vw,20px);font:500 18px/1 "IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif}
+.rh-tabs a{position:relative;display:flex;align-items:center;min-height:48px;padding:12px 14px;color:#0E1A2E;text-decoration:none;white-space:nowrap;border-radius:3px;transition:background-color .15s}
+.rh-tabs a::after{content:"";position:absolute;left:14px;right:14px;bottom:-1px;height:3px;background:#0E1A2E;transform:scaleX(0);transition:transform .18s}
+.rh-tabs a:hover{background:#F3F6FA}
+.rh-tabs a:hover::after{transform:scaleX(1)}
+.rh-tabs a[aria-current="page"]::after{transform:scaleX(1);background:#C99A2E}
+.rh-tabs a:focus-visible{outline:2px solid #2C6DBA;outline-offset:2px}
+@media (max-width:900px){
+  .rh-tabs{width:100%;justify-content:space-between;gap:4px;font-size:16.5px}
+  .rh-tabs a{padding:12px 8px}
+  .rh-tabs a::after{left:8px;right:8px}
+}
+</style>

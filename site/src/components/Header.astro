@@ -1,0 +1,28 @@
+---
+/**
+ * Docs header: the shared logo (links home), search, and the site tabs (desktop; on phones the sidebar menu carries them).
+ * Replaces Starlight's Header (astro.config.mjs components.Header).
+ */
+import Search from 'virtual:starlight/components/Search';
+import Logo from './Logo.astro';
+import SiteNav from './SiteNav.astro';
+const slug = Astro.locals.starlightRoute.id;
+const current = /^(guidelines)/.test(slug) ? 'Guidelines' : /^(research)/.test(slug) ? 'Research' : /^(about)/.test(slug) ? undefined : 'Education';
+---
+<div class="rh-header">
+  <Logo class="rh-header-logo" />
+  <div class="rh-search print:hidden"><Search /></div>
+  <div class="rh-header-nav print:hidden"><SiteNav current={current} /></div>
+</div>
+<style>
+  .rh-header{display:flex;align-items:center;gap:var(--sl-nav-gap);height:100%}
+  .rh-header :global(.rh-logo){--rh-logo-size:36px;color:var(--sl-color-white);flex:none}
+  .rh-search{display:flex;flex:1;justify-content:flex-end}
+  .rh-header-nav{display:none;align-self:flex-end}
+  @media (min-width:50rem){
+    .rh-header{gap:clamp(16px,2.5vw,40px)}
+    .rh-header :global(.rh-logo){--rh-logo-size:50px}
+    .rh-search{justify-content:flex-start}
+    .rh-header-nav{display:flex}
+  }
+</style>

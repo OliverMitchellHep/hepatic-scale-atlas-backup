@@ -1,3 +1,5 @@
+/* v52: #preview = the website's home-page card (no interface; atlas.js reads this class) */
+if(/^#preview\b/.test(location.hash)) document.documentElement.classList.add('rh-preview');
 
 /* boot watchdog: runs before the 3D engine loads, so a slow or failed download is reported
    instead of leaving the splash screen hanging */

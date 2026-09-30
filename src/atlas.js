@@ -40,6 +40,9 @@ await new Promise(r=>requestAnimationFrame(()=>setTimeout(r,0)));   // let the s
    Default camera is anterior, so the patient's RIGHT lobe renders on screen left. */
 
 const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
+/* v52 preview mode (#preview, set on <html> by boot.js): the teaching website's home-page card embeds the atlas with no
+   interface, no input and a slow auto-rotate; the view is set through the layer system once the scene is built (previewInit) */
+const PREVIEW = document.documentElement.classList.contains('rh-preview');
 const C = {
   tissue:0x57291F, tissueMid:0x4A241C, tissueDeep:0x371A14, capsule:0x7A4638,
   portal:0x7A5CB4, artery:0xB83A30, bile:0xB9BC5E, gb:0xC6CB80, vein:0x2F5A9E,
@@ -259,6 +262,7 @@ const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableZoom = false; controls.enablePan = false;
 controls.enableDamping = true; controls.dampingFactor = 0.075;
 controls.rotateSpeed = 0.62; controls.autoRotate = false;
+if(PREVIEW){ controls.enableRotate=false; controls.autoRotate=true; controls.autoRotateSpeed=0.7; renderer.domElement.style.pointerEvents='none'; }
 controls.target.set(0,-0.45,0);
 
 /* ════════════ helpers ════════════ */
@@ -5685,7 +5689,7 @@ function resize(){
 addEventListener('resize',()=>layoutDock()); layoutDock();
 /* ── phone layout (v34): one bottom sheet (drag between peek, half and full) holds the fibrosis slider, the panel,
    the layers and every text card and procedure card, so nothing floats over the model ── */
-const MOBQ=()=>innerWidth<=860||(innerHeight<=520&&matchMedia('(pointer:coarse)').matches);
+const MOBQ=()=>!PREVIEW&&(innerWidth<=860||(innerHeight<=520&&matchMedia('(pointer:coarse)').matches));
 const MOB={on:false,state:'peek',h:140,homes:new Map(),justDragged:0};
 function mobMove(el,dest,before){ if(!MOB.homes.has(el)) MOB.homes.set(el,{p:el.parentNode,n:el.nextSibling}); dest.insertBefore(el,before||null); }
 function mobRestore(){ const list=[...MOB.homes]; for(let i=list.length-1;i>=0;i--){ const [el,h]=list[i]; h.p.insertBefore(el,(h.n&&h.n.parentNode===h.p)?h.n:null); } MOB.homes.clear(); }
@@ -5831,12 +5835,13 @@ function coachLayout(){
   }
 }
 addEventListener('resize',coachLayout);
-{ let seen=false; try{ seen=localStorage.getItem('hsa-intro-seen-v51')==='1'; }catch(e){} if(!seen) introShow(); }
+{ let seen=PREVIEW; try{ seen=seen||localStorage.getItem('hsa-intro-seen-v51')==='1'; }catch(e){} if(!seen) introShow(); }
 
 const tmp=new THREE.Vector3(), clock=new THREE.Clock();
 const PERF={full:Math.min(devicePixelRatio,(innerWidth<=860||innerHeight<=520)?1.5:2), move:1, lastMoveT:-1e9, moving:false,
   cam:new THREE.Vector3(), q:new THREE.Quaternion(), fps:0, n:0, t0:performance.now(), occMs:0, rMs:0,
   el:null, on:false};
+if(PREVIEW) PERF.full=Math.min(devicePixelRatio,1.25);   // v52: the home-page card is small; cap its pixel ratio
 PERF.move=PERF.full;   // v44: same pixel ratio while moving (v43 dropped to 1× in motion: sharper at rest than rotating)
 const acA=new THREE.Color(0xE0574A), acB=new THREE.Color(0x9A4E92), accol=new THREE.Color();
 /* ── ambient occlusion (v37) ──
@@ -5954,6 +5959,7 @@ function rodShouldDraw(now){
 // transmissive materials to BackSide and back), so the reference signature is taken after each draw
 function rodAfterDraw(){ if(ROD.on&&!window.__rodOff) ROD.sig=sceneSig(); }
 function frame(){
+  if(PV.paused){ PV.raf=false; return; }
   requestAnimationFrame(frame);
   const dt=Math.min(clock.getDelta(),0.05), el=clock.elapsedTime;
   frameNo++;
@@ -6191,6 +6197,21 @@ function frame(){
 }
 
 
+/* v52 preview mode: vessels and biliary tree on, the liver and every other organ ghosted, blood flow running; the page that
+   embeds it sends {rhPreview:'pause'|'play'} (off screen, tab hidden) and gets {rhPreview:'ready'} after the first frames */
+const PV={paused:false, raf:true};
+function previewInit(){ if(!tiers[0].built||!CT_ORGANS){ setTimeout(previewInit,200); return; }
+  applyLayerMap({parenchyma:'ghost',portal:'on',artery:'on',hepaticVein:'on',biliary:'on',stomach:'ghost',esophagus:'ghost',duodenum:'ghost',
+    pancreas:'ghost',spleen:'ghost',kidneys:'ghost',ribcage:'off',diaphragm:'off'},{tier:0});
+  state.flow=true; flowUI();
+  // the card is small and shows no ribcage: frame the organs closer than the full-screen home view
+  { const T=new THREE.Vector3(0,-0.45,0); camera.position.copy(HOME).sub(T).multiplyScalar(0.56).add(T); controls.target.copy(T); controls.update(); }
+  let n=0; const ready=()=>{ if(++n<20) return requestAnimationFrame(ready); if(parent!==window) parent.postMessage({rhPreview:'ready'},location.origin); };
+  requestAnimationFrame(ready); }
+if(PREVIEW){ previewInit();
+  addEventListener('message',e=>{ if(e.origin!==location.origin||!e.data) return;
+    if(e.data.rhPreview==='pause') PV.paused=true;
+    else if(e.data.rhPreview==='play'&&PV.paused){ PV.paused=false; clock.getDelta(); if(!PV.raf){ PV.raf=true; requestAnimationFrame(frame); } } }); }
 applySim(); applyModes(); paintPanel(0); pathTargets(); refreshPathUI(); clinRefresh(); frame();
 if(/#v=/.test(location.hash)) setTimeout(shareRestore,400);   // v50: deep link
 

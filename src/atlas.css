@@ -770,3 +770,7 @@ body.mob #dock-hide,body.mob #dock-show{display:none}
 body.mob #p-title{font-size:22px}
 body.mob #topbar .find{display:none}
 body.mob .find.inmob{display:block;width:auto;margin:0 0 12px}
+
+/* v52 preview mode (#preview): the website's home-page card shows the stage only; no interface, no input */
+html.rh-preview #app>:not(#stage):not(#vignette){display:none!important}
+html.rh-preview #stage canvas{pointer-events:none;cursor:default}

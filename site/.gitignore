@@ -4,3 +4,4 @@ dist/
 public/atlas/
 src/content/docs/anatomy/
 src/content/docs/physiology/
+.atlas/

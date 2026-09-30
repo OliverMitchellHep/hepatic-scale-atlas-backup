@@ -4,9 +4,11 @@ Astro Starlight site that wraps the atlas. Single sources of truth stay where th
 
 | Thing | Source | Generated into |
 |---|---|---|
-| The atlas | `../src`, `../data`, `../assets`, `../build.py` | `public/atlas/` (via `python3 ../build.py`) |
+| The atlas | `../src`, `../data`, `../assets`, `../build.py` | `public/atlas/` + `.atlas/index.html` (via `python3 ../build.py`) |
 | Anatomy / physiology modules | `../content/A*.md`, `../content/P*.md` | `src/content/docs/anatomy`, `.../physiology` |
-| Title page (`/`) | `src/pages/index.astro` (standalone; Gray's plate in `public/img/`) | — |
+| Title page (`/`) | `src/pages/index.astro` (standalone; live atlas preview card, poster `public/img/atlas-preview.webp` from `scripts/poster.mjs`) | — |
+| Atlas page (`/atlas/`) | `src/pages/atlas/index.astro` (the built atlas plus the shared logo) | — |
+| Logo and site tabs | `src/components/Logo.astro`, `SiteNav.astro` (title page, docs `Header.astro`, atlas page) | — |
 | Hand-written pages (overview, histology, pathology, guidelines, about) | `src/content/docs/**` | — |
 
 Generated folders are git-ignored. `npm run dev` / `npm run build` run `scripts/prepare.mjs` first.

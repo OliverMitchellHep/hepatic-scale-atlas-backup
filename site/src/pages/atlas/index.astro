@@ -1,0 +1,20 @@
+---
+/**
+ * The full atlas at /atlas/: the page built by ../build.py (copied to .atlas/index.html by scripts/prepare.mjs), served
+ * unchanged except that the header's "Rex Hepatis" becomes the shared crowned logo, linking to the home page.
+ * The atlas's own files (vendor/, textures, context meshes) are in public/atlas/. #preview is the home-page card.
+ */
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+import Logo from '../../components/Logo.astro';
+
+const html = readFileSync(resolve(process.cwd(), '.atlas/index.html'), 'utf8');
+const marker = '<div class="brand"><b>Rex Hepatis</b>';
+const at = html.indexOf(marker);
+if (at < 0) throw new Error('atlas page: header brand not found (src/page.html changed?)');
+const head = '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,700&display=swap">'
+  + '<style>#topbar .brand .rh-logo{--rh-logo-size:32px;color:var(--ink)}body.mob #topbar .brand .rh-logo{--rh-logo-size:22px}</style>';
+const before = head + html.slice(0, at) + '<div class="brand">';
+const after = html.slice(at + marker.length);
+---
+<Fragment set:html={before} /><Logo /><Fragment set:html={after} />
